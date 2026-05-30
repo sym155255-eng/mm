@@ -515,7 +515,7 @@ textarea.form-input { resize: vertical; }
   .site-logo { width: 20px; height: 20px; border-radius: 4px; }
   .site-logo-fallback { width: 20px; height: 20px; font-size: .68rem; border-radius: 4px; }
   .site-title { font-size: .78rem; }
-  .site-desc { display: none; }
+  .site-desc { font-size: .68rem; margin-top: 1px; }
   .site-clicks { display: none; }
   .card-badge { font-size: .55rem; padding: 1px 4px; }
   .category-title { font-size: .92rem; margin-bottom: 6px; padding-bottom: 4px; }
