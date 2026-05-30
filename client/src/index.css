@@ -510,8 +510,8 @@ textarea.form-input { resize: vertical; }
   /* Content 区域 */
   .content { padding: 10px; overflow-y: auto; }
   .sites-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-  .site-card { padding: 6px 7px; border-radius: 8px; }
-  .site-card-inner { gap: 6px; align-items: center; }
+  .site-card { padding: 0; border-radius: 8px; }
+  .site-card-inner { gap: 6px; align-items: center; padding: 6px 8px; }
   .site-logo { width: 20px; height: 20px; border-radius: 4px; }
   .site-logo-fallback { width: 20px; height: 20px; font-size: .68rem; border-radius: 4px; }
   .site-title { font-size: .78rem; }
