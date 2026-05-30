@@ -14,17 +14,25 @@ const COLOR_PRESETS = [
   { label: '深', value: '#1e293b' },
 ];
 
-// 颜色弹出面板
+// 颜色弹出面板（自动判断向上/向下弹出）
 function ColorPopover({ value, onChange, onClose }) {
   const ref = useRef(null);
+  const [openUp, setOpenUp] = useState(false);
+
   useEffect(() => {
     const handler = e => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
 
+  useEffect(() => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    if (rect.bottom > window.innerHeight - 20) setOpenUp(true);
+  }, []);
+
   return (
-    <div className="tc-popover" ref={ref}>
+    <div className="tc-popover" ref={ref} style={openUp ? { top: 'auto', bottom: 'calc(100% + 8px)' } : {}}>
       <div className="tc-pop-presets">
         {COLOR_PRESETS.map(c => (
           <div
