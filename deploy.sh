@@ -23,7 +23,7 @@ apt-get install -y -q build-essential python3 unzip curl git
 # ── 2. 安装 Node.js 20 ──────────────────────
 if ! command -v node &>/dev/null || [[ $(node -v | cut -d. -f1 | tr -d v) -lt 18 ]]; then
   echo "[2/6] 安装 Node.js 20..."
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - -q
+  curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
   apt-get install -y -q nodejs
 else
   echo "[2/6] Node.js 已安装: $(node -v)"
