@@ -615,7 +615,7 @@ export default function Home() {
               group.links.length > 0 && (
                 <section key={group.id} className="category-section" id={`cat-${group.id}`}>
                   <h2 className="category-title">
-                    <span>{group.icon}</span> {group.name}
+                    {group.name}
                     <span className="link-count">{group.links.length}</span>
                   </h2>
                   <div className="sites-grid">
