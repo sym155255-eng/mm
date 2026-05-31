@@ -544,7 +544,7 @@ export default function Home() {
             )}
           </div>
         </div>
-      </div>
+      )}
 
       <div className={`main ${siteSettings.site_layout === 'topnav' ? 'main-topnav' : 'main-sidebar'}`}>
 
