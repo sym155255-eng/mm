@@ -514,7 +514,7 @@ export default function Home() {
               className={`cat-nav-item ${activeCategory === 'all' ? 'active' : ''}`}
               onClick={() => { setActiveCategory('all'); clearSearch(); }}
             >
-              🏠 全部
+              <span className="cat-nav-icon">🏠</span> 全部
             </button>
             {grouped.map(cat => (
               <button
@@ -522,7 +522,7 @@ export default function Home() {
                 className={`cat-nav-item ${activeCategory === cat.id ? 'active' : ''}`}
                 onClick={() => { setActiveCategory(cat.id); clearSearch(); }}
               >
-                {cat.icon} {cat.name}
+                <span className="cat-nav-icon">{cat.icon}</span> {cat.name}
                 <span className="cat-nav-count">{cat.links.length}</span>
               </button>
             ))}

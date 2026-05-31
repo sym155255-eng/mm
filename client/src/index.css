@@ -608,6 +608,11 @@ textarea.form-input { resize: vertical; }
   .settings-row { grid-template-columns: 1fr; gap: 0; }
   .settings-card { padding: 16px; }
 
+  /* 顶部导航栏 — 手机端隐藏图标只留文字 */
+  .cat-nav-icon { display: none; }
+  .cat-nav-inner { padding: 6px 10px; gap: 5px; }
+  .cat-nav-item { padding: 4px 10px; font-size: .8rem; }
+
   /* 文字管理表格 — 手机隐藏「分类」和「预览效果」列，保留4列 */
   .tc-table th:nth-child(2),
   .tc-table td:nth-child(2),
