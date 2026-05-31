@@ -73,9 +73,35 @@ const GRADIENTS = {
   gold:     'linear-gradient(90deg,#f59e0b,#fde68a,#d97706,#f59e0b)',
 };
 
-function Marquee({ text, gradient, speed }) {
+// 光谱色板：逐字/词上色
+const SPECTRUM = [
+  '#00f5ff', '#ff6eb4', '#ffe44d', '#b44fff',
+  '#ff6b35', '#00ff99', '#ff3d7f', '#4dfff3',
+  '#ffaa00', '#7b61ff', '#00e5ff', '#ff4fa3',
+];
+
+function Marquee({ text, gradient, speed, style: marqStyle }) {
+  const dur = `${Math.max(8, 60 - parseInt(speed || 30))}s`;
+  const isSpectrum = marqStyle === 'spectrum';
+
+  if (isSpectrum) {
+    const words = text.split(/\s+/).filter(Boolean);
+    const coloredSegment = words.map((w, i) => (
+      <span key={i} className="marquee-word" style={{ animationDelay: `${-(i * 0.4)}s` }}>{w}</span>
+    ));
+    return (
+      <div className="marquee-wrap marquee-dark">
+        <div className="marquee-track" style={{ animationDuration: dur }}>
+          {[0, 1, 2].map(n => (
+            <span key={n} className="marquee-segment">{coloredSegment}</span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // 经典渐变样式
   const bg = GRADIENTS[gradient] || GRADIENTS.rainbow;
-  const dur = `${Math.max(5, 60 - parseInt(speed || 30))}s`;
   return (
     <div className="marquee-wrap">
       <div className="marquee-track" style={{ animationDuration: dur }}>
@@ -480,55 +506,73 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="main">
-        {/* 移动端遮罩层 */}
-        {sidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar} />}
-
-        <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
-          {/* 移动端抽屉顶部 */}
-          <div className="sidebar-drawer-header">
-            <span className="sidebar-drawer-title">📂 分类导航</span>
-            <button className="sidebar-close-btn" onClick={closeSidebar}>✕</button>
-          </div>
-          <div className="sidebar-title">分类</div>
-          <ul className="category-list">
-            <li
-              className={`category-item ${activeCategory === 'all' ? 'active' : ''}`}
-              onClick={() => { setActiveCategory('all'); clearSearch(); closeSidebar(); }}
+      {/* 顶部分类导航栏（topnav 模式） */}
+      {siteSettings.site_layout === 'topnav' && (
+        <div className="cat-nav-bar">
+          <div className="cat-nav-inner">
+            <button
+              className={`cat-nav-item ${activeCategory === 'all' ? 'active' : ''}`}
+              onClick={() => { setActiveCategory('all'); clearSearch(); }}
             >
-              <span>🏠</span> 全部
-            </li>
+              🏠 全部
+            </button>
             {grouped.map(cat => (
-              <li
+              <button
                 key={cat.id}
-                className={`category-item ${activeCategory === cat.id ? 'active' : ''}`}
-                onClick={() => { setActiveCategory(cat.id); clearSearch(); closeSidebar(); }}
+                className={`cat-nav-item ${activeCategory === cat.id ? 'active' : ''}`}
+                onClick={() => { setActiveCategory(cat.id); clearSearch(); }}
               >
-                <span>{cat.icon}</span> {cat.name}
-                <span className="cat-count">{cat.links.length}</span>
-              </li>
+                {cat.icon} {cat.name}
+                <span className="cat-nav-count">{cat.links.length}</span>
+              </button>
             ))}
-          </ul>
-
-          {/* 移动端：侧边栏底部认证区 */}
-          <div className="sidebar-auth-footer">
-            {user ? (
-              <>
-                <span className="sidebar-auth-user">👤 {user.username}</span>
-                {isAdmin && (
-                  <Link to="/admin" className="sidebar-auth-btn sidebar-auth-admin" onClick={closeSidebar}>⚙️ 后台</Link>
-                )}
-                <button className="sidebar-auth-btn sidebar-auth-logout" onClick={() => { logout(); closeSidebar(); }}>退出</button>
-              </>
-            ) : (
-              <>
-                <Link to="/login"    className="sidebar-auth-btn sidebar-auth-login"    onClick={closeSidebar}>登录</Link>
-                <Link to="/register" className="sidebar-auth-btn sidebar-auth-register" onClick={closeSidebar}>注册</Link>
-              </>
-            )}
           </div>
-        </aside>
+        </div>
+      )}
 
+      <div className={`main ${siteSettings.site_layout === 'topnav' ? 'main-topnav' : 'main-sidebar'}`}>
+
+        {/* 左侧边栏（sidebar 模式） */}
+        {siteSettings.site_layout !== 'topnav' && (
+          <>
+            {sidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar} />}
+            <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
+              <div className="sidebar-drawer-header">
+                <span className="sidebar-drawer-title">📂 分类导航</span>
+                <button className="sidebar-close-btn" onClick={closeSidebar}>✕</button>
+              </div>
+              <div className="sidebar-title">分类</div>
+              <ul className="category-list">
+                <li className={`category-item ${activeCategory === 'all' ? 'active' : ''}`}
+                  onClick={() => { setActiveCategory('all'); clearSearch(); closeSidebar(); }}>
+                  <span>🏠</span> 全部
+                </li>
+                {grouped.map(cat => (
+                  <li key={cat.id}
+                    className={`category-item ${activeCategory === cat.id ? 'active' : ''}`}
+                    onClick={() => { setActiveCategory(cat.id); clearSearch(); closeSidebar(); }}>
+                    <span>{cat.icon}</span> {cat.name}
+                    <span className="cat-count">{cat.links.length}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="sidebar-auth-footer">
+                {user ? (
+                  <>
+                    <span className="sidebar-auth-user">👤 {user.username}</span>
+                    {isAdmin && <Link to="/admin" className="sidebar-auth-btn sidebar-auth-admin" onClick={closeSidebar}>⚙️ 后台</Link>}
+                    <button className="sidebar-auth-btn sidebar-auth-logout" onClick={() => { logout(); closeSidebar(); }}>退出</button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login" className="sidebar-auth-btn sidebar-auth-login" onClick={closeSidebar}>登录</Link>
+                    <Link to="/register" className="sidebar-auth-btn sidebar-auth-register" onClick={closeSidebar}>注册</Link>
+                  </>
+                )}
+              </div>
+            </aside>
+          </>
+        )}
 
         <main className="content">
           {siteSettings.marquee_enabled === 'true' && siteSettings.marquee_text && (
@@ -536,6 +580,7 @@ export default function Home() {
               text={siteSettings.marquee_text}
               gradient={siteSettings.marquee_gradient}
               speed={siteSettings.marquee_speed}
+              style={siteSettings.marquee_style || 'classic'}
             />
           )}
           <AdBar ads={adList} />

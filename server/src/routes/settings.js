@@ -16,7 +16,8 @@ router.get('/', (req, res) => {
 // PUT /api/admin/settings  —— 管理员批量保存
 router.put('/', adminMiddleware, (req, res) => {
   const allowed = ['site_name', 'site_icon', 'site_desc', 'site_footer',
-    'marquee_enabled', 'marquee_text', 'marquee_gradient', 'marquee_speed'];
+    'marquee_enabled', 'marquee_text', 'marquee_gradient', 'marquee_speed', 'marquee_style',
+    'site_layout'];
   try {
     const upsert = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value');
     db.transaction(() => {

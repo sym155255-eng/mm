@@ -42,8 +42,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .nav-btn { padding: 6px 14px; color: var(--text-secondary); font-size: .9rem; border-radius: 6px; }
 .nav-btn:hover { background: var(--bg); }
 
+/* ---- Category Nav Bar ---- */
+.cat-nav-bar { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 60px; z-index: 50; }
+.cat-nav-inner { max-width: 1400px; margin: 0 auto; padding: 8px 20px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.cat-nav-inner::-webkit-scrollbar { display: none; }
+.cat-nav-item { padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: none; color: var(--text-secondary); font-size: .85rem; white-space: nowrap; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+.cat-nav-item:hover { border-color: var(--primary); color: var(--primary); background: #f5f3ff; text-decoration: none; }
+.cat-nav-item.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.cat-nav-count { background: var(--bg); color: var(--text-secondary); padding: 1px 6px; border-radius: 8px; font-size: .72rem; }
+.cat-nav-item.active .cat-nav-count { background: rgba(255,255,255,.25); color: #fff; }
+
 /* ---- Layout ---- */
-.main { max-width: 1400px; margin: 0 auto; display: flex; padding: 20px; gap: 20px; min-height: calc(100vh - 110px); }
+.main { max-width: 1400px; margin: 0 auto; min-height: calc(100vh - 110px); }
+.main-sidebar { display: flex; padding: 20px; gap: 20px; }
+.main-topnav  { display: block; padding: 20px; }
 
 /* ---- Sidebar ---- */
 .sidebar { width: 160px; flex-shrink: 0; }
@@ -210,6 +222,23 @@ textarea.form-input { resize: vertical; }
 @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-33.333%); } }
 .marquee-text { font-size: 1rem; font-weight: 700; padding: 0 8px; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% auto; }
 
+/* ---- Marquee 暗色光谱版 ---- */
+.marquee-dark { background: #0a0a12; border: 1px solid rgba(180,79,255,.5); box-shadow: 0 0 12px rgba(180,79,255,.2), inset 0 0 20px rgba(0,0,0,.4); }
+.marquee-dark::before { background: linear-gradient(to right, #0a0a12, transparent); }
+.marquee-dark::after  { background: linear-gradient(to left,  #0a0a12, transparent); }
+.marquee-segment { display: inline-flex; gap: 0; padding: 0; }
+.marquee-word { font-size: 1rem; font-weight: 800; padding: 0 1.4em; letter-spacing: .02em; animation: spectrum-flow 3s linear infinite; text-shadow: 0 0 10px currentColor; }
+@keyframes spectrum-flow {
+  0%   { color: #ff0080; text-shadow: 0 0 12px #ff0080; }
+  14%  { color: #ff6600; text-shadow: 0 0 12px #ff6600; }
+  28%  { color: #ffe600; text-shadow: 0 0 12px #ffe600; }
+  42%  { color: #00ff88; text-shadow: 0 0 12px #00ff88; }
+  57%  { color: #00f5ff; text-shadow: 0 0 12px #00f5ff; }
+  71%  { color: #7b61ff; text-shadow: 0 0 12px #7b61ff; }
+  85%  { color: #ff44cc; text-shadow: 0 0 12px #ff44cc; }
+  100% { color: #ff0080; text-shadow: 0 0 12px #ff0080; }
+}
+
 /* ---- Settings page ---- */
 .settings-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; max-width: 640px; }
 .settings-preview { background: linear-gradient(135deg, #ede9fe, #dbeafe); border-radius: 12px; padding: 20px 24px; margin-bottom: 28px; display: flex; align-items: center; gap: 16px; }
@@ -221,6 +250,15 @@ textarea.form-input { resize: vertical; }
 .settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .settings-actions { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
 .save-success { color: #059669; font-size: .9rem; font-weight: 500; }
+
+/* ---- Marquee style picker ---- */
+.marquee-style-picker { display: flex; gap: 12px; }
+.marquee-style-opt { flex: 1; border: 2px solid var(--border); border-radius: 10px; padding: 8px; cursor: pointer; transition: all .15s; }
+.marquee-style-opt:hover { border-color: var(--primary); }
+.marquee-style-opt.selected { border-color: var(--primary); background: #ede9fe; }
+.marquee-style-preview { border-radius: 6px; padding: 7px 10px; min-height: 34px; display: flex; align-items: center; gap: 2px; overflow: hidden; margin-bottom: 6px; }
+.marquee-style-label { font-size: .8rem; font-weight: 600; color: var(--text-secondary); display: block; text-align: center; }
+.marquee-style-opt.selected .marquee-style-label { color: var(--primary); }
 
 /* ---- Marquee admin settings ---- */
 .marquee-toggle-row { margin-bottom: 16px; }

@@ -13,7 +13,8 @@ const GRADIENT_OPTIONS = [
 export default function AdminSettings() {
   const [form, setForm] = useState({
     site_name: '', site_icon: '', site_desc: '', site_footer: '',
-    marquee_enabled: 'false', marquee_text: '', marquee_gradient: 'rainbow', marquee_speed: '30',
+    marquee_enabled: 'false', marquee_text: '', marquee_gradient: 'rainbow', marquee_speed: '30', marquee_style: 'classic',
+    site_layout: 'sidebar',
   });
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -74,6 +75,39 @@ export default function AdminSettings() {
             <input className="form-input" value={form.site_footer} onChange={e => setForm(f => ({ ...f, site_footer: e.target.value }))} placeholder="如：© 2025 导航站 · 收录优质网站" maxLength={80} />
           </div>
 
+          {/* 布局样式 */}
+          <div className="settings-section-title" style={{ marginTop: 24 }}>前台布局</div>
+          <div className="form-group">
+            <div className="marquee-style-picker">
+              <div
+                className={`marquee-style-opt ${form.site_layout !== 'topnav' ? 'selected' : ''}`}
+                onClick={() => setForm(f => ({ ...f, site_layout: 'sidebar' }))}
+              >
+                <div className="marquee-style-preview" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', gap: 4, alignItems: 'stretch', padding: '5px 6px' }}>
+                  <div style={{ width: 28, background: '#1e293b', borderRadius: 4, flexShrink: 0 }} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3 }} />
+                    <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3, width: '70%' }} />
+                  </div>
+                </div>
+                <span className="marquee-style-label">▐ 左侧边栏</span>
+              </div>
+              <div
+                className={`marquee-style-opt ${form.site_layout === 'topnav' ? 'selected' : ''}`}
+                onClick={() => setForm(f => ({ ...f, site_layout: 'topnav' }))}
+              >
+                <div className="marquee-style-preview" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', flexDirection: 'column', padding: '5px 6px', gap: 3 }}>
+                  <div style={{ height: 8, background: '#4f46e5', borderRadius: 3, width: '100%' }} />
+                  <div style={{ display: 'flex', gap: 2 }}>
+                    {[40, 30, 35, 28].map((w, i) => <div key={i} style={{ height: 5, background: '#e2e8f0', borderRadius: 3, width: w }} />)}
+                  </div>
+                  <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3 }} />
+                </div>
+                <span className="marquee-style-label">▀ 顶部导航</span>
+              </div>
+            </div>
+          </div>
+
           {/* 跑马灯 */}
           <div className="settings-section-title" style={{ marginTop: 24 }}>彩字跑马灯</div>
 
@@ -99,6 +133,35 @@ export default function AdminSettings() {
                     const bg = `linear-gradient(90deg,${opt.colors.join(',')},${opt.colors[0]})`;
                     return <span key={i} style={{ backgroundImage: bg, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 700, fontSize: '1rem' }}>{t || '（在下方输入跑马灯文字）'}&nbsp;&nbsp;⭐&nbsp;&nbsp;</span>;
                   })}
+                </div>
+              </div>
+
+              {/* 样式切换 */}
+              <div className="form-group">
+                <label>跑马灯样式</label>
+                <div className="marquee-style-picker">
+                  <div
+                    className={`marquee-style-opt ${form.marquee_style !== 'spectrum' ? 'selected' : ''}`}
+                    onClick={() => setForm(f => ({ ...f, marquee_style: 'classic' }))}
+                  >
+                    <div className="marquee-style-preview" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
+                      <span style={{ background: 'linear-gradient(90deg,#ff0080,#ff8c00,#ffe600,#00d26a,#00b4d8,#7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 700, fontSize: '.8rem' }}>
+                        欢迎使用导航站 ⭐ 精选内容
+                      </span>
+                    </div>
+                    <span className="marquee-style-label">🌈 经典渐变</span>
+                  </div>
+                  <div
+                    className={`marquee-style-opt ${form.marquee_style === 'spectrum' ? 'selected' : ''}`}
+                    onClick={() => setForm(f => ({ ...f, marquee_style: 'spectrum' }))}
+                  >
+                    <div className="marquee-style-preview" style={{ background: '#0a0a12', border: '1px solid rgba(180,79,255,.5)' }}>
+                      {['欢迎', '使用', '导航站', '精选', '内容'].map((w, i) => (
+                        <span key={i} style={{ color: ['#00f5ff','#ff6eb4','#ffe44d','#00ff99','#b44fff'][i], fontWeight: 800, fontSize: '.75rem', marginRight: 6 }}>{w}</span>
+                      ))}
+                    </div>
+                    <span className="marquee-style-label">🌌 暗色光谱</span>
+                  </div>
                 </div>
               </div>
 
