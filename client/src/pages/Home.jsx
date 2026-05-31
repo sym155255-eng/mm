@@ -466,12 +466,14 @@ export default function Home() {
             <span className="logo-icon">{siteSettings.site_icon}</span>
             <span className="logo-text">{siteSettings.site_name}</span>
           </div>
-          {/* 移动端汉堡按钮，与搜索框同行 */}
-          <button
-            className="mobile-sidebar-toggle"
-            onClick={() => setSidebarOpen(v => !v)}
-            title="展开分类"
-          >☰</button>
+          {/* 移动端汉堡按钮：仅侧边栏模式显示 */}
+          {siteSettings.site_layout !== 'topnav' && (
+            <button
+              className="mobile-sidebar-toggle"
+              onClick={() => setSidebarOpen(v => !v)}
+              title="展开分类"
+            >☰</button>
+          )}
           <form className="search-form" onSubmit={handleSearch}>
             <input
               className="search-input"
@@ -527,8 +529,22 @@ export default function Home() {
               </button>
             ))}
           </div>
+          {/* topnav 模式：移动端认证入口 */}
+          <div className="cat-nav-auth">
+            {user ? (
+              <>
+                {isAdmin && <Link to="/admin" className="cat-nav-auth-btn cat-nav-auth-admin">⚙️</Link>}
+                <button className="cat-nav-auth-btn" onClick={logout}>退出</button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="cat-nav-auth-btn">登录</Link>
+                <Link to="/register" className="cat-nav-auth-btn cat-nav-auth-reg">注册</Link>
+              </>
+            )}
+          </div>
         </div>
-      )}
+      </div>
 
       <div className={`main ${siteSettings.site_layout === 'topnav' ? 'main-topnav' : 'main-sidebar'}`}>
 

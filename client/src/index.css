@@ -51,6 +51,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .cat-nav-item.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .cat-nav-count { background: var(--bg); color: var(--text-secondary); padding: 1px 6px; border-radius: 8px; font-size: .72rem; }
 .cat-nav-item.active .cat-nav-count { background: rgba(255,255,255,.25); color: #fff; }
+.cat-nav-auth { display: none; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; padding-left: 8px; border-left: 1px solid var(--border); }
+.cat-nav-auth-btn { padding: 4px 10px; border-radius: 16px; border: 1px solid var(--border); background: none; color: var(--text-secondary); font-size: .8rem; cursor: pointer; white-space: nowrap; text-decoration: none; }
+.cat-nav-auth-btn:hover { border-color: var(--primary); color: var(--primary); }
+.cat-nav-auth-reg { background: var(--primary); color: #fff !important; border-color: var(--primary); }
+.cat-nav-auth-admin { background: #fef3c7; color: #92400e !important; border-color: #fde68a; }
 
 /* ---- Layout ---- */
 .main { max-width: 1400px; margin: 0 auto; min-height: calc(100vh - 110px); }
@@ -608,10 +613,11 @@ textarea.form-input { resize: vertical; }
   .settings-row { grid-template-columns: 1fr; gap: 0; }
   .settings-card { padding: 16px; }
 
-  /* 顶部导航栏 — 手机端隐藏图标只留文字 */
+  /* 顶部导航栏 — 手机端隐藏图标只留文字，显示认证按钮 */
   .cat-nav-icon { display: none; }
   .cat-nav-inner { padding: 6px 10px; gap: 5px; }
   .cat-nav-item { padding: 4px 10px; font-size: .8rem; }
+  .cat-nav-auth { display: flex; }
 
   /* 文字管理表格 — 手机隐藏「分类」和「预览效果」列，保留4列 */
   .tc-table th:nth-child(2),
