@@ -542,6 +542,24 @@ export default function Home() {
               <span>菜单</span>
               <button onClick={() => setTopnavMenuOpen(false)}>✕</button>
             </div>
+            {/* 分类列表 */}
+            <div className="topnav-menu-cats">
+              <button
+                className={`topnav-menu-cat ${activeCategory === 'all' ? 'active' : ''}`}
+                onClick={() => { setActiveCategory('all'); clearSearch(); setTopnavMenuOpen(false); }}
+              >🏠 全部</button>
+              {grouped.map(cat => (
+                <button
+                  key={cat.id}
+                  className={`topnav-menu-cat ${activeCategory === cat.id ? 'active' : ''}`}
+                  onClick={() => { setActiveCategory(cat.id); clearSearch(); setTopnavMenuOpen(false); }}
+                >
+                  {cat.icon} {cat.name}
+                  <span className="topnav-menu-cat-count">{cat.links.length}</span>
+                </button>
+              ))}
+            </div>
+            <div className="topnav-menu-divider" />
             {user ? (
               <>
                 <span className="topnav-menu-user">👤 {user.username}</span>

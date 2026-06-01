@@ -612,7 +612,8 @@ textarea.form-input { resize: vertical; }
   .settings-row { grid-template-columns: 1fr; gap: 0; }
   .settings-card { padding: 16px; }
 
-  /* 顶部导航栏 — 手机端隐藏图标只留文字 */
+  /* 顶部导航栏 — 手机端完全隐藏，分类移入☰抽屉 */
+  .cat-nav-bar { display: none; }
   .cat-nav-icon { display: none; }
   .cat-nav-inner { padding: 6px 10px; gap: 5px; }
   .cat-nav-item { padding: 4px 10px; font-size: .8rem; }
@@ -629,6 +630,13 @@ textarea.form-input { resize: vertical; }
   .topnav-menu-admin { color: #92400e; background: #fffbeb; }
   .topnav-menu-add { color: #059669; }
   .topnav-menu-logout { color: var(--danger); margin-top: auto; }
+  .topnav-menu-cats { display: flex; flex-direction: column; overflow-y: auto; max-height: 55vh; }
+  .topnav-menu-cat { display: flex; align-items: center; padding: 11px 16px; font-size: .9rem; color: var(--text-secondary); border-bottom: 1px solid var(--border); text-align: left; background: none; width: 100%; cursor: pointer; font-family: inherit; gap: 8px; }
+  .topnav-menu-cat:hover { background: var(--bg); color: var(--primary); }
+  .topnav-menu-cat.active { background: var(--primary); color: #fff; font-weight: 600; }
+  .topnav-menu-cat-count { margin-left: auto; font-size: .75rem; background: rgba(0,0,0,.07); padding: 1px 7px; border-radius: 10px; }
+  .topnav-menu-cat.active .topnav-menu-cat-count { background: rgba(255,255,255,.25); }
+  .topnav-menu-divider { height: 1px; background: var(--border); margin: 4px 0; flex-shrink: 0; }
 
   /* 文字管理表格 — 手机隐藏「分类」和「预览效果」列，保留4列 */
   .tc-table th:nth-child(2),
