@@ -51,11 +51,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .cat-nav-item.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .cat-nav-count { background: var(--bg); color: var(--text-secondary); padding: 1px 6px; border-radius: 8px; font-size: .72rem; }
 .cat-nav-item.active .cat-nav-count { background: rgba(255,255,255,.25); color: #fff; }
-.cat-nav-auth { display: none; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; padding-left: 8px; border-left: 1px solid var(--border); }
-.cat-nav-auth-btn { padding: 4px 10px; border-radius: 16px; border: 1px solid var(--border); background: none; color: var(--text-secondary); font-size: .8rem; cursor: pointer; white-space: nowrap; text-decoration: none; }
-.cat-nav-auth-btn:hover { border-color: var(--primary); color: var(--primary); }
-.cat-nav-auth-reg { background: var(--primary); color: #fff !important; border-color: var(--primary); }
-.cat-nav-auth-admin { background: #fef3c7; color: #92400e !important; border-color: #fde68a; }
+/* ---- Topnav mobile drawer ---- */
+.topnav-menu-overlay { display: none; }
+.topnav-menu-drawer { display: none; }
+.topnav-menu-user { display: none; }
 
 /* ---- Layout ---- */
 .main { max-width: 1400px; margin: 0 auto; min-height: calc(100vh - 110px); }
@@ -613,11 +612,23 @@ textarea.form-input { resize: vertical; }
   .settings-row { grid-template-columns: 1fr; gap: 0; }
   .settings-card { padding: 16px; }
 
-  /* 顶部导航栏 — 手机端隐藏图标只留文字，显示认证按钮 */
+  /* 顶部导航栏 — 手机端隐藏图标只留文字 */
   .cat-nav-icon { display: none; }
   .cat-nav-inner { padding: 6px 10px; gap: 5px; }
   .cat-nav-item { padding: 4px 10px; font-size: .8rem; }
-  .cat-nav-auth { display: flex; }
+
+  /* topnav 菜单小抽屉 */
+  .topnav-menu-overlay { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 500; }
+  .topnav-menu-drawer { display: flex; flex-direction: column; position: fixed; top: 0; left: 0; width: 220px; height: 100dvh; background: #fff; z-index: 501; box-shadow: 4px 0 20px rgba(0,0,0,.15); padding: 0; }
+  .topnav-menu-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 12px; font-size: .95rem; font-weight: 700; color: var(--text); border-bottom: 1px solid var(--border); }
+  .topnav-menu-header button { width: 28px; height: 28px; border-radius: 50%; background: var(--bg); color: var(--text-secondary); font-size: .9rem; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); cursor: pointer; }
+  .topnav-menu-user { display: block; padding: 12px 16px 4px; font-size: .85rem; color: var(--text-secondary); }
+  .topnav-menu-item { display: block; padding: 12px 16px; font-size: .9rem; color: var(--text); border-bottom: 1px solid var(--border); text-decoration: none; text-align: left; background: none; width: 100%; cursor: pointer; font-family: inherit; }
+  .topnav-menu-item:hover { background: var(--bg); color: var(--primary); }
+  .topnav-menu-reg { color: var(--primary); font-weight: 600; }
+  .topnav-menu-admin { color: #92400e; background: #fffbeb; }
+  .topnav-menu-add { color: #059669; }
+  .topnav-menu-logout { color: var(--danger); margin-top: auto; }
 
   /* 文字管理表格 — 手机隐藏「分类」和「预览效果」列，保留4列 */
   .tc-table th:nth-child(2),
