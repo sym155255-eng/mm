@@ -143,27 +143,51 @@ function BadgeField({ value, onChange }) {
 function AdBar({ ads }) {
   if (!ads || ads.length === 0) return null;
   return (
-    <div className="ad-bar">
-      {ads.map(ad => (
-        <div
-          key={ad.id}
-          className="ad-card"
-          style={{
-            background: ad.bg_color || '#f8fafc',
-            gridColumn: `span ${ad.columns || 1}`,
-            cursor: ad.link ? 'pointer' : 'default',
-          }}
-          onClick={() => ad.link && window.open(ad.link, '_blank', 'noopener,noreferrer')}
-        >
-          <div className="ad-title-row">
-            <span className="ad-title" style={ad.title_color ? { color: ad.title_color } : {}}>{ad.title}</span>
-            {ad.badge && (
-              <span className="ad-badge" style={{ '--ad-badge-bg': ad.badge_color || '#6366f1' }}>{ad.badge}</span>
-            )}
-          </div>
-          {ad.description && <div className="ad-desc" style={ad.desc_color ? { color: ad.desc_color } : {}}>{ad.description}</div>}
+    <div className="ad-section">
+      {/* 标题行 */}
+      <div className="ad-section-header">
+        <div className="ad-section-title">
+          <span className="ad-dot" />
+          精品推荐 / 赞助合作商
         </div>
-      ))}
+        <div className="ad-section-right">
+          <span className="ad-sponsors-label">SPONSORS AD</span>
+        </div>
+      </div>
+      {/* 卡片横向滚动行 */}
+      <div className="ad-row">
+        {ads.map(ad => {
+          const logoSrc = ad.link
+            ? (() => { try { return `https://favicon.yandex.net/favicon/${new URL(ad.link).hostname}`; } catch { return ''; } })()
+            : '';
+          return (
+            <div
+              key={ad.id}
+              className="ad-new-card"
+              style={{ borderColor: ad.bg_color || '#f59e0b', cursor: ad.link ? 'pointer' : 'default' }}
+              onClick={() => ad.link && window.open(ad.link, '_blank', 'noopener,noreferrer')}
+            >
+              {ad.badge && (
+                <span className="ad-new-badge" style={{ background: ad.badge_color || '#ef4444' }}>{ad.badge}</span>
+              )}
+              <div className="ad-new-inner">
+                <div className="ad-new-logo">
+                  {logoSrc
+                    ? <img src={logoSrc} alt={ad.title} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                    : null}
+                  <div className="ad-new-logo-fallback" style={{ display: logoSrc ? 'none' : 'flex', background: ad.bg_color || '#f59e0b' }}>
+                    {ad.title[0]}
+                  </div>
+                </div>
+                <div className="ad-new-info">
+                  <div className="ad-new-title" style={ad.title_color ? { color: ad.title_color } : {}}>{ad.title}</div>
+                  {ad.description && <div className="ad-new-desc" style={ad.desc_color ? { color: ad.desc_color } : {}}>{ad.description}</div>}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -281,6 +305,14 @@ function AddModal({ categories, onSave, onClose }) {
   );
 }
 
+// 图标背景色（根据标题自动生成柔和色）
+const ICON_BG = ['#dbeafe','#fce7f3','#dcfce7','#fef3c7','#ede9fe','#e0f2fe','#fee2e2','#fdf4ff'];
+function getIconBg(str) {
+  let h = 0;
+  for (const c of str) h = (h << 5) - h + c.charCodeAt(0);
+  return ICON_BG[Math.abs(h) % ICON_BG.length];
+}
+
 // 网站卡片（含管理员编辑覆盖层）
 const SiteCard = memo(function SiteCard({ link, isAdmin, categories, onEdit, onDelete, onShowItems }) {
   const hasItems = link.items && link.items.length > 0;
@@ -304,32 +336,36 @@ const SiteCard = memo(function SiteCard({ link, isAdmin, categories, onEdit, onD
   return (
     <div className={`site-card ${isAdmin ? 'site-card-editable' : ''} ${hasItems ? 'site-card-has-items' : ''}`} onClick={handleClick} title={link.description}>
       {hasItems && <span className="card-items-dot" title="包含多个链接">▾</span>}
+      {link.badge && (
+        <span className="card-badge-top" style={{ '--badge-bg': badgeColor }}>{link.badge}</span>
+      )}
       <div className="site-card-inner">
-        {logoSrc ? (
-          <img
-            src={logoSrc}
-            alt={link.title}
-            className="site-logo"
-            loading="lazy"
-            decoding="async"
-            onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-          />
-        ) : null}
-        <div className="site-logo-fallback" style={{ display: logoSrc ? 'none' : 'flex' }}>
-          {link.title[0]}
+        <div className="site-logo-wrap" style={{ background: getIconBg(link.title) }}>
+          {logoSrc ? (
+            <img
+              src={logoSrc}
+              alt={link.title}
+              className="site-logo"
+              loading="lazy"
+              decoding="async"
+              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+            />
+          ) : null}
+          <div className="site-logo-fallback" style={{ display: logoSrc ? 'none' : 'flex' }}>
+            {link.title[0]}
+          </div>
         </div>
         <div className="site-info">
           <div className="site-title-row">
             <span className="site-title" style={link.title_color ? { color: link.title_color } : {}}>{link.title}</span>
-            {link.badge && (
-              <span className="card-badge" style={{ '--badge-bg': badgeColor }}>{link.badge}</span>
-            )}
+            {/* 桌面端保留行内角标 */}
+            <span className="card-badge card-badge-inline" style={badgeColor ? { '--badge-bg': badgeColor } : { display: 'none' }}>{link.badge}</span>
           </div>
           {link.description && (
             <div className="site-desc" style={link.desc_color ? { color: link.desc_color } : {}}>{link.description}</div>
           )}
+          {link.clicks > 0 && <span className="site-clicks">点击度: {link.clicks}</span>}
         </div>
-        {link.clicks > 0 && <span className="site-clicks">{link.clicks}</span>}
       </div>
       {isAdmin && (
         <div className="card-admin-btns">
@@ -646,6 +682,7 @@ export default function Home() {
               group.links.length > 0 && (
                 <section key={group.id} className="category-section" id={`cat-${group.id}`}>
                   <h2 className="category-title">
+                    <span className="cat-title-icon">{group.icon}</span>
                     {group.name}
                     <span className="link-count">{group.links.length}</span>
                   </h2>
