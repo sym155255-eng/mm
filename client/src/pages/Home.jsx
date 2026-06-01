@@ -364,7 +364,6 @@ const SiteCard = memo(function SiteCard({ link, isAdmin, categories, onEdit, onD
           {link.description && (
             <div className="site-desc" style={link.desc_color ? { color: link.desc_color } : {}}>{link.description}</div>
           )}
-          {link.clicks > 0 && <span className="site-clicks">点击度: {link.clicks}</span>}
         </div>
       </div>
       {isAdmin && (
@@ -682,9 +681,7 @@ export default function Home() {
               group.links.length > 0 && (
                 <section key={group.id} className="category-section" id={`cat-${group.id}`}>
                   <h2 className="category-title">
-                    <span className="cat-title-icon">{group.icon}</span>
                     {group.name}
-                    <span className="link-count">{group.links.length}</span>
                   </h2>
                   <div className="sites-grid">
                     {group.links.map(link => (
