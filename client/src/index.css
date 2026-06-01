@@ -75,7 +75,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .category-section { margin-bottom: 32px; }
 .category-title { display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 600; margin-bottom: 14px; color: var(--text); }
 .link-count { font-size: .75rem; background: #ede9fe; color: var(--primary); padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
-.sites-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.sites-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 
 /* ---- Site Card ---- */
 .site-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all .15s; position: relative; overflow: visible; }
@@ -342,7 +342,7 @@ textarea.form-input { resize: vertical; }
 .ad-sponsors-label { font-size: .72rem; color: #94a3b8; letter-spacing: .04em; }
 .ad-more-btn { padding: 3px 10px; border: 1px solid var(--border); border-radius: 16px; font-size: .78rem; color: var(--text-secondary); background: none; cursor: pointer; white-space: nowrap; }
 .ad-more-btn:hover { border-color: var(--primary); color: var(--primary); }
-.ad-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ad-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .ad-new-card { position: relative; background: #fff; border: 1.5px solid #f59e0b; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; justify-content: center; cursor: pointer; transition: box-shadow .15s, transform .1s; overflow: hidden; min-height: 64px; }
 .ad-new-card:hover { box-shadow: 0 4px 14px rgba(245,158,11,.2); transform: translateY(-1px); }
 .ad-new-badge { position: absolute; top: 7px; right: 8px; padding: 1px 7px; border-radius: 4px; font-size: .62rem; font-weight: 700; color: #fff; letter-spacing: .03em; }
@@ -453,7 +453,7 @@ textarea.form-input { resize: vertical; }
   .search-form { max-width: 360px; }
   .main { padding: 14px; gap: 14px; }
   .sidebar { width: 170px; }
-  .sites-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .sites-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ============================================================
