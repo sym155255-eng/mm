@@ -1,244 +1,131 @@
-import { useEffect, useState } from 'react';
-import { adsApi } from '../../api';
+import React, { useEffect, useState } from 'react';
+import { getAds, createAd, updateAd, deleteAd } from '../../api';
 
-const BADGE_COLORS = [
-  { label: '紫', value: '#6366f1' },
-  { label: '红', value: '#ef4444' },
-  { label: '橙', value: '#f97316' },
-  { label: '绿', value: '#22c55e' },
-  { label: '蓝', value: '#3b82f6' },
-  { label: '粉', value: '#ec4899' },
-];
+const empty = { title: '', url: '', image_url: '', description: '', position: 'top', visible: 1, sort_order: 0, title_color: '', desc_color: '', badge: '', badge_color: '' };
 
-const BG_PRESETS = [
-  { label: '无', value: '' },
-  { label: '浅紫', value: '#f5f3ff' },
-  { label: '浅蓝', value: '#eff6ff' },
-  { label: '浅绿', value: '#f0fdf4' },
-  { label: '浅橙', value: '#fff7ed' },
-  { label: '浅粉', value: '#fdf2f8' },
-  { label: '浅灰', value: '#f8fafc' },
-];
+export default function Ads() {
+  const [list, setList] = useState([]);
+  const [form, setForm] = useState(empty);
+  const [editing, setEditing] = useState(null);
+  const [modal, setModal] = useState(false);
 
-const emptyForm = {
-  title: '', description: '', badge: '', badge_color: '#6366f1',
-  link: '', columns: 1, bg_color: '', sort: 0, enabled: 1,
-};
-
-function AdModal({ ad, onSave, onClose }) {
-  const [form, setForm] = useState(ad ? {
-    title: ad.title, description: ad.description || '', badge: ad.badge || '',
-    badge_color: ad.badge_color || '#6366f1', link: ad.link || '',
-    columns: ad.columns || 1, bg_color: ad.bg_color || '',
-    sort: ad.sort ?? 0, enabled: ad.enabled ?? 1,
-  } : { ...emptyForm });
-
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-  const handleSubmit = async e => {
-    e.preventDefault();
-    await onSave(form);
-    onClose();
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <h3>{ad ? '编辑广告' : '添加广告'}</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>标题 *</label>
-            <input className="form-input" value={form.title} onChange={e => set('title', e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>文字描述</label>
-            <textarea className="form-input" value={form.description} onChange={e => set('description', e.target.value)} rows={2} placeholder="广告说明文字" />
-          </div>
-          <div className="form-group">
-            <label>角标文字 <span className="label-hint">（留空不显示）</span></label>
-            <input className="form-input" value={form.badge} onChange={e => set('badge', e.target.value)} placeholder="如：限时 / 新品 / HOT" maxLength={6} />
-          </div>
-          <div className="form-group">
-            <label>角标颜色</label>
-            <div className="ads-badge-colors">
-              {BADGE_COLORS.map(c => (
-                <div
-                  key={c.value}
-                  className={`ads-badge-dot ${form.badge_color === c.value ? 'active' : ''}`}
-                  style={{ background: c.value }}
-                  title={c.label}
-                  onClick={() => set('badge_color', c.value)}
-                />
-              ))}
-              <input type="color" className="color-picker-input" value={form.badge_color}
-                onChange={e => set('badge_color', e.target.value)} title="自定义" />
-            </div>
-          </div>
-          <div className="form-group">
-            <label>跳转链接 <span className="label-hint">（留空不跳转）</span></label>
-            <input className="form-input" value={form.link} onChange={e => set('link', e.target.value)} placeholder="https://" />
-          </div>
-          <div className="ads-row-2">
-            <div className="form-group">
-              <label>宽度</label>
-              <div className="ads-cols-picker">
-                <div className={`ads-col-btn ${form.columns === 1 ? 'active' : ''}`} onClick={() => set('columns', 1)}>
-                  <div className="ads-col-icon col1"><span /><span /></div>
-                  <span>半宽（1列）</span>
-                </div>
-                <div className={`ads-col-btn ${form.columns === 2 ? 'active' : ''}`} onClick={() => set('columns', 2)}>
-                  <div className="ads-col-icon col2"><span /></div>
-                  <span>全宽（2列）</span>
-                </div>
-              </div>
-            </div>
-            <div className="form-group">
-              <label>背景色</label>
-              <div className="ads-bg-picker">
-                {BG_PRESETS.map(b => (
-                  <div
-                    key={b.value}
-                    className={`ads-bg-swatch ${form.bg_color === b.value ? 'active' : ''}`}
-                    style={{ background: b.value || '#fff', border: b.value ? `2px solid ${b.value === form.bg_color ? '#6366f1' : '#e2e8f0'}` : '2px dashed #cbd5e1' }}
-                    title={b.label}
-                    onClick={() => set('bg_color', b.value)}
-                  />
-                ))}
-                <input type="color" className="color-picker-input" value={form.bg_color || '#ffffff'}
-                  onChange={e => set('bg_color', e.target.value)} title="自定义背景色" />
-              </div>
-            </div>
-          </div>
-          <div className="ads-row-2">
-            <div className="form-group">
-              <label>排序值 <span className="label-hint">（小的在前）</span></label>
-              <input className="form-input" type="number" value={form.sort} onChange={e => set('sort', parseInt(e.target.value) || 0)} />
-            </div>
-            <div className="form-group">
-              <label>状态</label>
-              <div className="ads-enabled-row">
-                <div
-                  className={`toggle-switch ${form.enabled ? 'on' : ''}`}
-                  onClick={() => set('enabled', form.enabled ? 0 : 1)}
-                ><div className="toggle-thumb" /></div>
-                <span>{form.enabled ? '已启用' : '已禁用'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 实时预览 */}
-          <div className="form-group">
-            <label>预览效果</label>
-            <div className="ad-card-preview" style={{ background: form.bg_color || '#f8fafc', gridColumn: form.columns === 2 ? 'span 2' : 'span 1' }}>
-              <div className="ad-title-row">
-                <span className="ad-title">{form.title || '广告标题'}</span>
-                {form.badge && (
-                  <span className="ad-badge" style={{ '--ad-badge-bg': form.badge_color }}>{form.badge}</span>
-                )}
-              </div>
-              {form.description && <div className="ad-desc">{form.description}</div>}
-              {form.link && <div className="ad-link-hint">🔗 {form.link}</div>}
-            </div>
-          </div>
-
-          <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>取消</button>
-            <button type="submit" className="btn-primary">保存</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-export default function AdminAds() {
-  const [ads, setAds] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [editAd, setEditAd] = useState(null);
-
-  const load = () => {
-    setLoading(true);
-    adsApi.getAll().then(res => setAds(res.data || [])).finally(() => setLoading(false));
-  };
-
+  async function load() { setList(await getAds()); }
   useEffect(() => { load(); }, []);
 
-  const handleSave = async form => {
-    try {
-      if (editAd) await adsApi.update(editAd.id, form);
-      else await adsApi.create(form);
-      load();
-    } catch (err) {
-      alert(err.message || '保存失败');
-      throw err;
-    }
-  };
+  function openAdd() { setForm(empty); setEditing(null); setModal(true); }
+  function openEdit(item) { setForm({ ...item }); setEditing(item.id); setModal(true); }
 
-  const handleDelete = async id => {
-    if (!confirm('确认删除该广告？')) return;
-    await adsApi.delete(id);
+  async function handleSave() {
+    if (!form.title.trim()) return;
+    if (editing) await updateAd(editing, form);
+    else await createAd(form);
+    setModal(false);
     load();
-  };
+  }
 
-  const toggleEnabled = async ad => {
-    await adsApi.update(ad.id, { ...ad, enabled: ad.enabled ? 0 : 1 });
+  async function handleDelete(id) {
+    if (!confirm('确认删除此广告/公告？')) return;
+    await deleteAd(id);
     load();
-  };
-
-  const openCreate = () => { setEditAd(null); setShowModal(true); };
-  const openEdit = ad => { setEditAd(ad); setShowModal(true); };
+  }
 
   return (
-    <div className="admin-page">
-      <div className="admin-page-header">
+    <div>
+      <div style={s.hdr}>
         <div>
-          <h1 className="admin-page-title">广告栏</h1>
-          <p className="admin-page-sub">展示在首页跑马灯下方，支持1列/2列宽度，含角标和描述</p>
+          <h2 style={s.title}>广告/公告管理</h2>
+          <p style={{ color: '#6b7280', fontSize: 13, marginTop: 2 }}>可用于展示广告横幅或公告信息</p>
         </div>
-        <button className="btn-primary" onClick={openCreate}>+ 添加广告</button>
+        <button style={s.addBtn} onClick={openAdd}>+ 新增</button>
       </div>
 
-      {loading ? <div className="admin-loading">加载中...</div> : ads.length === 0 ? (
-        <div className="ads-empty">
-          <div className="ads-empty-icon">📢</div>
-          <p>暂无广告，点击右上角添加</p>
+      <div style={s.table}>
+        <div style={s.thead}>
+          <span style={{ flex: 2 }}>标题</span>
+          <span style={{ flex: 1 }}>位置</span>
+          <span style={{ width: 80, textAlign: 'center' }}>可见</span>
+          <span style={{ width: 120, textAlign: 'right' }}>操作</span>
         </div>
-      ) : (
-        <div className="ads-admin-list">
-          {ads.map(ad => (
-            <div key={ad.id} className={`ads-admin-card ${!ad.enabled ? 'disabled' : ''}`}
-              style={{ background: ad.bg_color || '#f8fafc', gridColumn: `span ${ad.columns}` }}>
-              <div className="ads-admin-card-inner">
-                <div className="ads-admin-meta">
-                  <span className="ads-admin-title">{ad.title}</span>
-                  {ad.badge && (
-                    <span className="ad-badge" style={{ '--ad-badge-bg': ad.badge_color || '#6366f1' }}>{ad.badge}</span>
-                  )}
-                  <span className="ads-admin-cols">{ad.columns === 2 ? '全宽' : '半宽'}</span>
-                  {!ad.enabled && <span className="ads-admin-off">已禁用</span>}
-                </div>
-                {ad.description && <div className="ads-admin-desc">{ad.description}</div>}
-                {ad.link && <div className="ads-admin-link">🔗 {ad.link}</div>}
-              </div>
-              <div className="ads-admin-actions">
-                <button className="btn-sm btn-edit" onClick={() => openEdit(ad)}>编辑</button>
-                <button className="btn-sm" style={{ background: ad.enabled ? '#fef9c3' : '#f0fdf4', color: ad.enabled ? '#854d0e' : '#166534' }}
-                  onClick={() => toggleEnabled(ad)}>{ad.enabled ? '禁用' : '启用'}</button>
-                <button className="btn-sm btn-delete" onClick={() => handleDelete(ad.id)}>删除</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+        {list.map(item => (
+          <div key={item.id} style={s.row}>
+            <span style={{ flex: 2, fontWeight: 600 }}>{item.title}</span>
+            <span style={{ flex: 1, color: '#6b7280', fontSize: 13 }}>{item.position === 'top' ? '顶部' : '其他'}</span>
+            <span style={{ width: 80, textAlign: 'center' }}>
+              <span style={{ ...s.badge, background: item.visible ? '#d1fae5' : '#f3f4f6', color: item.visible ? '#065f46' : '#6b7280' }}>
+                {item.visible ? '显示' : '隐藏'}
+              </span>
+            </span>
+            <span style={{ width: 120, textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button style={s.editBtn} onClick={() => openEdit(item)}>编辑</button>
+              <button style={s.delBtn} onClick={() => handleDelete(item.id)}>删除</button>
+            </span>
+          </div>
+        ))}
+        {list.length === 0 && <div style={s.empty}>暂无广告/公告</div>}
+      </div>
 
-      {showModal && (
-        <AdModal
-          ad={editAd}
-          onSave={handleSave}
-          onClose={() => setShowModal(false)}
-        />
+      {modal && (
+        <div style={s.modalBg} onClick={() => setModal(false)}>
+          <div style={s.modal} onClick={e => e.stopPropagation()}>
+            <h3 style={s.modalTitle}>{editing ? '编辑' : '新增'}广告/公告</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+              <Field label="标题 *" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder="广告标题或公告内容" />
+              <Field label="描述文字" value={form.description} onChange={v => setForm(f => ({ ...f, description: v }))} placeholder="副标题或补充说明..." />
+              <Field label="角标文字（如 HOT、NEW、广告）" value={form.badge} onChange={v => setForm(f => ({ ...f, badge: v }))} placeholder="留空则不显示" />
+              <Field label="链接 URL" value={form.url} onChange={v => setForm(f => ({ ...f, url: v }))} placeholder="https://..." />
+              <Field label="图片 URL (可选)" value={form.image_url} onChange={v => setForm(f => ({ ...f, image_url: v }))} placeholder="https://..." />
+              <div style={{ marginBottom: 14 }}>
+                <label style={s.fieldLabel}>显示位置</label>
+                <select value={form.position} onChange={e => setForm(f => ({ ...f, position: e.target.value }))}
+                  style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14 }}>
+                  <option value="top">顶部横幅</option>
+                  <option value="sidebar">侧边栏</option>
+                </select>
+              </div>
+              <Field label="排序" value={form.sort_order} type="number" onChange={v => setForm(f => ({ ...f, sort_order: +v }))} />
+              <label style={{ ...s.checkLabel, alignSelf: 'flex-end', marginBottom: 14 }}>
+                <input type="checkbox" checked={!!form.visible} onChange={e => setForm(f => ({ ...f, visible: e.target.checked ? 1 : 0 }))} />
+                <span>显示此项</span>
+              </label>
+            </div>
+            <div style={s.modalFoot}>
+              <button style={s.cancelBtn} onClick={() => setModal(false)}>取消</button>
+              <button style={s.saveBtn} onClick={handleSave}>保存</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 }
+
+function Field({ label, value, onChange, type = 'text', placeholder }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 5, color: '#374151' }}>{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14 }} />
+    </div>
+  );
+}
+
+const s = {
+  hdr: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 },
+  title: { fontSize: 20, fontWeight: 700 },
+  addBtn: { background: 'var(--primary)', color: '#fff', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600 },
+  table: { background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' },
+  thead: { display: 'flex', alignItems: 'center', padding: '10px 20px', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', fontSize: 12, color: '#6b7280', fontWeight: 600 },
+  row: { display: 'flex', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #f3f4f6', fontSize: 14 },
+  badge: { padding: '2px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600 },
+  editBtn: { background: '#eff2ff', color: 'var(--primary)', padding: '5px 12px', borderRadius: 6, fontSize: 13, fontWeight: 600 },
+  delBtn: { background: '#fef2f2', color: '#dc2626', padding: '5px 12px', borderRadius: 6, fontSize: 13, fontWeight: 600 },
+  empty: { padding: '40px', textAlign: 'center', color: '#9ca3af' },
+  modalBg: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200 },
+  modal: { background: '#fff', borderRadius: 14, padding: '28px', width: '100%', maxWidth: 620, boxShadow: '0 20px 60px rgba(0,0,0,0.15)', maxHeight: '90vh', overflowY: 'auto' },
+  modalTitle: { fontSize: 17, fontWeight: 700, marginBottom: 20 },
+  fieldLabel: { display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 5, color: '#374151' },
+  checkLabel: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, marginBottom: 20, cursor: 'pointer' },
+  modalFoot: { display: 'flex', gap: 10, justifyContent: 'flex-end' },
+  cancelBtn: { padding: '8px 20px', border: '1.5px solid #e5e7eb', borderRadius: 8, background: '#fff', fontSize: 14 },
+  saveBtn: { padding: '8px 20px', background: 'var(--primary)', color: '#fff', borderRadius: 8, fontSize: 14, fontWeight: 600 },
+};

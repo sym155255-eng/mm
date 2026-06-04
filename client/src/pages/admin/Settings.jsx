@@ -1,212 +1,130 @@
-import { useEffect, useState } from 'react';
-import { settingsApi } from '../../api';
+import React, { useEffect, useState } from 'react';
+import { getSettings, saveSettings, changePassword } from '../../api';
 
-const GRADIENT_OPTIONS = [
-  { value: 'rainbow', label: '🌈 彩虹', colors: ['#ff0080','#ff8c00','#ffe600','#00d26a','#00b4d8','#7c3aed'] },
-  { value: 'sunset',  label: '🌅 日落', colors: ['#f43f5e','#f97316','#facc15'] },
-  { value: 'ocean',   label: '🌊 海洋', colors: ['#06b6d4','#3b82f6','#8b5cf6'] },
-  { value: 'forest',  label: '🌿 森林', colors: ['#22c55e','#84cc16','#10b981'] },
-  { value: 'candy',   label: '🍭 糖果', colors: ['#ec4899','#a855f7','#6366f1'] },
-  { value: 'gold',    label: '✨ 金光', colors: ['#f59e0b','#fde68a','#d97706'] },
-];
-
-export default function AdminSettings() {
-  const [form, setForm] = useState({
-    site_name: '', site_icon: '', site_desc: '', site_footer: '',
-    marquee_enabled: 'false', marquee_text: '', marquee_gradient: 'rainbow', marquee_speed: '30', marquee_style: 'classic',
-    site_layout: 'sidebar',
-  });
+export default function Settings() {
+  const [form, setForm] = useState({});
   const [saved, setSaved] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [pwForm, setPwForm] = useState({ oldPassword: '', newPassword: '', confirm: '' });
+  const [pwMsg, setPwMsg] = useState('');
 
   useEffect(() => {
-    settingsApi.get().then(res => {
-      if (res.data) setForm(f => ({ ...f, ...res.data }));
-    }).finally(() => setLoading(false));
+    getSettings().then(s => setForm(s));
   }, []);
 
-  const handleSave = async e => {
+  function set(key, val) { setForm(f => ({ ...f, [key]: val })); }
+
+  async function handleSave(e) {
     e.preventDefault();
-    await settingsApi.save(form);
+    await saveSettings(form);
     setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-  };
+    setTimeout(() => setSaved(false), 2000);
+  }
 
-  const marqueeOn = form.marquee_enabled === 'true';
-
-  if (loading) return <div className="admin-loading">加载中...</div>;
+  async function handlePw(e) {
+    e.preventDefault();
+    if (pwForm.newPassword !== pwForm.confirm) { setPwMsg('两次密码不一致'); return; }
+    const res = await changePassword(pwForm.oldPassword, pwForm.newPassword);
+    if (res.ok) { setPwMsg('✅ 修改成功'); setPwForm({ oldPassword: '', newPassword: '', confirm: '' }); }
+    else setPwMsg(res.error || '修改失败');
+  }
 
   return (
-    <div className="admin-page">
-      <div className="admin-page-header">
-        <h1 className="admin-page-title">网站设置</h1>
-      </div>
+    <div style={{ maxWidth: 700 }}>
+      <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24 }}>网站设置</h2>
 
-      <div className="settings-card">
-        <form onSubmit={handleSave}>
+      <form onSubmit={handleSave}>
+        <Card title="基本信息">
+          <Field label="网站名称" value={form.site_title || ''} onChange={v => set('site_title', v)} />
+          <Field label="副标题" value={form.site_subtitle || ''} onChange={v => set('site_subtitle', v)} />
+          <Field label="网站图标 (emoji)" value={form.site_logo || ''} onChange={v => set('site_logo', v)} placeholder="🧭" />
+          <Field label="页脚文字" value={form.footer_text || ''} onChange={v => set('footer_text', v)} />
+          <Field label="搜索框占位符" value={form.search_placeholder || ''} onChange={v => set('search_placeholder', v)} />
+        </Card>
 
-          {/* 站点预览 */}
-          <div className="settings-preview">
-            <div className="preview-logo">
-              <span className="preview-icon">{form.site_icon || '🧭'}</span>
-              <span className="preview-name">{form.site_name || '导航站'}</span>
-            </div>
-            <div className="preview-desc">{form.site_desc || '收录优质网站'}</div>
+        <Card title="外观">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <ColorField label="主题色" value={form.primary_color || '#4f6ef7'} onChange={v => set('primary_color', v)} />
+            <ColorField label="背景色" value={form.bg_color || '#f0f4ff'} onChange={v => set('bg_color', v)} />
           </div>
+        </Card>
 
-          {/* 基本信息 */}
-          <div className="settings-section-title">基本信息</div>
-          <div className="settings-row">
-            <div className="form-group">
-              <label>网站名称</label>
-              <input className="form-input" value={form.site_name} onChange={e => setForm(f => ({ ...f, site_name: e.target.value }))} placeholder="如：我的导航站" maxLength={30} />
-            </div>
-            <div className="form-group">
-              <label>网站图标（Emoji）</label>
-              <input className="form-input" value={form.site_icon} onChange={e => setForm(f => ({ ...f, site_icon: e.target.value }))} placeholder="如：🧭 🌐 🚀 ⭐" maxLength={4} />
-            </div>
-          </div>
-          <div className="form-group">
-            <label>网站副标题</label>
-            <input className="form-input" value={form.site_desc} onChange={e => setForm(f => ({ ...f, site_desc: e.target.value }))} placeholder="如：收录优质网站，发现互联网精华" maxLength={60} />
-          </div>
-          <div className="form-group">
-            <label>页脚文字</label>
-            <input className="form-input" value={form.site_footer} onChange={e => setForm(f => ({ ...f, site_footer: e.target.value }))} placeholder="如：© 2025 导航站 · 收录优质网站" maxLength={80} />
-          </div>
+        <Card title="功能开关">
+          <Toggle label="显示搜索框" value={form.show_search !== '0'} onChange={v => set('show_search', v ? '1' : '0')} />
+          <Toggle label="显示广告/公告栏" value={form.show_ads !== '0'} onChange={v => set('show_ads', v ? '1' : '0')} />
+        </Card>
 
-          {/* 布局样式 */}
-          <div className="settings-section-title" style={{ marginTop: 24 }}>前台布局</div>
-          <div className="form-group">
-            <div className="marquee-style-picker">
-              <div
-                className={`marquee-style-opt ${form.site_layout !== 'topnav' ? 'selected' : ''}`}
-                onClick={() => setForm(f => ({ ...f, site_layout: 'sidebar' }))}
-              >
-                <div className="marquee-style-preview" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', gap: 4, alignItems: 'stretch', padding: '5px 6px' }}>
-                  <div style={{ width: 28, background: '#1e293b', borderRadius: 4, flexShrink: 0 }} />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3 }} />
-                    <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3, width: '70%' }} />
-                  </div>
-                </div>
-                <span className="marquee-style-label">▐ 左侧边栏</span>
-              </div>
-              <div
-                className={`marquee-style-opt ${form.site_layout === 'topnav' ? 'selected' : ''}`}
-                onClick={() => setForm(f => ({ ...f, site_layout: 'topnav' }))}
-              >
-                <div className="marquee-style-preview" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', flexDirection: 'column', padding: '5px 6px', gap: 3 }}>
-                  <div style={{ height: 8, background: '#4f46e5', borderRadius: 3, width: '100%' }} />
-                  <div style={{ display: 'flex', gap: 2 }}>
-                    {[40, 30, 35, 28].map((w, i) => <div key={i} style={{ height: 5, background: '#e2e8f0', borderRadius: 3, width: w }} />)}
-                  </div>
-                  <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3 }} />
-                </div>
-                <span className="marquee-style-label">▀ 顶部导航</span>
-              </div>
-            </div>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button type="submit" style={s.saveBtn}>保存设置</button>
+          {saved && <span style={{ color: '#16a34a', fontSize: 14, fontWeight: 600 }}>✅ 已保存</span>}
+        </div>
+      </form>
 
-          {/* 跑马灯 */}
-          <div className="settings-section-title" style={{ marginTop: 24 }}>彩字跑马灯</div>
-
-          <div className="marquee-toggle-row">
-            <label className="toggle-label">
-              <span>启用跑马灯</span>
-              <div
-                className={`toggle-switch ${marqueeOn ? 'on' : ''}`}
-                onClick={() => setForm(f => ({ ...f, marquee_enabled: marqueeOn ? 'false' : 'true' }))}
-              >
-                <div className="toggle-thumb" />
-              </div>
-            </label>
-          </div>
-
-          {marqueeOn && (
-            <>
-              {/* 实时预览 */}
-              <div className="marquee-admin-preview">
-                <div className="marquee-preview-track">
-                  {[form.marquee_text, form.marquee_text].map((t, i) => {
-                    const opt = GRADIENT_OPTIONS.find(o => o.value === form.marquee_gradient) || GRADIENT_OPTIONS[0];
-                    const bg = `linear-gradient(90deg,${opt.colors.join(',')},${opt.colors[0]})`;
-                    return <span key={i} style={{ backgroundImage: bg, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 700, fontSize: '1rem' }}>{t || '（在下方输入跑马灯文字）'}&nbsp;&nbsp;⭐&nbsp;&nbsp;</span>;
-                  })}
-                </div>
-              </div>
-
-              {/* 样式切换 */}
-              <div className="form-group">
-                <label>跑马灯样式</label>
-                <div className="marquee-style-picker">
-                  <div
-                    className={`marquee-style-opt ${form.marquee_style !== 'spectrum' ? 'selected' : ''}`}
-                    onClick={() => setForm(f => ({ ...f, marquee_style: 'classic' }))}
-                  >
-                    <div className="marquee-style-preview" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
-                      <span style={{ background: 'linear-gradient(90deg,#ff0080,#ff8c00,#ffe600,#00d26a,#00b4d8,#7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 700, fontSize: '.8rem' }}>
-                        欢迎使用导航站 ⭐ 精选内容
-                      </span>
-                    </div>
-                    <span className="marquee-style-label">🌈 经典渐变</span>
-                  </div>
-                  <div
-                    className={`marquee-style-opt ${form.marquee_style === 'spectrum' ? 'selected' : ''}`}
-                    onClick={() => setForm(f => ({ ...f, marquee_style: 'spectrum' }))}
-                  >
-                    <div className="marquee-style-preview" style={{ background: '#0a0a12', border: '1px solid rgba(180,79,255,.5)' }}>
-                      {['欢迎', '使用', '导航站', '精选', '内容'].map((w, i) => (
-                        <span key={i} style={{ color: ['#00f5ff','#ff6eb4','#ffe44d','#00ff99','#b44fff'][i], fontWeight: 800, fontSize: '.75rem', marginRight: 6 }}>{w}</span>
-                      ))}
-                    </div>
-                    <span className="marquee-style-label">🌌 暗色光谱</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>跑马灯文字</label>
-                <input className="form-input" value={form.marquee_text} onChange={e => setForm(f => ({ ...f, marquee_text: e.target.value }))} placeholder="🎉 欢迎使用导航站！✨ 每天更新精选内容 🚀" maxLength={200} />
-              </div>
-
-              <div className="form-group">
-                <label>颜色主题</label>
-                <div className="gradient-picker">
-                  {GRADIENT_OPTIONS.map(opt => (
-                    <div
-                      key={opt.value}
-                      className={`gradient-item ${form.marquee_gradient === opt.value ? 'selected' : ''}`}
-                      onClick={() => setForm(f => ({ ...f, marquee_gradient: opt.value }))}
-                    >
-                      <div className="gradient-swatch" style={{ background: `linear-gradient(90deg,${opt.colors.join(',')})` }} />
-                      <span>{opt.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>滚动速度：{form.marquee_speed <= 15 ? '慢' : form.marquee_speed <= 35 ? '中' : '快'}</label>
-                <div className="speed-row">
-                  <span>慢</span>
-                  <input type="range" min="5" max="55" step="5" value={form.marquee_speed}
-                    onChange={e => setForm(f => ({ ...f, marquee_speed: e.target.value }))}
-                    className="speed-slider"
-                  />
-                  <span>快</span>
-                </div>
-              </div>
-            </>
-          )}
-
-          <div className="settings-actions">
-            <button type="submit" className="btn-primary">保存设置</button>
-            {saved && <span className="save-success">✅ 已保存！刷新首页即可生效</span>}
-          </div>
-
-        </form>
+      <div style={{ marginTop: 36 }}>
+        <Card title="修改密码">
+          <form onSubmit={handlePw}>
+            <Field label="原密码" value={pwForm.oldPassword} onChange={v => setPwForm(f => ({ ...f, oldPassword: v }))} type="password" />
+            <Field label="新密码" value={pwForm.newPassword} onChange={v => setPwForm(f => ({ ...f, newPassword: v }))} type="password" />
+            <Field label="确认新密码" value={pwForm.confirm} onChange={v => setPwForm(f => ({ ...f, confirm: v }))} type="password" />
+            {pwMsg && <div style={{ fontSize: 13, color: pwMsg.startsWith('✅') ? '#16a34a' : '#dc2626', marginBottom: 12 }}>{pwMsg}</div>}
+            <button type="submit" style={s.saveBtn}>修改密码</button>
+          </form>
+        </Card>
       </div>
     </div>
   );
 }
+
+function Card({ title, children }) {
+  return (
+    <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', padding: '20px 24px', marginBottom: 20 }}>
+      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#374151' }}>{title}</h3>
+      {children}
+    </div>
+  );
+}
+
+function Field({ label, value, onChange, type = 'text', placeholder }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 5, color: '#374151' }}>{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14 }} />
+    </div>
+  );
+}
+
+function ColorField({ label, value, onChange }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 5, color: '#374151' }}>{label}</label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <input type="color" value={value} onChange={e => onChange(e.target.value)}
+          style={{ width: 40, height: 36, border: 'none', borderRadius: 6, cursor: 'pointer', padding: 2 }} />
+        <input type="text" value={value} onChange={e => onChange(e.target.value)}
+          style={{ flex: 1, padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14 }} />
+      </div>
+    </div>
+  );
+}
+
+function Toggle({ label, value, onChange }) {
+  return (
+    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f3f4f6', cursor: 'pointer' }}>
+      <span style={{ fontSize: 14 }}>{label}</span>
+      <div onClick={() => onChange(!value)} style={{
+        width: 44, height: 24, borderRadius: 12, background: value ? 'var(--primary)' : '#d1d5db',
+        position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+      }}>
+        <div style={{
+          position: 'absolute', top: 3, left: value ? 23 : 3,
+          width: 18, height: 18, borderRadius: '50%', background: '#fff',
+          transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+        }} />
+      </div>
+    </label>
+  );
+}
+
+const s = {
+  saveBtn: { background: 'var(--primary)', color: '#fff', padding: '10px 24px', borderRadius: 8, fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer' },
+};

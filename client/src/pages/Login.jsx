@@ -1,69 +1,65 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { authApi } from '../api';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { login } from '../api';
 import { useAuth } from '../store/auth';
 
 export default function Login() {
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form, setForm] = useState({ username: 'admin', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { signIn } = useAuth();
+  const nav = useNavigate();
 
-  const handleSubmit = async e => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setError('');
     setLoading(true);
-    try {
-      const res = await authApi.login(form);
-      login(res.token, res.user);
-      navigate(res.user.role === 'admin' ? '/admin' : '/');
-    } catch (err) {
-      setError(err.message || '登录失败');
-    } finally {
-      setLoading(false);
+    setError('');
+    const res = await login(form.username, form.password);
+    setLoading(false);
+    if (res.token) {
+      signIn(res.token, res.user);
+      nav('/admin');
+    } else {
+      setError(res.error || '登录失败');
     }
-  };
+  }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-logo">🧭 导航站</div>
-        <h2>登录</h2>
-        {error && <div className="error-msg">{error}</div>}
+    <div style={s.page}>
+      <div style={s.card}>
+        <div style={s.logo}>🧭</div>
+        <h1 style={s.title}>管理后台</h1>
+        <p style={s.sub}>导航站管理系统</p>
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>用户名</label>
-            <input
-              className="form-input"
-              value={form.username}
-              onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
-              placeholder="请输入用户名"
-              required
-            />
+          <div style={s.field}>
+            <label style={s.label}>用户名</label>
+            <input style={s.input} value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} required />
           </div>
-          <div className="form-group">
-            <label>密码</label>
-            <input
-              type="password"
-              className="form-input"
-              value={form.password}
-              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-              placeholder="请输入密码"
-              required
-            />
+          <div style={s.field}>
+            <label style={s.label}>密码</label>
+            <input style={s.input} type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="默认: admin123" required />
           </div>
-          <button className="btn-primary full-width" type="submit" disabled={loading}>
+          {error && <div style={s.error}>{error}</div>}
+          <button style={s.btn} type="submit" disabled={loading}>
             {loading ? '登录中...' : '登录'}
           </button>
         </form>
-        <p className="auth-switch">
-          还没有账号？<Link to="/register">立即注册</Link>
-        </p>
-        <p className="auth-switch">
-          <Link to="/">← 返回首页</Link>
-        </p>
+        <a href="/" style={s.back}>← 返回首页</a>
       </div>
     </div>
   );
 }
+
+const s = {
+  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' },
+  card: { background: '#fff', borderRadius: 16, padding: '40px 36px', width: '100%', maxWidth: 380, boxShadow: '0 4px 32px rgba(0,0,0,0.1)', textAlign: 'center' },
+  logo: { fontSize: 48, marginBottom: 8 },
+  title: { fontSize: 22, fontWeight: 700, marginBottom: 4 },
+  sub: { color: '#6b7280', fontSize: 14, marginBottom: 28 },
+  field: { textAlign: 'left', marginBottom: 16 },
+  label: { display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#374151' },
+  input: { width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14, transition: 'border-color 0.2s' },
+  error: { background: '#fef2f2', color: '#dc2626', padding: '8px 12px', borderRadius: 8, fontSize: 13, marginBottom: 12, textAlign: 'left' },
+  btn: { width: '100%', padding: '11px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 4 },
+  back: { display: 'block', marginTop: 20, color: '#6b7280', fontSize: 13 },
+};

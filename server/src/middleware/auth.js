@@ -1,27 +1,15 @@
 const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'nav_secret_2025';
 
 function authMiddleware(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(401).json({ code: 401, message: '未提供 Token' });
-
-  const token = authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ code: 401, message: 'Token 格式错误' });
-
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: '未授权' });
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = jwt.verify(token, JWT_SECRET);
     next();
   } catch {
-    res.status(401).json({ code: 401, message: 'Token 无效或已过期' });
+    res.status(401).json({ error: 'Token无效' });
   }
 }
 
-function adminMiddleware(req, res, next) {
-  authMiddleware(req, res, () => {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ code: 403, message: '无管理员权限' });
-    }
-    next();
-  });
-}
-
-module.exports = { authMiddleware, adminMiddleware };
+module.exports = { authMiddleware, JWT_SECRET };

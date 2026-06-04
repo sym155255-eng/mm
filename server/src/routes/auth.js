@@ -1,44 +1,31 @@
 const router = require('express').Router();
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../db');
+const { getDB } = require('../db');
+const { JWT_SECRET } = require('../middleware/auth');
 
-router.post('/login', async (req, res) => {
+router.post('/login', (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password)
-    return res.status(400).json({ code: 400, message: '用户名和密码不能为空' });
-  try {
-    const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
-    if (!user) return res.status(401).json({ code: 401, message: '用户名或密码错误' });
-
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ code: 401, message: '用户名或密码错误' });
-
-    const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-    res.json({ code: 200, token, user: { id: user.id, username: user.username, role: user.role } });
-  } catch {
-    res.status(500).json({ code: 500, message: '服务器错误' });
+  if (!username || !password) return res.status(400).json({ error: '请填写用户名和密码' });
+  const db = getDB();
+  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+  if (!user || !bcrypt.compareSync(password, user.password)) {
+    return res.status(401).json({ error: '用户名或密码错误' });
   }
+  const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
 });
 
-router.post('/register', async (req, res) => {
-  const { username, password, email } = req.body;
-  if (!username || !password)
-    return res.status(400).json({ code: 400, message: '用户名和密码不能为空' });
-  try {
-    const exists = db.prepare('SELECT id FROM users WHERE username = ?').get(username);
-    if (exists) return res.status(409).json({ code: 409, message: '用户名已存在' });
-
-    const hashed = await bcrypt.hash(password, 10);
-    db.prepare('INSERT INTO users (username, password, email, role) VALUES (?,?,?,?)').run(username, hashed, email || null, 'user');
-    res.json({ code: 200, message: '注册成功' });
-  } catch {
-    res.status(500).json({ code: 500, message: '服务器错误' });
+router.post('/change-password', require('../middleware/auth').authMiddleware, (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  const db = getDB();
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  if (!bcrypt.compareSync(oldPassword, user.password)) {
+    return res.status(400).json({ error: '原密码错误' });
   }
+  const hash = bcrypt.hashSync(newPassword, 10);
+  db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hash, req.user.id);
+  res.json({ ok: true });
 });
 
 module.exports = router;

@@ -1,36 +1,36 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './store/auth';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './store/auth';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import Register from './pages/Register';
 import AdminLayout from './pages/admin/Layout';
-import Stats from './pages/admin/Stats';
-import AdminLinks from './pages/admin/Links';
-import AdminCategories from './pages/admin/Categories';
-import AdminUsers from './pages/admin/Users';
-import AdminSettings from './pages/admin/Settings';
-import TextColors from './pages/admin/TextColors';
-import AdminAds from './pages/admin/Ads';
+import Categories from './pages/admin/Categories';
+import Links from './pages/admin/Links';
+import Ads from './pages/admin/Ads';
+import Settings from './pages/admin/Settings';
+import Colors from './pages/admin/Colors';
+
+function PrivateRoute({ children }) {
+  const { user } = useAuth();
+  return user ? children : <Navigate to="/login" replace />;
+}
 
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Stats />} />
-            <Route path="links" element={<AdminLinks />} />
-            <Route path="categories" element={<AdminCategories />} />
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="settings" element={<AdminSettings />} />
-            <Route path="textcolors" element={<TextColors />} />
-            <Route path="ads" element={<AdminAds />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<PrivateRoute><AdminLayout /></PrivateRoute>}>
+          <Route index element={<Navigate to="/admin/links" replace />} />
+          <Route path="links" element={<Links />} />
+          <Route path="categories" element={<Categories />} />
+          <Route path="ads" element={<Ads />} />
+          <Route path="colors" element={<Colors />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </AuthProvider>
   );
 }

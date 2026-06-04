@@ -1,64 +1,127 @@
 const router = require('express').Router();
-const db = require('../db');
-const bcrypt = require('bcrypt');
-const { adminMiddleware } = require('../middleware/auth');
+const { getDB } = require('../db');
+const { authMiddleware } = require('../middleware/auth');
+const { broadcast } = require('../sse');
 
-router.get('/stats', adminMiddleware, (req, res) => {
-  try {
-    const users = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
-    const categories = db.prepare('SELECT COUNT(*) as c FROM categories').get().c;
-    const links = db.prepare('SELECT COUNT(*) as c FROM links').get().c;
-    const total_clicks = db.prepare('SELECT COALESCE(SUM(clicks),0) as c FROM links').get().c;
-    const top_links = db.prepare('SELECT title, url, clicks FROM links ORDER BY clicks DESC LIMIT 10').all();
-    res.json({ code: 200, data: { users, categories, links, total_clicks, top_links } });
-  } catch {
-    res.status(500).json({ code: 500, message: '服务器错误' });
-  }
+router.use(authMiddleware);
+
+function db() { return getDB(); }
+
+// ── Settings ──────────────────────────────────────────────
+router.get('/settings', (req, res) => {
+  const rows = db().prepare('SELECT * FROM settings').all();
+  const obj = {};
+  rows.forEach(r => obj[r.key] = r.value);
+  res.json(obj);
 });
 
-router.get('/users', adminMiddleware, (req, res) => {
-  try {
-    const rows = db.prepare('SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC').all();
-    res.json({ code: 200, data: rows });
-  } catch {
-    res.status(500).json({ code: 500, message: '服务器错误' });
-  }
+router.put('/settings', (req, res) => {
+  const d = db();
+  Object.entries(req.body).forEach(([k, v]) => {
+    d.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(k, String(v));
+  });
+  broadcast('update');
+  res.json({ ok: true });
 });
 
-router.put('/users/:id/role', adminMiddleware, (req, res) => {
-  const { role } = req.body;
-  if (!['admin', 'user'].includes(role))
-    return res.status(400).json({ code: 400, message: '无效角色' });
-  try {
-    db.prepare('UPDATE users SET role=? WHERE id=?').run(role, req.params.id);
-    res.json({ code: 200, message: '更新成功' });
-  } catch {
-    res.status(500).json({ code: 500, message: '服务器错误' });
-  }
+// ── Categories ────────────────────────────────────────────
+router.get('/categories', (req, res) => {
+  res.json(db().prepare('SELECT * FROM categories ORDER BY sort_order,id').all());
 });
 
-router.delete('/users/:id', adminMiddleware, (req, res) => {
-  if (parseInt(req.params.id) === req.user.id)
-    return res.status(400).json({ code: 400, message: '不能删除自己' });
-  try {
-    db.prepare('DELETE FROM users WHERE id=?').run(req.params.id);
-    res.json({ code: 200, message: '删除成功' });
-  } catch {
-    res.status(500).json({ code: 500, message: '服务器错误' });
-  }
+router.post('/categories', (req, res) => {
+  const { name, icon = '🔗', sort_order = 0, visible = 1 } = req.body;
+  const r = db().prepare('INSERT INTO categories (name,icon,sort_order,visible) VALUES (?,?,?,?)').run(name, icon, sort_order, visible);
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
 });
 
-router.post('/reset-admin-password', adminMiddleware, async (req, res) => {
-  const { newPassword } = req.body;
-  if (!newPassword || newPassword.length < 6)
-    return res.status(400).json({ code: 400, message: '密码至少6位' });
-  try {
-    const hashed = await bcrypt.hash(newPassword, 10);
-    db.prepare('UPDATE users SET password=? WHERE id=?').run(hashed, req.user.id);
-    res.json({ code: 200, message: '密码修改成功' });
-  } catch {
-    res.status(500).json({ code: 500, message: '服务器错误' });
-  }
+router.put('/categories/:id', (req, res) => {
+  const { name, icon, sort_order, visible } = req.body;
+  db().prepare('UPDATE categories SET name=?,icon=?,sort_order=?,visible=? WHERE id=?').run(name, icon, sort_order, visible, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+router.delete('/categories/:id', (req, res) => {
+  db().prepare('DELETE FROM categories WHERE id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+// ── Links ─────────────────────────────────────────────────
+router.get('/links', (req, res) => {
+  res.json(db().prepare('SELECT * FROM links ORDER BY sort_order,id').all());
+});
+
+router.post('/links', (req, res) => {
+  const { category_id, title, url, icon = '', description = '', title_color = '', desc_color = '', badge = '', badge_color = '', sort_order = 0, visible = 1 } = req.body;
+  const r = db().prepare('INSERT INTO links (category_id,title,url,icon,description,title_color,desc_color,badge,badge_color,sort_order,visible) VALUES (?,?,?,?,?,?,?,?,?,?,?)').run(category_id || null, title, url, icon, description, title_color, desc_color, badge, badge_color, sort_order, visible);
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
+});
+
+router.put('/links/:id', (req, res) => {
+  const { category_id, title, url, icon, description, title_color = '', desc_color = '', badge = '', badge_color = '', sort_order, visible } = req.body;
+  db().prepare('UPDATE links SET category_id=?,title=?,url=?,icon=?,description=?,title_color=?,desc_color=?,badge=?,badge_color=?,sort_order=?,visible=? WHERE id=?').run(category_id || null, title, url, icon, description, title_color, desc_color, badge, badge_color, sort_order, visible, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+router.delete('/links/:id', (req, res) => {
+  db().prepare('DELETE FROM links WHERE id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+// ── Sub Links ─────────────────────────────────────────────
+router.get('/links/:id/sub', (req, res) => {
+  res.json(db().prepare('SELECT * FROM sub_links WHERE link_id=? ORDER BY sort_order,id').all(req.params.id));
+});
+
+router.post('/links/:id/sub', (req, res) => {
+  const { title, url, icon = '', sort_order = 0 } = req.body;
+  const r = db().prepare('INSERT INTO sub_links (link_id,title,url,icon,sort_order) VALUES (?,?,?,?,?)').run(req.params.id, title, url, icon, sort_order);
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
+});
+
+router.put('/sub/:id', (req, res) => {
+  const { title, url, icon = '', sort_order = 0 } = req.body;
+  db().prepare('UPDATE sub_links SET title=?,url=?,icon=?,sort_order=? WHERE id=?').run(title, url, icon, sort_order, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+router.delete('/sub/:id', (req, res) => {
+  db().prepare('DELETE FROM sub_links WHERE id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+// ── Ads ───────────────────────────────────────────────────
+router.get('/ads', (req, res) => {
+  res.json(db().prepare('SELECT * FROM ads ORDER BY sort_order,id').all());
+});
+
+router.post('/ads', (req, res) => {
+  const { title, url = '', image_url = '', description = '', position = 'top', visible = 1, sort_order = 0, title_color = '', desc_color = '', badge = '', badge_color = '' } = req.body;
+  const r = db().prepare('INSERT INTO ads (title,url,image_url,description,position,visible,sort_order,title_color,desc_color,badge,badge_color) VALUES (?,?,?,?,?,?,?,?,?,?,?)').run(title, url, image_url, description, position, visible, sort_order, title_color, desc_color, badge, badge_color);
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
+});
+
+router.put('/ads/:id', (req, res) => {
+  const { title, url, image_url, description = '', position, visible, sort_order, title_color = '', desc_color = '', badge = '', badge_color = '' } = req.body;
+  db().prepare('UPDATE ads SET title=?,url=?,image_url=?,description=?,position=?,visible=?,sort_order=?,title_color=?,desc_color=?,badge=?,badge_color=? WHERE id=?').run(title, url, image_url, description, position, visible, sort_order, title_color, desc_color, badge, badge_color, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+router.delete('/ads/:id', (req, res) => {
+  db().prepare('DELETE FROM ads WHERE id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
 });
 
 module.exports = router;

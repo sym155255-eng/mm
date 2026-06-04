@@ -1,1 +1,33 @@
-/* intentionally empty */
+/* Mobile responsive overrides */
+@media (max-width: 768px) {
+  /* Home sidebar → hidden, show mobile catbar */
+  aside[style] { display: none !important; }
+
+  /* Show mobile category scroll bar */
+  div[style*="mobileCatBar"],
+  .mobile-cat-bar { display: flex !important; overflow-x: auto; gap: 8px; padding: 8px 16px; background: #fff; border-bottom: 1px solid #e5e7eb; }
+
+  /* Reduce body padding */
+  div[style*="maxWidth: 1400"] { padding: 12px 12px 40px !important; }
+
+  /* Admin sidebar: offscreen by default */
+  aside[style*="1e2235"] { transform: translateX(-100%); }
+
+  /* Admin main: no left margin on mobile */
+  div[style*="marginLeft: 220"] { margin-left: 0 !important; }
+
+  /* Show hamburger button */
+  button[style*="menuBtn"] { display: flex !important; }
+
+  /* Smaller grid */
+  div[style*="minmax(180px"] { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; }
+}
+
+@media (max-width: 480px) {
+  div[style*="minmax(180px"] { grid-template-columns: repeat(2, 1fr) !important; }
+  div[style*="headerInner"] { padding: 0 12px !important; }
+}
+
+/* Card hover effect */
+a[style*="card"]:hover,
+a[href]:hover div + div { opacity: 0.9; }
