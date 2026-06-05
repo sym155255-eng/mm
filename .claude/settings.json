@@ -7,9 +7,9 @@
           {
             "type": "command",
             "shell": "powershell",
-            "timeout": 15,
-            "statusMessage": "自动保存到 git...",
-            "command": "$input = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = if ($input.tool_input.file_path) { $input.tool_input.file_path } else { $input.tool_response.filePath }; if ($f) { git -C 'C:\\Users\\10557\\Desktop\\aaa' add $f; git -C 'C:\\Users\\10557\\Desktop\\aaa' commit -m \"auto: update $($f | Split-Path -Leaf)\" --no-verify 2>$null }; exit 0"
+            "timeout": 30,
+            "statusMessage": "自动保存并推送...",
+            "command": "$input = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = if ($input.tool_input.file_path) { $input.tool_input.file_path } else { $input.tool_response.filePath }; $repo = 'C:\\Users\\10557\\Desktop\\aaa'; if ($f) { git -C $repo add $f; git -C $repo commit -m \"auto: update $($f | Split-Path -Leaf)\" --no-verify 2>$null; Start-Process -FilePath 'git' -ArgumentList '-C', $repo, 'push' -WindowStyle Hidden }; exit 0"
           }
         ]
       }
