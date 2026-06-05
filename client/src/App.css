@@ -17,6 +17,12 @@
     box-shadow: 2px 0 16px rgba(0,0,0,0.15);
   }
   .home-sidebar.open { transform: translateX(0); }
+  /* 抽屉纵向布局：菜单在上，管理后台沉底 */
+  .home-sidebar { display: flex !important; flex-direction: column; }
+  .home-sidebar > nav { flex: 1; }
+  .drawer-admin-btn { display: block !important; }
+  /* 隐藏顶部的管理后台按钮 */
+  .header-inner > div:last-child { display: none !important; }
   /* 抽屉遮罩 */
   .home-drawer-overlay {
     position: fixed;

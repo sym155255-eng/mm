@@ -122,6 +122,10 @@ export default function Home() {
               </button>
             ))}
           </nav>
+          {/* 抽屉底部：管理后台（仅手机抽屉显示） */}
+          <Link to="/admin" className="drawer-admin-btn" style={styles.drawerAdminBtn} onClick={() => setMenuOpen(false)}>
+            ⚙️ 管理后台
+          </Link>
         </aside>
 
 
@@ -617,6 +621,18 @@ const styles = {
     position: 'sticky',
     top: 80,
     '@media(max-width:768px)': { display: 'none' },
+  },
+  drawerAdminBtn: {
+    display: 'none',   // 桌面隐藏，手机抽屉里显示
+    margin: '8px',
+    padding: '12px',
+    background: 'var(--primary)',
+    color: '#fff',
+    borderRadius: 10,
+    fontSize: 15,
+    fontWeight: 600,
+    textAlign: 'center',
+    textDecoration: 'none',
   },
   catItem: {
     display: 'flex',
