@@ -46,9 +46,11 @@
   button[style*="menuBtn"] { display: flex !important; }
 }
 
-/* 超小屏：卡片单列 */
-@media (max-width: 430px) {
-  .link-grid, .ads-row {
-    grid-template-columns: 1fr !important;
+/* 手机始终 2 列，卡片内边距收紧 */
+@media (max-width: 768px) {
+  .link-grid > a, .link-grid > div,
+  .ads-row > a {
+    padding: 10px 12px !important;
+    gap: 10px !important;
   }
 }
