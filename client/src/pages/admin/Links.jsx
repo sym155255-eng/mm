@@ -85,17 +85,17 @@ export default function Links() {
       <div style={s.table}>
         <div style={s.thead}>
           <span style={{ flex: 2 }}>标题</span>
-          <span style={{ flex: 2 }}>URL</span>
+          <span className="col-url" style={{ flex: 2 }}>URL</span>
           <span style={{ flex: 1 }}>分类</span>
-          <span style={{ width: 70, textAlign: 'center' }}>可见</span>
+          <span className="col-visible" style={{ width: 70, textAlign: 'center' }}>可见</span>
           <span style={{ width: 130, textAlign: 'right' }}>操作</span>
         </div>
         {filtered.map(item => (
           <div key={item.id} style={s.row}>
             <span style={{ flex: 2, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
-            <span style={{ flex: 2, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>{item.url}</span>
+            <span className="col-url" style={{ flex: 2, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>{item.url}</span>
             <span style={{ flex: 1, color: '#6b7280', fontSize: 13 }}>{catName(item.category_id)}</span>
-            <span style={{ width: 70, textAlign: 'center' }}>
+            <span className="col-visible" style={{ width: 70, textAlign: 'center' }}>
               <span style={{ ...s.badge, background: item.visible ? '#d1fae5' : '#f3f4f6', color: item.visible ? '#065f46' : '#6b7280' }}>
                 {item.visible ? '显示' : '隐藏'}
               </span>

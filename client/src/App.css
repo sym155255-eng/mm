@@ -89,6 +89,9 @@
   /* 显示汉堡按钮 */
   .admin-menu-btn { display: flex !important; }
 
+  /* 链接管理：手机端隐藏 URL 和 可见列，腾出空间给标题 */
+  .col-url, .col-visible { display: none !important; }
+
   /* 宽表格（颜色管理等）手机端横向滚动 */
   .color-table { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
   .color-table > div { min-width: 720px; }
