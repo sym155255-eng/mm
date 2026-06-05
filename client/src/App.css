@@ -39,6 +39,10 @@
   .header-inner > div:first-child { flex-shrink: 0; }
   /* 手机端隐藏 logo+标题，搜索框占满 */
   .header-logo { display: none !important; }
+  /* 显示三条杠菜单按钮 */
+  .hamburger-btn { display: flex !important; }
+  /* header 一行排：三条杠 + 搜索框 + 后台，不换行 */
+  .header-inner { flex-wrap: nowrap !important; }
 
   /* 卡片网格间距收紧 */
   .link-grid, .ads-row {

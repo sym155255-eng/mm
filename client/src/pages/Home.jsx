@@ -78,6 +78,8 @@ export default function Home() {
               <div style={styles.siteSubtitle}>{settings.site_subtitle || ''}</div>
             </div>
           </div>
+          {/* 三条杠菜单（仅手机显示） */}
+          <button className="hamburger-btn" style={styles.hamburger} onClick={() => setMenuOpen(v => !v)}>☰</button>
           {settings.show_search !== '0' && (
             <div style={styles.searchBox}>
               <span style={{ fontSize: 16, marginRight: 8, opacity: 0.4 }}>🔍</span>
@@ -119,22 +121,24 @@ export default function Home() {
           </nav>
         </aside>
 
-        {/* Mobile category bar */}
-        <div className="mobile-cat-bar" style={styles.mobileCatBar}>
-          <button
-            style={{ ...styles.mobileCatBtn, ...(activeCategory === 'all' ? styles.mobileCatActive : {}) }}
-            onClick={() => setActiveCategory('all')}
-          >全部</button>
-          {categories.map(cat => (
+        {/* 手机端：点三条杠弹出的分类下拉菜单 */}
+        {menuOpen && (
+          <div className="mobile-cat-menu" style={styles.mobileCatMenu}>
             <button
-              key={cat.id}
-              style={{ ...styles.mobileCatBtn, ...(activeCategory === cat.id ? styles.mobileCatActive : {}) }}
-              onClick={() => setActiveCategory(cat.id)}
-            >
-              {cat.icon} {cat.name}
-            </button>
-          ))}
-        </div>
+              style={{ ...styles.mobileMenuItem, ...(activeCategory === 'all' ? styles.mobileMenuActive : {}) }}
+              onClick={() => { setActiveCategory('all'); setMenuOpen(false); }}
+            >🏠 全部</button>
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                style={{ ...styles.mobileMenuItem, ...(activeCategory === cat.id ? styles.mobileMenuActive : {}) }}
+                onClick={() => { setActiveCategory(cat.id); setMenuOpen(false); }}
+              >
+                {cat.icon} {cat.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Main content */}
         <main style={styles.main}>
@@ -647,6 +651,45 @@ const styles = {
   catActive: {
     background: '#eff2ff',
     color: 'var(--primary)',
+    fontWeight: 600,
+  },
+  hamburger: {
+    display: 'none',   // 桌面隐藏，App.css 媒体查询里手机显示
+    background: '#f3f4f6',
+    border: 'none',
+    borderRadius: 10,
+    width: 42,
+    height: 42,
+    fontSize: 20,
+    color: '#374151',
+    cursor: 'pointer',
+    flexShrink: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mobileCatMenu: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+    background: '#fff',
+    borderRadius: 12,
+    padding: 8,
+    boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+    marginBottom: 4,
+  },
+  mobileMenuItem: {
+    textAlign: 'left',
+    padding: '11px 14px',
+    borderRadius: 8,
+    background: 'none',
+    border: 'none',
+    fontSize: 15,
+    color: 'var(--text)',
+    cursor: 'pointer',
+  },
+  mobileMenuActive: {
+    background: 'var(--primary)',
+    color: '#fff',
     fontWeight: 600,
   },
   mobileCatBar: {
