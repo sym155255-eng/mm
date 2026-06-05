@@ -56,10 +56,17 @@
     padding-right: 16px !important;
   }
 
-  /* Admin 后台侧边栏默认收起 */
-  aside[style*="1e2235"] { transform: translateX(-100%); }
-  div[style*="marginLeft: 220"] { margin-left: 0 !important; }
-  button[style*="menuBtn"] { display: flex !important; }
+  /* ===== 后台移动端 ===== */
+  /* 侧边栏默认滑出屏幕 */
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s !important;
+  }
+  .admin-sidebar.open { transform: translateX(0) !important; }
+  /* 主内容区取消左边距，占满全宽 */
+  .admin-main { margin-left: 0 !important; width: 100% !important; }
+  /* 显示汉堡按钮 */
+  .admin-menu-btn { display: flex !important; }
 }
 
 /* 手机始终 2 列，卡片内边距收紧 */

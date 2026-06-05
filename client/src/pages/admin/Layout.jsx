@@ -28,7 +28,7 @@ export default function AdminLayout() {
       {sideOpen && <div style={s.overlay} onClick={() => setSideOpen(false)} />}
 
       {/* Sidebar */}
-      <aside style={{ ...s.sidebar, transform: sideOpen ? 'translateX(0)' : undefined }}>
+      <aside className={`admin-sidebar${sideOpen ? ' open' : ''}`} style={s.sidebar}>
         <div style={s.sideTop}>
           <div style={s.brandIcon}>🧭</div>
           <div>
@@ -56,10 +56,10 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main */}
-      <div style={s.main}>
+      <div className="admin-main" style={s.main}>
         {/* Topbar */}
         <header style={s.topbar}>
-          <button style={s.menuBtn} onClick={() => setSideOpen(v => !v)}>☰</button>
+          <button className="admin-menu-btn" style={s.menuBtn} onClick={() => setSideOpen(v => !v)}>☰</button>
           <span style={s.pageTitle}>后台管理系统</span>
           <span style={s.userChip}>{user?.username}</span>
         </header>
