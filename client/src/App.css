@@ -14,13 +14,20 @@
   /* body 改为单列纵向 */
   .home-body {
     flex-direction: column !important;
-    padding: 12px 12px 40px !important;
-    gap: 12px !important;
+    padding: 10px 10px 30px !important;
+    gap: 10px !important;
     width: 100% !important;
     box-sizing: border-box !important;
   }
   /* 主内容区占满宽度 */
   .home-body > main { width: 100% !important; min-width: 0 !important; }
+
+  /* 缩小分类区块上下间距 */
+  .home-body section { margin-bottom: 12px !important; }
+  /* 缩小分类容器内边距 */
+  .home-body section > div { padding: 16px 16px 18px !important; }
+  /* 缩小广告容器内边距 */
+  .home-body > main > div[style*="border-radius: 16"] { padding: 16px !important; margin-bottom: 12px !important; }
 
   /* header 内层：允许换行，搜索框占满第二行 */
   .header-inner {
