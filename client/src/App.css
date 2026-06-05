@@ -82,6 +82,12 @@
   .admin-main { margin-left: 0 !important; width: 100% !important; }
   /* 显示汉堡按钮 */
   .admin-menu-btn { display: flex !important; }
+
+  /* 宽表格（颜色管理等）手机端横向滚动 */
+  .color-table { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .color-table > div { min-width: 720px; }
+  /* 后台内容区允许横向滚动，避免被裁切 */
+  .admin-main > div:last-child { overflow-x: auto; }
 }
 
 /* 手机始终 2 列，卡片内边距收紧 */

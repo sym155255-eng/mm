@@ -212,7 +212,7 @@ function ColorRow({ row, subLabel, onUpdate, onSave, onClear }) {
 
 function ColorTable({ rows, subLabel, onUpdate, onSave, onClear }) {
   return (
-    <div style={s.linkTable}>
+    <div className="color-table" style={s.linkTable}>
       <div style={s.thead}>
         <span style={{ width: 110 }}>名称</span>
         <span style={{ width: 64 }}>说明</span>
