@@ -1,0 +1,12 @@
+services:
+  nav:
+    build: .
+    container_name: nav-site
+    restart: unless-stopped
+    ports:
+      - "3001:3001"          # 左边改成你想用的外部端口，如 "80:3001"
+    volumes:
+      - ./data:/app/data     # 数据库持久化到宿主机 ./data
+    environment:
+      - PORT=3001
+      - JWT_SECRET=请改成你自己的随机密钥
