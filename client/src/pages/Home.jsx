@@ -416,8 +416,8 @@ const styles = {
     background: '#fff',
     borderRadius: 16,
     border: '1px solid #f0e6c8',
-    padding: '24px 28px 28px',
-    marginBottom: 28,
+    padding: '20px 28px 22px',
+    marginBottom: 14,
   },
   adsHeader: {
     display: 'flex',
@@ -712,7 +712,7 @@ const styles = {
     borderColor: 'var(--primary)',
   },
   main: { flex: 1, minWidth: 0 },
-  section: { marginBottom: 28 },
+  section: { marginBottom: 14 },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 700,
