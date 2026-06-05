@@ -16,7 +16,11 @@
     flex-direction: column !important;
     padding: 12px 12px 40px !important;
     gap: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
+  /* 主内容区占满宽度 */
+  .home-body > main { width: 100% !important; min-width: 0 !important; }
 
   /* header 内层：允许换行，搜索框占满第二行 */
   .header-inner {
