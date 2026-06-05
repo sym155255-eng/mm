@@ -99,9 +99,12 @@ export default function Home() {
       </header>
 
 
+      {/* 手机端抽屉遮罩 */}
+      {menuOpen && <div className="home-drawer-overlay" onClick={() => setMenuOpen(false)} />}
+
       <div className="home-body" style={styles.body}>
-        {/* Sidebar Categories */}
-        <aside className="home-sidebar" style={styles.sidebar}>
+        {/* Sidebar Categories（手机端为滑出抽屉） */}
+        <aside className={`home-sidebar${menuOpen ? ' open' : ''}`} style={styles.sidebar}>
           <nav>
             <button
               style={{ ...styles.catItem, ...(activeCategory === 'all' ? styles.catActive : {}) }}
@@ -121,24 +124,6 @@ export default function Home() {
           </nav>
         </aside>
 
-        {/* 手机端：点三条杠弹出的分类下拉菜单 */}
-        {menuOpen && (
-          <div className="mobile-cat-menu" style={styles.mobileCatMenu}>
-            <button
-              style={{ ...styles.mobileMenuItem, ...(activeCategory === 'all' ? styles.mobileMenuActive : {}) }}
-              onClick={() => { setActiveCategory('all'); setMenuOpen(false); }}
-            >🏠 全部</button>
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                style={{ ...styles.mobileMenuItem, ...(activeCategory === cat.id ? styles.mobileMenuActive : {}) }}
-                onClick={() => { setActiveCategory(cat.id); setMenuOpen(false); }}
-              >
-                {cat.icon} {cat.name}
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Main content */}
         <main style={styles.main}>
