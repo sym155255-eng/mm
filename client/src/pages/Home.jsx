@@ -71,7 +71,7 @@ export default function Home() {
       {/* Header */}
       <header style={styles.header}>
         <div className="header-inner" style={styles.headerInner}>
-          <div style={styles.logo}>
+          <div className="header-logo" style={styles.logo}>
             <span style={{ fontSize: 28 }}>{settings.site_logo || '🧭'}</span>
             <div>
               <div style={styles.siteTitle}>{settings.site_title || '我的导航'}</div>

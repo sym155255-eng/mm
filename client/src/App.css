@@ -37,6 +37,8 @@
     gap: 10px !important;
   }
   .header-inner > div:first-child { flex-shrink: 0; }
+  /* 手机端隐藏 logo+标题，搜索框占满 */
+  .header-logo { display: none !important; }
 
   /* 卡片网格间距收紧 */
   .link-grid, .ads-row {
