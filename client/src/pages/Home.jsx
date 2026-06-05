@@ -445,7 +445,6 @@ const styles = {
   adsLabel: { fontSize: 11, color: '#9ca3af', letterSpacing: 1 },
   adsRow: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: 16,
   },
   adCard: {
@@ -714,7 +713,6 @@ const styles = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: 16,
   },
   card: {

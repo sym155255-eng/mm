@@ -27,9 +27,8 @@
   }
   .header-inner > div:first-child { flex-shrink: 0; }
 
-  /* 卡片网格：手机 2 列 */
+  /* 卡片网格间距收紧 */
   .link-grid, .ads-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 10px !important;
   }
 
