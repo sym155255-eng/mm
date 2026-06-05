@@ -20,11 +20,16 @@ export default function SubCategories() {
   const catSubs = subs.filter(s => s.category_id === activeCat);
 
   async function handleAdd(e) {
-    e.preventDefault();
-    if (!newName.trim() || !activeCat) return;
-    await createSubCategory({ category_id: activeCat, name: newName.trim(), sort_order: catSubs.length });
-    setNewName('');
-    load();
+    if (e) e.preventDefault();
+    if (!newName.trim()) { alert('请先输入子分类名称'); return; }
+    if (!activeCat) { alert('请先在上方选择一个大分类'); return; }
+    try {
+      await createSubCategory({ category_id: activeCat, name: newName.trim(), sort_order: catSubs.length });
+      setNewName('');
+      await load();
+    } catch (err) {
+      alert('添加失败：' + err.message);
+    }
   }
 
   async function handleUpdate(id) {
@@ -66,7 +71,7 @@ export default function SubCategories() {
           <form onSubmit={handleAdd} style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
             <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="子分类名称，如 AI工具"
               style={{ flex: 1, padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14 }} />
-            <button type="submit" style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+            <button type="button" onClick={handleAdd} style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
               + 添加
             </button>
           </form>
