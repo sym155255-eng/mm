@@ -1,16 +1,49 @@
 import React, { useEffect, useState } from 'react';
 import { getSettings, saveSettings, getLinks, getCategories, updateLink, getAds, updateAd } from '../../api';
 
-const GLOBAL_KEYS = [
-  { key: 'color_card_title',    label: '卡片标题',    default: '#1a1a2e' },
-  { key: 'color_card_desc',     label: '卡片描述',    default: '#6b7280' },
-  { key: 'color_card_bg',       label: '卡片背景',    default: '#ffffff' },
-  { key: 'color_card_border',   label: '卡片边框',    default: '#e5e7eb' },
-  { key: 'color_section_title', label: '分类标题',    default: '#1a1a2e' },
-  { key: 'color_ad_title',      label: '广告标题',    default: '#1a1a2e' },
-  { key: 'color_ad_desc',       label: '广告描述',    default: '#6b7280' },
-  { key: 'color_ad_bg',         label: '广告背景',    default: '#ffffff' },
+const GLOBAL_GROUPS = [
+  {
+    title: '🎨 主题 & 页面',
+    keys: [
+      { key: 'bg_color',            label: '页面背景',    default: '#f0f4ff' },
+      { key: 'primary_color',       label: '主题色',      default: '#4f6ef7' },
+      { key: 'color_header_bg',     label: '顶部栏背景',  default: '#ffffff' },
+      { key: 'color_site_title',    label: '站点标题',    default: '#1a1a2e' },
+      { key: 'color_footer',        label: '页脚文字',    default: '#6b7280' },
+    ],
+  },
+  {
+    title: '📦 分类容器',
+    keys: [
+      { key: 'color_section_bg',    label: '分类容器背景',default: '#ffffff' },
+      { key: 'color_section_title', label: '分类标题',    default: '#1a1a2e' },
+      { key: 'color_tab_bg',        label: '标签页背景',  default: '#f3f4f6' },
+      { key: 'color_tab_text',      label: '标签页文字',  default: '#374151' },
+    ],
+  },
+  {
+    title: '🔗 链接卡片',
+    keys: [
+      { key: 'color_card_title',    label: '卡片标题',    default: '#1a1a2e' },
+      { key: 'color_card_desc',     label: '卡片描述',    default: '#6b7280' },
+      { key: 'color_card_bg',       label: '卡片背景',    default: '#f7f8fa' },
+      { key: 'color_card_border',   label: '卡片边框',    default: '#f0f1f3' },
+      { key: 'color_card_hover',    label: '卡片悬停背景',default: '#ffffff' },
+      { key: 'color_icon_bg',       label: '图标底色',    default: '#ffffff' },
+    ],
+  },
+  {
+    title: '📢 广告卡片',
+    keys: [
+      { key: 'color_ad_title',      label: '广告标题',    default: '#1a1a2e' },
+      { key: 'color_ad_desc',       label: '广告描述',    default: '#6b7280' },
+      { key: 'color_ad_bg',         label: '广告背景',    default: '#ffffff' },
+      { key: 'color_ad_border',     label: '广告边框',    default: '#fbbf24' },
+      { key: 'color_badge',         label: '默认角标色',  default: '#ef4444' },
+    ],
+  },
 ];
+const GLOBAL_KEYS = GLOBAL_GROUPS.flatMap(g => g.keys);
 
 export default function Colors() {
   const [global, setGlobal] = useState({});
@@ -60,21 +93,26 @@ export default function Colors() {
       {/* 全局颜色 */}
       <form onSubmit={saveGlobal}>
         <div style={s.sectionHdr}><span style={s.sectionLabel}>🌐 全局默认颜色</span></div>
-        <div style={s.card}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 0 }}>
-            {GLOBAL_KEYS.map(({ key, label }) => (
-              <div key={key} style={s.globalRow}>
-                <span style={s.globalLabel}>{label}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <input type="color" value={global[key] || '#ffffff'}
-                    onChange={e => setGlobal(g => ({ ...g, [key]: e.target.value }))} style={s.colorPicker} />
-                  <input type="text" value={global[key] || ''}
-                    onChange={e => setGlobal(g => ({ ...g, [key]: e.target.value }))} style={s.hexInput} />
-                </div>
+        {GLOBAL_GROUPS.map(group => (
+          <div key={group.title} style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#6b7280', marginBottom: 8 }}>{group.title}</div>
+            <div style={s.card}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 0 }}>
+                {group.keys.map(({ key, label }) => (
+                  <div key={key} style={s.globalRow}>
+                    <span style={s.globalLabel}>{label}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <input type="color" value={global[key] || '#ffffff'}
+                        onChange={e => setGlobal(g => ({ ...g, [key]: e.target.value }))} style={s.colorPicker} />
+                      <input type="text" value={global[key] || ''}
+                        onChange={e => setGlobal(g => ({ ...g, [key]: e.target.value }))} style={s.hexInput} />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        ))}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 32 }}>
           <button type="submit" style={s.saveBtn}>保存全局颜色</button>
           <button type="button" onClick={resetGlobal} style={s.resetBtn}>恢复默认</button>

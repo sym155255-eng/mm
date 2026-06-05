@@ -19,6 +19,16 @@
   --ad-title: #1a1a2e;
   --ad-desc: #6b7280;
   --ad-bg: #ffffff;
+  --ad-border: #fbbf24;
+  --header-bg: #ffffff;
+  --site-title: #1a1a2e;
+  --footer: #6b7280;
+  --section-bg: #ffffff;
+  --tab-bg: #f3f4f6;
+  --tab-text: #374151;
+  --card-hover: #ffffff;
+  --icon-bg: #ffffff;
+  --badge: #ef4444;
 }
 
 body {
@@ -49,9 +59,43 @@ input, textarea, select { outline: none; font-family: inherit; }
 
 /* Card hover */
 .link-grid > a:hover, .link-grid > div:hover {
-  background: #fff !important;
-  border-color: #e3e5e8 !important;
+  background: var(--card-hover) !important;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Marquee 跑马灯 */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee 30s linear infinite;
+}
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* 霓虹发光边框呼吸动画 */
+@keyframes neonGlow {
+  0%, 100% { box-shadow: 0 0 6px rgba(168,85,247,0.6), 0 0 12px rgba(236,72,153,0.4); border-color: #a855f7; }
+  50%      { box-shadow: 0 0 12px rgba(236,72,153,0.8), 0 0 24px rgba(168,85,247,0.6); border-color: #ec4899; }
+}
+.marquee-neon {
+  animation: neonGlow 2s ease-in-out infinite;
+}
+
+/* 流光渐变文字 */
+@keyframes flowText {
+  to { background-position: 200% center; }
+}
+.marquee-grad {
+  background: var(--grad, linear-gradient(90deg, #60a5fa, #f472b6, #60a5fa));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: flowText 3s linear infinite;
 }
 
 /* Animations */

@@ -147,4 +147,26 @@ router.delete('/ads/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Notices (跑马灯) ───────────────────────────────────────
+router.get('/notices', (req, res) => {
+  res.json(db().prepare('SELECT * FROM notices ORDER BY sort_order,id').all());
+});
+router.post('/notices', (req, res) => {
+  const { text, url = '', color = '', visible = 1, sort_order = 0 } = req.body;
+  const r = db().prepare('INSERT INTO notices (text,url,color,visible,sort_order) VALUES (?,?,?,?,?)').run(text, url, color, visible, sort_order);
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
+});
+router.put('/notices/:id', (req, res) => {
+  const { text, url = '', color = '', visible, sort_order } = req.body;
+  db().prepare('UPDATE notices SET text=?,url=?,color=?,visible=?,sort_order=? WHERE id=?').run(text, url, color, visible, sort_order, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+router.delete('/notices/:id', (req, res) => {
+  db().prepare('DELETE FROM notices WHERE id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
 module.exports = router;

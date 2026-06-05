@@ -130,3 +130,21 @@ export async function deleteAd(id) {
   const r = await fetch(`${BASE}/admin/ads/${id}`, { method: 'DELETE', headers: authHeaders() });
   return r.json();
 }
+
+// Notices (跑马灯)
+export async function getNotices() {
+  const r = await fetch(`${BASE}/admin/notices`, { headers: authHeaders() });
+  return r.json();
+}
+export async function createNotice(data) {
+  const r = await fetch(`${BASE}/admin/notices`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function updateNotice(id, data) {
+  const r = await fetch(`${BASE}/admin/notices/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function deleteNotice(id) {
+  const r = await fetch(`${BASE}/admin/notices/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}

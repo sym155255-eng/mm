@@ -14,6 +14,16 @@ function applyTheme(settings) {
   if (settings.color_ad_title)     root.style.setProperty('--ad-title',     settings.color_ad_title);
   if (settings.color_ad_desc)      root.style.setProperty('--ad-desc',      settings.color_ad_desc);
   if (settings.color_ad_bg)        root.style.setProperty('--ad-bg',        settings.color_ad_bg);
+  if (settings.color_ad_border)    root.style.setProperty('--ad-border',    settings.color_ad_border);
+  if (settings.color_header_bg)    root.style.setProperty('--header-bg',    settings.color_header_bg);
+  if (settings.color_site_title)   root.style.setProperty('--site-title',   settings.color_site_title);
+  if (settings.color_footer)       root.style.setProperty('--footer',       settings.color_footer);
+  if (settings.color_section_bg)   root.style.setProperty('--section-bg',   settings.color_section_bg);
+  if (settings.color_tab_bg)       root.style.setProperty('--tab-bg',       settings.color_tab_bg);
+  if (settings.color_tab_text)     root.style.setProperty('--tab-text',     settings.color_tab_text);
+  if (settings.color_card_hover)   root.style.setProperty('--card-hover',   settings.color_card_hover);
+  if (settings.color_icon_bg)      root.style.setProperty('--icon-bg',      settings.color_icon_bg);
+  if (settings.color_badge)        root.style.setProperty('--badge',        settings.color_badge);
   if (settings.site_title) document.title = settings.site_title;
 }
 
@@ -37,7 +47,7 @@ export default function Home() {
     return () => es.close();
   }, [load]);
 
-  const { categories, links, settings, ads, subCategories = [] } = data;
+  const { categories, links, settings, ads, subCategories = [], notices = [] } = data;
   const topAds = ads.filter(a => a.position === 'top');
 
   const filteredLinks = links.filter(l => {
@@ -128,6 +138,37 @@ export default function Home() {
 
         {/* Main content */}
         <main style={styles.main}>
+          {/* 跑马灯 */}
+          {notices.length > 0 && (() => {
+            const speed = parseFloat(settings.marquee_speed) || 30;
+            const grad = settings.marquee_gradient;
+            const gradOn = grad && grad.includes(',');
+            const colors = gradOn ? grad.split(',') : [];
+            // 首色追加到末尾，保证流光循环无缝
+            const gradStr = gradOn ? `linear-gradient(90deg, ${[...colors, colors[0]].join(', ')})` : '';
+            const gradVars = gradOn ? { '--grad': gradStr } : {};
+            // 重复足够多次填满宽度，保证无缝
+            let base = [...notices];
+            while (base.length < 12) base = [...base, ...notices];
+            const loopItems = [...base, ...base]; // 整体复制一份做无缝循环
+            return (
+              <div className="marquee-neon" style={styles.marquee}>
+                <span style={styles.marqueeIcon}>📣</span>
+                <div style={styles.marqueeViewport}>
+                  <div className="marquee-track" style={{ ...styles.marqueeTrack, animationDuration: `${speed}s` }}>
+                    {loopItems.map((n, i) => {
+                      const itemStyle = { ...styles.marqueeItem, ...gradVars, ...(gradOn ? {} : { color: n.color || '#facc15' }) };
+                      const cls = gradOn ? 'marquee-grad' : '';
+                      return n.url
+                        ? <a key={i} className={cls} href={n.url} target="_blank" rel="noopener noreferrer" style={itemStyle}>{n.text}</a>
+                        : <span key={i} className={cls} style={itemStyle}>{n.text}</span>;
+                    })}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Ads */}
           {settings.show_ads === '1' && topAds.length > 0 && (
             <div style={styles.adsWrap}>
@@ -146,12 +187,12 @@ export default function Home() {
                 {topAds.map(ad => (
                   <a key={ad.id} href={ad.url || '#'} target="_blank" rel="noopener noreferrer" style={styles.adCard}>
                     {ad.badge && (
-                      <span style={{ ...styles.adBadge, background: ad.badge_color || '#ef4444' }}>{ad.badge}</span>
+                      <span style={{ ...styles.adBadge, background: ad.badge_color || 'var(--badge)' }}>{ad.badge}</span>
                     )}
                     <div style={styles.adCardIcon}>
                       {ad.image_url
-                        ? <img src={ad.image_url} alt={ad.title} style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'contain' }} />
-                        : <span style={{ fontSize: 22 }}>📢</span>
+                        ? <img src={ad.image_url} alt={ad.title} style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain' }} />
+                        : <span style={{ fontSize: 18 }}>📢</span>
                       }
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -299,7 +340,7 @@ function LinkCard({ link, onOpen }) {
   if (hasSubs) {
     return (
       <div onClick={() => onOpen(link)} style={{ ...styles.card, position: 'relative', cursor: 'pointer' }}>
-        {link.badge && <span style={{ ...styles.badge, background: link.badge_color || '#ef4444' }}>{link.badge}</span>}
+        {link.badge && <span style={{ ...styles.badge, background: link.badge_color || 'var(--badge)' }}>{link.badge}</span>}
         <div style={styles.cardIcon}>
           <FaviconImg url={link.url} title={link.title} icon={link.icon} />
         </div>
@@ -313,7 +354,7 @@ function LinkCard({ link, onOpen }) {
 
   return (
     <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ ...styles.card, position: 'relative' }}>
-      {link.badge && <span style={{ ...styles.badge, background: link.badge_color || '#ef4444' }}>{link.badge}</span>}
+      {link.badge && <span style={{ ...styles.badge, background: link.badge_color || 'var(--badge)' }}>{link.badge}</span>}
       <div style={styles.cardIcon}>
         <FaviconImg url={link.url} title={link.title} icon={link.icon} />
       </div>
@@ -329,12 +370,12 @@ function FaviconImg({ url, title, icon }) {
   const [err, setErr] = useState(false);
   const src = icon || `https://www.google.com/s2/favicons?domain=${encodeURIComponent(url)}&sz=32`;
   if (err) return <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--primary)' }}>{title[0]}</span>;
-  return <img src={src} alt={title} width={32} height={32} onError={() => setErr(true)} style={{ borderRadius: 6, objectFit: 'contain' }} />;
+  return <img src={src} alt={title} width={24} height={24} onError={() => setErr(true)} style={{ borderRadius: 6, objectFit: 'contain' }} />;
 }
 
 const styles = {
   header: {
-    background: 'var(--card-bg)',
+    background: 'var(--header-bg)',
     borderBottom: '1px solid var(--border)',
     position: 'sticky',
     top: 0,
@@ -351,7 +392,7 @@ const styles = {
     gap: 16,
   },
   logo: { display: 'flex', alignItems: 'center', gap: 10 },
-  siteTitle: { fontWeight: 700, fontSize: 18, color: 'var(--text)' },
+  siteTitle: { fontWeight: 700, fontSize: 18, color: 'var(--site-title)' },
   siteSubtitle: { fontSize: 12, color: 'var(--text-muted)' },
   headerRight: { display: 'flex', alignItems: 'center', gap: 12, marginLeft: 'auto', flexShrink: 0 },
   adminBtn: {
@@ -363,12 +404,27 @@ const styles = {
     fontWeight: 600,
     transition: 'opacity 0.2s',
   },
+  marquee: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    background: 'linear-gradient(135deg, #1e1b2e, #2d2640)',
+    border: '2px solid #a855f7',
+    borderRadius: 999,
+    padding: '12px 22px',
+    marginBottom: 16,
+    overflow: 'hidden',
+  },
+  marqueeIcon: { fontSize: 18, flexShrink: 0 },
+  marqueeViewport: { flex: 1, overflow: 'hidden', position: 'relative' },
+  marqueeTrack: { display: 'flex', width: 'max-content', gap: 48, whiteSpace: 'nowrap', willChange: 'transform' },
+  marqueeItem: { fontSize: 15, fontWeight: 700, textDecoration: 'none' },
   adsWrap: {
     background: '#fff',
-    borderRadius: 12,
+    borderRadius: 16,
     border: '1px solid #f0e6c8',
-    padding: '12px 16px 14px',
-    marginBottom: 24,
+    padding: '24px 28px 28px',
+    marginBottom: 28,
   },
   adsHeader: {
     display: 'flex',
@@ -389,16 +445,16 @@ const styles = {
   adsLabel: { fontSize: 11, color: '#9ca3af', letterSpacing: 1 },
   adsRow: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-    gap: 12,
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: 16,
   },
   adCard: {
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
     position: 'relative',
     background: 'var(--ad-bg, #fff)',
-    border: '1.5px solid #fbbf24',
+    border: '1.5px solid var(--ad-border)',
     borderRadius: 10,
     padding: '10px 14px',
     textDecoration: 'none',
@@ -624,7 +680,7 @@ const styles = {
     gap: 6,
   },
   sectionWrap: {
-    background: '#fff',
+    background: 'var(--section-bg)',
     borderRadius: 16,
     padding: '24px 28px 28px',
   },
@@ -647,8 +703,8 @@ const styles = {
     fontWeight: 500,
     cursor: 'pointer',
     border: 'none',
-    background: '#f3f4f6',
-    color: '#374151',
+    background: 'var(--tab-bg)',
+    color: 'var(--tab-text)',
     transition: 'background 0.15s, color 0.15s',
   },
   tabActive: {
@@ -664,11 +720,11 @@ const styles = {
   card: {
     display: 'flex',
     alignItems: 'center',
-    gap: 14,
-    background: '#f7f8fa',
-    borderRadius: 12,
-    padding: '16px 18px',
-    border: '1px solid #f0f1f3',
+    gap: 12,
+    background: 'var(--card-bg)',
+    borderRadius: 10,
+    padding: '10px 14px',
+    border: '1px solid var(--card-border)',
     transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
     cursor: 'pointer',
     overflow: 'hidden',
@@ -676,13 +732,13 @@ const styles = {
     textDecoration: 'none',
   },
   cardIcon: {
-    width: 44,
-    height: 44,
+    width: 36,
+    height: 36,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#fff',
-    borderRadius: 10,
+    background: 'var(--icon-bg)',
+    borderRadius: 8,
     flexShrink: 0,
   },
   cardContent: { flex: 1, minWidth: 0 },
@@ -712,9 +768,9 @@ const styles = {
   footer: {
     textAlign: 'center',
     padding: '20px',
-    color: 'var(--text-muted)',
+    color: 'var(--footer)',
     fontSize: 13,
     borderTop: '1px solid var(--border)',
-    background: '#fff',
+    background: 'var(--header-bg)',
   },
 };

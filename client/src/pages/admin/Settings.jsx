@@ -46,6 +46,35 @@ export default function Settings() {
             <ColorField label="主题色" value={form.primary_color || '#4f6ef7'} onChange={v => set('primary_color', v)} />
             <ColorField label="背景色" value={form.bg_color || '#f0f4ff'} onChange={v => set('bg_color', v)} />
           </div>
+          <Field label="背景图片 URL（留空则用背景色）" value={form.bg_image || ''} onChange={v => set('bg_image', v)} placeholder="https://...jpg/png" />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 5, color: '#374151' }}>背景图模式</label>
+              <select value={form.bg_size || 'cover'} onChange={e => set('bg_size', e.target.value)}
+                style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14 }}>
+                <option value="cover">铺满 (cover)</option>
+                <option value="contain">完整显示 (contain)</option>
+                <option value="repeat">平铺 (repeat)</option>
+                <option value="auto">原始大小</option>
+              </select>
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 5, color: '#374151' }}>背景固定</label>
+              <select value={form.bg_fixed || '0'} onChange={e => set('bg_fixed', e.target.value)}
+                style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14 }}>
+                <option value="0">随页面滚动</option>
+                <option value="1">固定不动</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ marginBottom: 4 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 5, color: '#374151' }}>
+              背景遮罩透明度（0~1，越大背景越淡）
+            </label>
+            <input type="range" min="0" max="1" step="0.05" value={form.bg_overlay || '0'}
+              onChange={e => set('bg_overlay', e.target.value)} style={{ width: '100%' }} />
+            <span style={{ fontSize: 12, color: '#6b7280' }}>{form.bg_overlay || '0'}</span>
+          </div>
         </Card>
 
         <Card title="功能开关">
