@@ -70,7 +70,7 @@ export default function Home() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {/* Header */}
       <header style={styles.header}>
-        <div style={styles.headerInner}>
+        <div className="header-inner" style={styles.headerInner}>
           <div style={styles.logo}>
             <span style={{ fontSize: 28 }}>{settings.site_logo || '🧭'}</span>
             <div>
@@ -97,9 +97,9 @@ export default function Home() {
       </header>
 
 
-      <div style={styles.body}>
+      <div className="home-body" style={styles.body}>
         {/* Sidebar Categories */}
-        <aside style={{ ...styles.sidebar, display: menuOpen ? 'block' : undefined }}>
+        <aside className="home-sidebar" style={styles.sidebar}>
           <nav>
             <button
               style={{ ...styles.catItem, ...(activeCategory === 'all' ? styles.catActive : {}) }}
@@ -120,7 +120,7 @@ export default function Home() {
         </aside>
 
         {/* Mobile category bar */}
-        <div style={styles.mobileCatBar}>
+        <div className="mobile-cat-bar" style={styles.mobileCatBar}>
           <button
             style={{ ...styles.mobileCatBtn, ...(activeCategory === 'all' ? styles.mobileCatActive : {}) }}
             onClick={() => setActiveCategory('all')}
