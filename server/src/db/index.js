@@ -35,8 +35,11 @@ class DB {
     return {
       run(...params) {
         self._db.run(sql, params);
+        // 必须在 _save() (export) 之前查询，否则 rowid 可能被重置
+        let lastId = 0;
+        try { lastId = self._db.exec('SELECT last_insert_rowid() as id')[0]?.values[0][0] || 0; } catch {}
         self._save();
-        return { lastInsertRowid: self._db.exec('SELECT last_insert_rowid() as id')[0]?.values[0][0] };
+        return { lastInsertRowid: lastId };
       },
       get(...params) {
         const res = self._db.exec(sql, params);
@@ -137,6 +140,16 @@ async function initDB() {
   try { db._db.run(`ALTER TABLE ads ADD COLUMN description TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE ads ADD COLUMN title_color TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE ads ADD COLUMN desc_color TEXT DEFAULT ''`); db._save(); } catch {}
+  db._db.run(`
+    CREATE TABLE IF NOT EXISTS sub_categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      sort_order INTEGER DEFAULT 0
+    )
+  `);
+  db._save();
+  try { db._db.run(`ALTER TABLE links ADD COLUMN sub_category_id INTEGER`); db._save(); } catch {}
   db._db.run(`
     CREATE TABLE IF NOT EXISTS sub_links (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

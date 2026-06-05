@@ -37,7 +37,7 @@ export default function Home() {
     return () => es.close();
   }, [load]);
 
-  const { categories, links, settings, ads } = data;
+  const { categories, links, settings, ads, subCategories = [] } = data;
   const topAds = ads.filter(a => a.position === 'top');
 
   const filteredLinks = links.filter(l => {
@@ -130,26 +130,39 @@ export default function Home() {
         <main style={styles.main}>
           {/* Ads */}
           {settings.show_ads === '1' && topAds.length > 0 && (
-            <div style={styles.adsBar}>
-              {topAds.map(ad => (
-                <a key={ad.id} href={ad.url || '#'} target="_blank" rel="noopener noreferrer" style={{ ...styles.adItem, position: 'relative' }}>
-                  {ad.badge && (
-                    <span style={{ ...styles.badge, background: ad.badge_color || '#ef4444' }}>{ad.badge}</span>
-                  )}
-                  <div style={styles.cardIcon}>
-                    {ad.image_url
-                      ? <img src={ad.image_url} alt={ad.title} style={{ width: 20, height: 20, borderRadius: 4, objectFit: 'contain' }} />
-                      : <span style={{ fontSize: 18, lineHeight: 1 }}>📢</span>
-                    }
-                  </div>
-                  <div style={styles.cardContent}>
-                    <div style={{ ...styles.adTitle, ...(ad.title_color ? { color: ad.title_color } : {}) }}>{ad.title}</div>
-                    {ad.description && (
-                      <div style={{ ...styles.adDesc, ...(ad.desc_color ? { color: ad.desc_color } : {}) }}>{ad.description}</div>
+            <div style={styles.adsWrap}>
+              {/* 标题栏 */}
+              <div style={styles.adsHeader}>
+                <div style={styles.adsHeaderLeft}>
+                  <span style={styles.adsDot} />
+                  <span style={styles.adsTitle}>{settings.ads_section_title || '精品推荐 / 赞助合作商'}</span>
+                </div>
+                <div style={styles.adsHeaderRight}>
+                  <span style={styles.adsLabel}>SPONSORS AD</span>
+                </div>
+              </div>
+              {/* 卡片横向滚动 */}
+              <div className="ads-row" style={styles.adsRow}>
+                {topAds.map(ad => (
+                  <a key={ad.id} href={ad.url || '#'} target="_blank" rel="noopener noreferrer" style={styles.adCard}>
+                    {ad.badge && (
+                      <span style={{ ...styles.adBadge, background: ad.badge_color || '#ef4444' }}>{ad.badge}</span>
                     )}
-                  </div>
-                </a>
-              ))}
+                    <div style={styles.adCardIcon}>
+                      {ad.image_url
+                        ? <img src={ad.image_url} alt={ad.title} style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'contain' }} />
+                        : <span style={{ fontSize: 22 }}>📢</span>
+                      }
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ ...styles.adCardTitle, ...(ad.title_color ? { color: ad.title_color } : {}) }}>{ad.title}</div>
+                      {ad.description && (
+                        <div style={{ ...styles.adCardDesc, ...(ad.desc_color ? { color: ad.desc_color } : {}) }}>{ad.description}</div>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
           )}
 
@@ -158,19 +171,24 @@ export default function Home() {
           )}
 
           {grouped.map(({ cat, items }) => (
-            <section key={cat.id} className="fade-in" style={styles.section}>
-              <h2 style={styles.sectionTitle}><span>{cat.icon}</span> {cat.name}</h2>
-              <div style={styles.grid}>
-                {items.map(link => <LinkCard key={link.id} link={link} onOpen={setPopup} />)}
-              </div>
-            </section>
+            <CategorySection
+              key={cat.id}
+              cat={cat}
+              items={items}
+              subCategories={subCategories.filter(sc => sc.category_id === cat.id)}
+              onOpen={setPopup}
+            />
           ))}
 
           {uncategorized.length > 0 && (
             <section className="fade-in" style={styles.section}>
-              <h2 style={styles.sectionTitle}><span>🔗</span> 其他</h2>
-              <div style={styles.grid}>
-                {uncategorized.map(link => <LinkCard key={link.id} link={link} onOpen={setPopup} />)}
+              <div style={styles.sectionWrap}>
+                <div style={styles.sectionHeader}>
+                  <h2 style={styles.sectionTitle}><span>🔗</span> 其他</h2>
+                </div>
+                <div className="link-grid" style={styles.grid}>
+                  {uncategorized.map(link => <LinkCard key={link.id} link={link} onOpen={setPopup} />)}
+                </div>
               </div>
             </section>
           )}
@@ -229,6 +247,50 @@ export default function Home() {
   );
 }
 
+function CategorySection({ cat, items, subCategories, onOpen }) {
+  const [activeTab, setActiveTab] = useState('all');
+  const hasTabs = subCategories.length > 0;
+
+  // 当前标签页下的链接
+  const shownItems = !hasTabs || activeTab === 'all'
+    ? items
+    : items.filter(l => l.sub_category_id === activeTab);
+
+  return (
+    <section className="fade-in" style={styles.section}>
+      <div style={styles.sectionWrap}>
+        <div style={styles.sectionHeader}>
+          <h2 style={styles.sectionTitle}><span>{cat.icon}</span> {cat.name}</h2>
+        </div>
+
+        {/* 子分类标签页 */}
+        {hasTabs && (
+          <div style={styles.tabBar}>
+            <button
+              onClick={() => setActiveTab('all')}
+              style={{ ...styles.tab, ...(activeTab === 'all' ? styles.tabActive : {}) }}
+            >全部</button>
+            {subCategories.map(sc => (
+              <button
+                key={sc.id}
+                onClick={() => setActiveTab(sc.id)}
+                style={{ ...styles.tab, ...(activeTab === sc.id ? styles.tabActive : {}) }}
+              >{sc.name}</button>
+            ))}
+          </div>
+        )}
+
+        <div className="link-grid" style={styles.grid}>
+          {shownItems.map(link => <LinkCard key={link.id} link={link} onOpen={onOpen} />)}
+        </div>
+        {shownItems.length === 0 && (
+          <div style={{ padding: '24px 0', textAlign: 'center', color: '#9ca3af', fontSize: 14 }}>该标签暂无链接</div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function LinkCard({ link, onOpen }) {
   const titleStyle = { ...styles.cardTitle, ...(link.title_color ? { color: link.title_color } : {}) };
   const descStyle  = { ...styles.cardDesc,  ...(link.desc_color  ? { color: link.desc_color  } : {}) };
@@ -267,7 +329,7 @@ function FaviconImg({ url, title, icon }) {
   const [err, setErr] = useState(false);
   const src = icon || `https://www.google.com/s2/favicons?domain=${encodeURIComponent(url)}&sz=32`;
   if (err) return <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--primary)' }}>{title[0]}</span>;
-  return <img src={src} alt={title} width={20} height={20} onError={() => setErr(true)} style={{ borderRadius: 4, objectFit: 'contain' }} />;
+  return <img src={src} alt={title} width={32} height={32} onError={() => setErr(true)} style={{ borderRadius: 6, objectFit: 'contain' }} />;
 }
 
 const styles = {
@@ -301,39 +363,82 @@ const styles = {
     fontWeight: 600,
     transition: 'opacity 0.2s',
   },
-  adsBar: {
+  adsWrap: {
+    background: '#fff',
+    borderRadius: 12,
+    border: '1px solid #f0e6c8',
+    padding: '12px 16px 14px',
+    marginBottom: 24,
+  },
+  adsHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  adsHeaderLeft: { display: 'flex', alignItems: 'center', gap: 7 },
+  adsDot: {
+    width: 9, height: 9,
+    borderRadius: '50%',
+    background: '#f59e0b',
+    flexShrink: 0,
+    boxShadow: '0 0 0 2px #fde68a',
+  },
+  adsTitle: { fontSize: 13, fontWeight: 700, color: '#78350f' },
+  adsHeaderRight: { display: 'flex', alignItems: 'center', gap: 10 },
+  adsLabel: { fontSize: 11, color: '#9ca3af', letterSpacing: 1 },
+  adsRow: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
     gap: 12,
-    marginBottom: 24,
   },
-  adItem: {
+  adCard: {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    background: 'var(--ad-bg)',
+    position: 'relative',
+    background: 'var(--ad-bg, #fff)',
+    border: '1.5px solid #fbbf24',
     borderRadius: 10,
-    padding: '12px 14px',
-    border: '1px solid var(--card-border)',
-    boxShadow: 'var(--shadow)',
-    transition: 'box-shadow 0.2s, transform 0.2s',
-    overflow: 'hidden',
+    padding: '10px 14px',
+    textDecoration: 'none',
+    transition: 'box-shadow 0.2s, transform 0.15s',
+    cursor: 'pointer',
+    minWidth: 0,
   },
-  adTitle: {
+  adCardIcon: {
+    width: 36, height: 36,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: '#fffbeb',
+    borderRadius: 8,
+    flexShrink: 0,
+  },
+  adCardTitle: {
     fontSize: 13,
-    fontWeight: 600,
-    color: 'var(--ad-title)',
+    fontWeight: 700,
+    color: 'var(--ad-title, #1a1a2e)',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   },
-  adDesc: {
+  adCardDesc: {
     fontSize: 11,
-    color: 'var(--ad-desc, var(--card-desc))',
+    color: 'var(--ad-desc, #6b7280)',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     marginTop: 2,
+  },
+  adBadge: {
+    position: 'absolute',
+    top: 6, right: 6,
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 700,
+    padding: '1px 6px',
+    borderRadius: 4,
+    lineHeight: 1.5,
+    zIndex: 1,
   },
   subCount: {
     flexShrink: 0,
@@ -508,60 +613,95 @@ const styles = {
     borderColor: 'var(--primary)',
   },
   main: { flex: 1, minWidth: 0 },
-  section: { marginBottom: 32 },
+  section: { marginBottom: 28 },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 700,
     color: 'var(--section-title)',
-    marginBottom: 12,
+    marginBottom: 0,
     display: 'flex',
     alignItems: 'center',
     gap: 6,
   },
+  sectionWrap: {
+    background: '#fff',
+    borderRadius: 16,
+    padding: '24px 28px 28px',
+  },
+  sectionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  tabBar: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 20,
+  },
+  tab: {
+    padding: '7px 18px',
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: 'pointer',
+    border: 'none',
+    background: '#f3f4f6',
+    color: '#374151',
+    transition: 'background 0.15s, color 0.15s',
+  },
+  tabActive: {
+    background: 'var(--primary)',
+    color: '#fff',
+    fontWeight: 600,
+  },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-    gap: 12,
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: 16,
   },
   card: {
     display: 'flex',
     alignItems: 'center',
-    gap: 10,
-    background: 'var(--card-bg)',
-    borderRadius: 10,
-    padding: '12px 14px',
-    border: '1px solid var(--card-border)',
-    boxShadow: 'var(--shadow)',
-    transition: 'box-shadow 0.2s, transform 0.2s',
+    gap: 14,
+    background: '#f7f8fa',
+    borderRadius: 12,
+    padding: '16px 18px',
+    border: '1px solid #f0f1f3',
+    transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
     cursor: 'pointer',
     overflow: 'hidden',
+    minWidth: 0,
+    textDecoration: 'none',
   },
   cardIcon: {
-    width: 32,
-    height: 32,
+    width: 44,
+    height: 44,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#f3f4f6',
-    borderRadius: 8,
+    background: '#fff',
+    borderRadius: 10,
     flexShrink: 0,
   },
   cardContent: { flex: 1, minWidth: 0 },
   cardTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 600,
     color: 'var(--card-title)',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    marginBottom: 3,
   },
   cardDesc: {
-    fontSize: 11,
-    color: 'var(--card-desc)',
+    fontSize: 12,
+    color: '#999',
+    lineHeight: 1.4,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    marginTop: 2,
   },
   empty: {
     textAlign: 'center',

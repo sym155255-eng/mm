@@ -1,5 +1,19 @@
 {
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "timeout": 15,
+            "statusMessage": "自动保存到 git...",
+            "command": "$input = [Console]::In.ReadToEnd() | ConvertFrom-Json; $f = if ($input.tool_input.file_path) { $input.tool_input.file_path } else { $input.tool_response.filePath }; if ($f) { git -C 'C:\\Users\\10557\\Desktop\\aaa' add $f; git -C 'C:\\Users\\10557\\Desktop\\aaa' commit -m \"auto: update $($f | Split-Path -Leaf)\" --no-verify 2>$null }; exit 0"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [

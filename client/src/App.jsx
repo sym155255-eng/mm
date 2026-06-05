@@ -9,6 +9,7 @@ import Links from './pages/admin/Links';
 import Ads from './pages/admin/Ads';
 import Settings from './pages/admin/Settings';
 import Colors from './pages/admin/Colors';
+import SubCategories from './pages/admin/SubCategories';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -25,6 +26,7 @@ export default function App() {
           <Route index element={<Navigate to="/admin/links" replace />} />
           <Route path="links" element={<Links />} />
           <Route path="categories" element={<Categories />} />
+          <Route path="sub-categories" element={<SubCategories />} />
           <Route path="ads" element={<Ads />} />
           <Route path="colors" element={<Colors />} />
           <Route path="settings" element={<Settings />} />

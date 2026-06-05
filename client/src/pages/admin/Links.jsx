@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { getLinks, createLink, updateLink, deleteLink, getCategories, getSubLinks, createSubLink, updateSubLink, deleteSubLink } from '../../api';
+import { getLinks, createLink, updateLink, deleteLink, getCategories, getSubLinks, createSubLink, updateSubLink, deleteSubLink, getSubCategories } from '../../api';
 
-const empty = { category_id: '', title: '', url: '', icon: '', description: '', title_color: '', desc_color: '', badge: '', badge_color: '', sort_order: 0, visible: 1 };
+const empty = { category_id: '', sub_category_id: '', title: '', url: '', icon: '', description: '', title_color: '', desc_color: '', badge: '', badge_color: '', sort_order: 0, visible: 1 };
 
 export default function Links() {
   const [list, setList] = useState([]);
@@ -12,11 +12,13 @@ export default function Links() {
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('');
   const [subLinks, setSubLinks] = useState([]);
+  const [subCats, setSubCats] = useState([]);
 
   async function load() {
-    const [links, categories] = await Promise.all([getLinks(), getCategories()]);
+    const [links, categories, subCategories] = await Promise.all([getLinks(), getCategories(), getSubCategories()]);
     setList(links);
     setCats(categories);
+    setSubCats(subCategories);
   }
   useEffect(() => { load(); }, []);
 
@@ -33,8 +35,20 @@ export default function Links() {
 
   async function handleSave() {
     if (!form.title.trim() || !form.url.trim()) return;
-    if (editing) await updateLink(editing, form);
-    else await createLink(form);
+    try {
+      if (editing) {
+        await updateLink(editing, form);
+      } else {
+        const res = await createLink(form);
+        if (res.id && subLinks.length) {
+          for (const sl of subLinks) {
+            await createSubLink(res.id, { title: sl.title, url: sl.url, icon: sl.icon || '', sort_order: sl.sort_order || 0 });
+          }
+        }
+      }
+    } catch (e) {
+      alert('保存失败：' + e.message);
+    }
     setModal(false);
     load();
   }
@@ -110,6 +124,16 @@ export default function Links() {
                   {cats.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
                 </select>
               </div>
+              <div style={{ marginBottom: 14 }}>
+                <label style={s.fieldLabel}>子分类（标签页）</label>
+                <select value={form.sub_category_id || ''} onChange={e => setForm(f => ({ ...f, sub_category_id: e.target.value ? +e.target.value : null }))}
+                  style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14 }}>
+                  <option value="">无（直接显示）</option>
+                  {subCats.filter(sc => sc.category_id === form.category_id).map(sc => (
+                    <option key={sc.id} value={sc.id}>{sc.name}</option>
+                  ))}
+                </select>
+              </div>
               <Field label="图标 URL (留空自动获取)" value={form.icon} onChange={v => setForm(f => ({ ...f, icon: v }))} placeholder="https://..." />
               <Field label="描述" value={form.description} onChange={v => setForm(f => ({ ...f, description: v }))} placeholder="简短描述..." />
               <Field label="角标文字（如 HOT、NEW、推荐）" value={form.badge} onChange={v => setForm(f => ({ ...f, badge: v }))} placeholder="留空则不显示" />
@@ -119,8 +143,11 @@ export default function Links() {
                 <span>显示此链接</span>
               </label>
             </div>
-            {editing && (
-              <SubLinksEditor linkId={editing} subLinks={subLinks} setSubLinks={setSubLinks} />
+            <SubLinksEditor linkId={editing} subLinks={subLinks} setSubLinks={setSubLinks} />
+            {!editing && (
+              <div style={{ fontSize: 12, color: '#9ca3af', marginTop: -8, marginBottom: 12 }}>
+                提示：子链接将在保存主链接后一并创建
+              </div>
             )}
             <div style={s.modalFoot}>
               <button style={s.cancelBtn} onClick={() => setModal(false)}>取消</button>
@@ -185,10 +212,16 @@ function SubLinksEditor({ linkId, subLinks, setSubLinks }) {
     if (!newUrl.trim())   { setErr('请填写URL');  return; }
     setErr(''); setBusy(true);
     try {
-      const res = await createSubLink(linkId, { title: newTitle.trim(), url: newUrl.trim(), icon: '', sort_order: subLinks.length });
-      // 直接追加到列表，不依赖 re-fetch
-      const newItem = { id: res.id || Date.now(), link_id: linkId, title: newTitle.trim(), url: newUrl.trim(), icon: '', sort_order: subLinks.length };
-      setSubLinks(prev => [...prev, newItem]);
+      const item = { title: newTitle.trim(), url: newUrl.trim(), icon: '', sort_order: subLinks.length };
+      let newId;
+      if (linkId) {
+        const res = await createSubLink(linkId, item);
+        newId = res.id || Date.now();
+      } else {
+        // 新增模式：本地暂存，用临时负数 id
+        newId = -Date.now();
+      }
+      setSubLinks(prev => [...prev, { id: newId, link_id: linkId, ...item }]);
       setNewTitle(''); setNewUrl('');
     } catch(e) { setErr('添加失败: ' + e.message); }
     setBusy(false);
@@ -197,7 +230,7 @@ function SubLinksEditor({ linkId, subLinks, setSubLinks }) {
   async function handleUpdate(sl) {
     setBusy(true);
     try {
-      await updateSubLink(sl.id, { ...sl, title: editTitle, url: editUrl });
+      if (linkId && sl.id > 0) await updateSubLink(sl.id, { ...sl, title: editTitle, url: editUrl });
       setSubLinks(prev => prev.map(s => s.id === sl.id ? { ...s, title: editTitle, url: editUrl } : s));
       setEditId(null);
     } catch(e) { setErr('编辑失败'); }
@@ -206,7 +239,7 @@ function SubLinksEditor({ linkId, subLinks, setSubLinks }) {
 
   async function handleDelete(id) {
     if (!confirm('确认删除此子链接？')) return;
-    await deleteSubLink(id);
+    if (linkId && id > 0) await deleteSubLink(id);
     setSubLinks(prev => prev.filter(s => s.id !== id));
   }
 

@@ -77,6 +77,24 @@ export async function deleteLink(id) {
   return r.json();
 }
 
+// Sub Categories
+export async function getSubCategories() {
+  const r = await fetch(`${BASE}/admin/sub-categories`, { headers: authHeaders() });
+  return r.json();
+}
+export async function createSubCategory(data) {
+  const r = await fetch(`${BASE}/admin/sub-categories`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function updateSubCategory(id, data) {
+  const r = await fetch(`${BASE}/admin/sub-categories/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function deleteSubCategory(id) {
+  const r = await fetch(`${BASE}/admin/sub-categories/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}
+
 // Sub Links
 export async function getSubLinks(linkId) {
   const r = await fetch(`${BASE}/admin/links/${linkId}/sub`, { headers: authHeaders() });

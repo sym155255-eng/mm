@@ -5,6 +5,7 @@ import { useAuth } from '../../store/auth';
 const navItems = [
   { to: '/admin/links', icon: '🔗', label: '链接管理' },
   { to: '/admin/categories', icon: '📂', label: '分类管理' },
+  { to: '/admin/sub-categories', icon: '🏷️', label: '子分类管理' },
   { to: '/admin/ads', icon: '📢', label: '广告管理' },
   { to: '/admin/colors', icon: '🎨', label: '颜色管理' },
   { to: '/admin/settings', icon: '⚙️', label: '网站设置' },

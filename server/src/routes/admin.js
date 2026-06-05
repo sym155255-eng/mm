@@ -55,21 +55,44 @@ router.get('/links', (req, res) => {
 });
 
 router.post('/links', (req, res) => {
-  const { category_id, title, url, icon = '', description = '', title_color = '', desc_color = '', badge = '', badge_color = '', sort_order = 0, visible = 1 } = req.body;
-  const r = db().prepare('INSERT INTO links (category_id,title,url,icon,description,title_color,desc_color,badge,badge_color,sort_order,visible) VALUES (?,?,?,?,?,?,?,?,?,?,?)').run(category_id || null, title, url, icon, description, title_color, desc_color, badge, badge_color, sort_order, visible);
+  const { category_id, sub_category_id = null, title, url, icon = '', description = '', title_color = '', desc_color = '', badge = '', badge_color = '', sort_order = 0, visible = 1 } = req.body;
+  const r = db().prepare('INSERT INTO links (category_id,sub_category_id,title,url,icon,description,title_color,desc_color,badge,badge_color,sort_order,visible) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').run(category_id || null, sub_category_id || null, title, url, icon, description, title_color, desc_color, badge, badge_color, sort_order, visible);
   broadcast('update');
   res.json({ id: r.lastInsertRowid });
 });
 
 router.put('/links/:id', (req, res) => {
-  const { category_id, title, url, icon, description, title_color = '', desc_color = '', badge = '', badge_color = '', sort_order, visible } = req.body;
-  db().prepare('UPDATE links SET category_id=?,title=?,url=?,icon=?,description=?,title_color=?,desc_color=?,badge=?,badge_color=?,sort_order=?,visible=? WHERE id=?').run(category_id || null, title, url, icon, description, title_color, desc_color, badge, badge_color, sort_order, visible, req.params.id);
+  const { category_id, sub_category_id = null, title, url, icon, description, title_color = '', desc_color = '', badge = '', badge_color = '', sort_order, visible } = req.body;
+  db().prepare('UPDATE links SET category_id=?,sub_category_id=?,title=?,url=?,icon=?,description=?,title_color=?,desc_color=?,badge=?,badge_color=?,sort_order=?,visible=? WHERE id=?').run(category_id || null, sub_category_id || null, title, url, icon, description, title_color, desc_color, badge, badge_color, sort_order, visible, req.params.id);
   broadcast('update');
   res.json({ ok: true });
 });
 
 router.delete('/links/:id', (req, res) => {
   db().prepare('DELETE FROM links WHERE id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+// ── Sub Categories ────────────────────────────────────────
+router.get('/sub-categories', (req, res) => {
+  res.json(db().prepare('SELECT * FROM sub_categories ORDER BY sort_order,id').all());
+});
+router.post('/sub-categories', (req, res) => {
+  const { category_id, name, sort_order = 0 } = req.body;
+  const r = db().prepare('INSERT INTO sub_categories (category_id,name,sort_order) VALUES (?,?,?)').run(category_id, name, sort_order);
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
+});
+router.put('/sub-categories/:id', (req, res) => {
+  const { name, sort_order = 0 } = req.body;
+  db().prepare('UPDATE sub_categories SET name=?,sort_order=? WHERE id=?').run(name, sort_order, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+router.delete('/sub-categories/:id', (req, res) => {
+  db().prepare('DELETE FROM sub_categories WHERE id=?').run(req.params.id);
+  db().prepare('UPDATE links SET sub_category_id=NULL WHERE sub_category_id=?').run(req.params.id);
   broadcast('update');
   res.json({ ok: true });
 });
