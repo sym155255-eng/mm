@@ -359,9 +359,15 @@ function LinkCard({ link, onOpen }) {
   );
 }
 
+function getDomain(url) {
+  try { return new URL(url).hostname; }
+  catch { return (url || '').replace(/^https?:\/\//, '').split('/')[0]; }
+}
+
 function FaviconImg({ url, title, icon }) {
   const [err, setErr] = useState(false);
-  const src = icon || `https://www.google.com/s2/favicons?domain=${encodeURIComponent(url)}&sz=32`;
+  // 国内可访问的 favicon 源（iowen），留空时自动获取
+  const src = icon || `https://api.iowen.cn/favicon/${getDomain(url)}.png`;
   if (err) return <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--primary)' }}>{title[0]}</span>;
   return <img src={src} alt={title} width={24} height={24} onError={() => setErr(true)} style={{ borderRadius: 6, objectFit: 'contain' }} />;
 }
