@@ -1,6 +1,7 @@
-/* 窄屏：弹窗两列布局变单列，避免字段挤压 */
+/* 弹窗始终保持两列；窄屏收紧内边距和间距给字段更多空间 */
 @media (max-width: 680px) {
-  .modal-grid2 { grid-template-columns: 1fr !important; }
+  .modal-grid2 { gap: 0 10px !important; }
+  .edit-modal { padding: 20px 16px !important; }
 }
 
 /* ===== 移动端适配 ===== */
