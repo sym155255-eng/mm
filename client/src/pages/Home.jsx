@@ -105,7 +105,7 @@ export default function Home() {
             </div>
           )}
           <div style={styles.headerRight}>
-            <Link to="/admin" style={styles.adminBtn}>管理后台</Link>
+            <Link to="/login" style={styles.adminBtn}>登录</Link>
           </div>
         </div>
       </header>
@@ -135,8 +135,8 @@ export default function Home() {
             ))}
           </nav>
           {/* 抽屉底部：管理后台（仅手机抽屉显示） */}
-          <Link to="/admin" className="drawer-admin-btn" style={styles.drawerAdminBtn} onClick={() => setMenuOpen(false)}>
-            ⚙️ 管理后台
+          <Link to="/login" className="drawer-admin-btn" style={styles.drawerAdminBtn} onClick={() => setMenuOpen(false)}>
+            🔑 登录
           </Link>
         </aside>
 
