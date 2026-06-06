@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../api';
 import { useAuth } from '../store/auth';
@@ -9,6 +9,11 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const nav = useNavigate();
+
+  // 已登录则直接进后台，无需重复登录
+  useEffect(() => {
+    if (localStorage.getItem('nav_token')) nav('/admin', { replace: true });
+  }, [nav]);
 
   async function handleSubmit(e) {
     e.preventDefault();
