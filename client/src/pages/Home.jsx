@@ -42,9 +42,21 @@ export default function Home() {
 
   useEffect(() => {
     load();
-    const es = new EventSource('/api/events');
-    es.addEventListener('update', load);
-    return () => es.close();
+    // SSE 实时推送（反代不支持时会失败，由下面的轮询兜底）
+    let es;
+    try {
+      es = new EventSource('/api/events');
+      es.addEventListener('update', load);
+    } catch {}
+    // 轮询兜底：每 20 秒拉一次最新数据；切回页面时也立即刷新
+    const timer = setInterval(load, 20000);
+    const onVisible = () => { if (document.visibilityState === 'visible') load(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      if (es) es.close();
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [load]);
 
   const { categories, links, settings, ads, subCategories = [], notices = [] } = data;
