@@ -197,7 +197,7 @@ function IconField({ value, onChange }) {
   }
 
   return (
-    <div style={{ marginBottom: 14 }}>
+    <div style={{ marginBottom: 14, gridColumn: '1 / -1' }}>
       <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 5, color: '#374151' }}>
         图标（留空自动抓取，抓不到可手动上传）
       </label>
