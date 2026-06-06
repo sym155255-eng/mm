@@ -218,7 +218,7 @@ export default function Home() {
             <section className="fade-in" style={styles.section}>
               <div style={styles.sectionWrap}>
                 <div style={styles.sectionHeader}>
-                  <h2 style={styles.sectionTitle}><span>🔗</span> 其他</h2>
+                  <h2 style={styles.sectionTitle}>其他</h2>
                 </div>
                 <div className="link-grid" style={styles.grid}>
                   {uncategorized.map(link => <LinkCard key={link.id} link={link} onOpen={setPopup} />)}
@@ -294,7 +294,7 @@ function CategorySection({ cat, items, subCategories, onOpen }) {
     <section className="fade-in" style={styles.section}>
       <div style={styles.sectionWrap}>
         <div style={styles.sectionHeader}>
-          <h2 style={styles.sectionTitle}><span>{cat.icon}</span> {cat.name}</h2>
+          <h2 style={styles.sectionTitle}>{cat.name}</h2>
         </div>
 
         {/* 子分类标签页 */}
@@ -714,7 +714,7 @@ const styles = {
   main: { flex: 1, minWidth: 0 },
   section: { marginBottom: 14 },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 13,
     fontWeight: 700,
     color: 'var(--section-title)',
     marginBottom: 0,
