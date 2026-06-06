@@ -39,6 +39,7 @@ export default function Settings() {
           <Field label="网站图标 (emoji)" value={form.site_logo || ''} onChange={v => set('site_logo', v)} placeholder="🧭" />
           <Field label="页脚文字" value={form.footer_text || ''} onChange={v => set('footer_text', v)} />
           <Field label="搜索框占位符" value={form.search_placeholder || ''} onChange={v => set('search_placeholder', v)} />
+          <Field label="广告栏标题" value={form.ads_section_title || ''} onChange={v => set('ads_section_title', v)} placeholder="精品推荐 / 赞助合作商" />
         </Card>
 
         <Card title="外观">
