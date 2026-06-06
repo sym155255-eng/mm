@@ -8,6 +8,8 @@ cd "$ROOT"
 
 echo "========== 更新导航站 =========="
 echo "📥 拉取最新代码..."
+# 丢弃服务器上被 npm/构建 自动修改的文件，避免 git pull 冲突
+git checkout -- . 2>/dev/null || true
 git pull
 
 echo "📦 构建前端..."
