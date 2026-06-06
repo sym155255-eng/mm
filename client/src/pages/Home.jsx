@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchPublicData, updateLink } from '../api';
+import { fetchPublicData, updateLink, getSubLinks, createSubLink, updateSubLink, deleteSubLink } from '../api';
 
 function applyTheme(settings) {
   const root = document.documentElement;
@@ -36,11 +36,18 @@ export default function Home() {
   const isAdmin = !!localStorage.getItem('nav_token'); // 是否已登录
   const [editMode, setEditMode] = useState(false);     // 前端编辑模式
   const [editLink, setEditLink] = useState(null);      // 正在编辑的链接
+  const [editSubs, setEditSubs] = useState([]);        // 该链接的子链接
+
+  async function openEditLink(link) {
+    setEditLink({ ...link });
+    setEditSubs(await getSubLinks(link.id));
+  }
 
   async function saveEditLink() {
     if (!editLink) return;
     await updateLink(editLink.id, editLink);
     setEditLink(null);
+    setEditSubs([]);
     load();
   }
 
@@ -234,7 +241,7 @@ export default function Home() {
               subCategories={subCategories.filter(sc => sc.category_id === cat.id)}
               onOpen={setPopup}
               editMode={editMode}
-              onEdit={setEditLink}
+              onEdit={openEditLink}
             />
           ))}
 
@@ -245,7 +252,7 @@ export default function Home() {
                   <h2 style={styles.sectionTitle}>其他</h2>
                 </div>
                 <div className="link-grid" style={styles.grid}>
-                  {uncategorized.map(link => <LinkCard key={link.id} link={link} onOpen={setPopup} editMode={editMode} onEdit={setEditLink} />)}
+                  {uncategorized.map(link => <LinkCard key={link.id} link={link} onOpen={setPopup} editMode={editMode} onEdit={openEditLink} />)}
                 </div>
               </div>
             </section>
@@ -281,8 +288,12 @@ export default function Home() {
               <EditField label="网址" value={editLink.url} onChange={v => setEditLink(l => ({ ...l, url: v }))} />
               <EditField label="描述" value={editLink.description || ''} onChange={v => setEditLink(l => ({ ...l, description: v }))} />
               <EditField label="角标(留空不显示)" value={editLink.badge || ''} onChange={v => setEditLink(l => ({ ...l, badge: v }))} />
+
+              {/* 子链接管理 */}
+              <SubLinksMini linkId={editLink.id} subs={editSubs} setSubs={setEditSubs} />
+
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
-                <button onClick={() => setEditLink(null)} style={styles.editCancelBtn}>取消</button>
+                <button onClick={() => { setEditLink(null); setEditSubs([]); }} style={styles.editCancelBtn}>取消</button>
                 <button onClick={saveEditLink} style={styles.editSaveBtn}>保存</button>
               </div>
             </div>
@@ -426,6 +437,43 @@ function EditField({ label, value, onChange }) {
       <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>{label}</label>
       <input value={value} onChange={e => onChange(e.target.value)}
         style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }} />
+    </div>
+  );
+}
+
+function SubLinksMini({ linkId, subs, setSubs }) {
+  const [t, setT] = useState('');
+  const [u, setU] = useState('');
+
+  async function add() {
+    if (!t.trim() || !u.trim()) return;
+    const res = await createSubLink(linkId, { title: t.trim(), url: u.trim(), icon: '', sort_order: subs.length });
+    setSubs(prev => [...prev, { id: res.id || Date.now(), title: t.trim(), url: u.trim(), icon: '' }]);
+    setT(''); setU('');
+  }
+  async function del(id) {
+    await deleteSubLink(id);
+    setSubs(prev => prev.filter(s => s.id !== id));
+  }
+
+  return (
+    <div style={{ marginTop: 6, marginBottom: 4, borderTop: '1px solid #f3f4f6', paddingTop: 12 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 8 }}>子链接 ({subs.length})</div>
+      {subs.map(s => (
+        <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, fontSize: 13 }}>
+          <span style={{ color: '#9ca3af' }}>•</span>
+          <span style={{ fontWeight: 600 }}>{s.title}</span>
+          <span style={{ flex: 1, color: '#9ca3af', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.url}</span>
+          <button onClick={() => del(s.id)} style={{ background: '#fef2f2', color: '#dc2626', border: 'none', borderRadius: 5, padding: '3px 8px', fontSize: 11, cursor: 'pointer' }}>删</button>
+        </div>
+      ))}
+      <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+        <input value={t} onChange={e => setT(e.target.value)} placeholder="标题"
+          style={{ flex: '0 0 80px', padding: '6px 8px', border: '1.5px solid #e5e7eb', borderRadius: 6, fontSize: 12, boxSizing: 'border-box' }} />
+        <input value={u} onChange={e => setU(e.target.value)} placeholder="URL"
+          style={{ flex: 1, padding: '6px 8px', border: '1.5px solid #e5e7eb', borderRadius: 6, fontSize: 12, minWidth: 0, boxSizing: 'border-box' }} />
+        <button onClick={add} style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>+加</button>
+      </div>
     </div>
   );
 }
