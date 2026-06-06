@@ -80,7 +80,7 @@ export default function AdminLayout() {
       {/* Main */}
       <div className="admin-main" style={s.main}>
         {/* Topbar */}
-        <header style={s.topbar}>
+        <header className="admin-topbar" style={s.topbar}>
           <button className="admin-menu-btn" style={s.menuBtn} onClick={() => setSideOpen(v => !v)}>☰</button>
           <span style={s.pageTitle}>后台管理系统</span>
           <span style={s.userChip}>{user?.username}</span>

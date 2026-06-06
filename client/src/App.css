@@ -104,6 +104,14 @@
   .admin-main { margin-left: 0 !important; width: 100% !important; }
   /* 显示汉堡按钮 */
   .admin-menu-btn { display: flex !important; }
+  /* 后台顶栏固定（overflow-x:hidden 破坏 sticky，改 fixed） */
+  .admin-topbar {
+    position: fixed !important;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+  }
+  /* 后台内容下移，避免被固定顶栏遮住 */
+  .admin-main > div:last-child { padding-top: 72px !important; }
 
   /* 链接管理：手机端隐藏 URL 和 可见列，腾出空间给标题 */
   .col-url, .col-visible { display: none !important; }
