@@ -1,0 +1,170 @@
+========================================================
+          导航网站 - 服务器部署详细说明
+========================================================
+
+一、项目简介
+--------------------------------------------------------
+这是一个导航网站，单端口运行（Node 后端同时提供：前端页面 + API + 数据库）。
+技术栈：Node.js + Express + sql.js(数据库) + React(前端)
+默认管理账号：admin / admin123（部署后请立即修改！）
+
+数据全部存在 data/nav.db 一个文件里，备份它即可备份全站数据。
+
+
+二、压缩包里有什么
+--------------------------------------------------------
+nav-site.zip 解压后：
+  client/        前端源码(React)
+  server/        后端源码(Node)
+  Dockerfile     Docker 构建文件
+  docker-compose.yml   Docker 编排文件
+  deploy.sh      Linux 一键部署脚本(PM2)
+  update.sh      一键更新脚本
+  服务器部署说明.txt   本文件
+
+注意：压缩包不含 node_modules（依赖）和 data（数据库），
+      部署时会自动安装依赖、自动生成数据库。
+
+
+三、部署前提
+--------------------------------------------------------
+1. 一台 Linux 服务器（Ubuntu/Debian/CentOS 都行）
+2. 能 SSH 登录服务器
+3. 服务器能访问外网（安装依赖用）
+4. 准备一个域名并解析到服务器 IP（可选，也可用 IP 访问）
+
+
+========================================================
+  方案一：Docker 部署（最推荐，最省心）
+========================================================
+前提：服务器装了 Docker 和 docker compose
+（没装的话：curl -fsSL https://get.docker.com | sh）
+
+步骤：
+  1. 把 nav-site.zip 上传到服务器（用宝塔/1Panel文件管理，或 scp 命令）
+  2. 解压：
+       unzip nav-site.zip -d nav-site
+       cd nav-site
+  3. 一键构建并启动：
+       docker compose up -d --build
+  4. 完成！访问 http://服务器IP:3001
+
+常用命令：
+  docker compose logs -f        看日志
+  docker compose restart        重启
+  docker compose down           停止
+  docker compose up -d --build  更新代码后重新部署
+
+数据持久化：数据库存在宿主机 ./data/nav.db，删容器不丢数据。
+改端口：编辑 docker-compose.yml，把 "3001:3001" 改成 "80:3001" 即可用80端口。
+改密钥：编辑 docker-compose.yml 里的 JWT_SECRET 改成你自己的随机字符串。
+
+
+========================================================
+  方案二：直接部署（Node + PM2）
+========================================================
+前提：服务器装了 Node.js 18 或更高版本
+（没装：curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash - && sudo apt install -y nodejs）
+
+步骤：
+  1. 上传并解压 nav-site.zip
+       unzip nav-site.zip -d nav-site
+       cd nav-site
+  2. 给脚本执行权限并运行：
+       chmod +x deploy.sh
+       ./deploy.sh
+  3. 脚本会自动：装PM2 → 装依赖 → 构建前端 → 启动服务
+  4. 访问 http://服务器IP:3001
+
+设置开机自启（首次部署后执行一次）：
+       pm2 startup     （复制它输出的那行命令再执行一次）
+       pm2 save
+
+自定义端口：
+       PORT=8080 ./deploy.sh
+
+常用命令：
+  pm2 logs nav-site       看日志
+  pm2 restart nav-site    重启
+  pm2 stop nav-site       停止
+  pm2 list                查看所有进程
+
+
+========================================================
+  绑定域名 + HTTPS（用宝塔/1Panel面板最简单）
+========================================================
+如果用 1Panel 或宝塔面板：
+
+1. 创建一个"反向代理"网站，域名填你的域名
+2. 反向代理目标填：http://127.0.0.1:3001
+3. 在面板「证书」里申请 Let's Encrypt 免费证书（验证方式选 HTTP）
+4. 网站的 HTTPS 设置里：启用 HTTPS + 选刚申请的证书 + 强制跳转
+
+如果手动用 Nginx，配置参考：
+
+server {
+    listen 80;
+    server_name 你的域名.com;
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        # 实时更新(SSE)需要：
+        proxy_http_version 1.1;
+        proxy_set_header Connection '';
+        proxy_buffering off;
+    }
+}
+
+然后用 certbot --nginx 一键上 HTTPS。
+
+
+========================================================
+  部署后必做（安全）
+========================================================
+1. 登录后台 http://你的域名/admin （账号 admin / admin123）
+2. 立即在「网站设置」修改密码（改成强密码：字母+数字+符号，12位以上）
+3. 务必配置 HTTPS（防止密码明文传输被监听）
+4. 防火墙/安全组放行你用的端口（3001 或 80/443）
+
+
+========================================================
+  日常更新（改了代码后）
+========================================================
+方法A（Docker）：
+   重新上传代码 → docker compose up -d --build
+
+方法B（PM2）：
+   重新上传代码 → ./update.sh
+   （update.sh 自动：构建前端 + 重启服务）
+
+
+========================================================
+  数据备份（重要！）
+========================================================
+全站数据就一个文件，定期备份它：
+   cp data/nav.db ~/nav-backup-$(date +%Y%m%d).db
+
+图标文件在 data/icons/ 目录，需要的话一起备份 data/ 整个目录。
+
+恢复：把备份的 nav.db 放回 data/ 目录，重启服务即可。
+
+
+========================================================
+  常见问题
+========================================================
+Q: 访问不了？
+A: 检查防火墙/安全组是否放行端口；pm2 logs 或 docker compose logs 看报错。
+
+Q: 后台改了前端不更新？
+A: 前端有20秒轮询兜底，等一会或刷新即可；用面板反代记得开 proxy_buffering off。
+
+Q: 图标抓不到？
+A: 编辑链接时点"📁上传"手动传一张图标即可。
+
+Q: 忘记密码？
+A: 删除 data/nav.db 会重置为默认 admin/admin123（但会丢所有数据，慎用）。
+   或在服务器上用 sqlite 工具改 users 表。
+
+========================================================
