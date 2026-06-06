@@ -1,5 +1,23 @@
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET || 'nav_secret_2025';
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+
+// 密钥优先级：环境变量 > data/.jwt_secret 文件（首次自动生成随机值）
+function loadSecret() {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  const file = path.join(__dirname, '../../../data/.jwt_secret');
+  try {
+    if (fs.existsSync(file)) return fs.readFileSync(file, 'utf8').trim();
+    const secret = crypto.randomBytes(48).toString('hex'); // 随机 96 位十六进制
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, secret);
+    return secret;
+  } catch {
+    return crypto.randomBytes(48).toString('hex'); // 兜底：内存随机（重启会失效）
+  }
+}
+const JWT_SECRET = loadSecret();
 
 function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
