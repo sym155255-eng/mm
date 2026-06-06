@@ -963,10 +963,10 @@ const styles = {
   card: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
+    gap: 9,
     background: 'var(--card-bg)',
     borderRadius: 10,
-    padding: '10px 14px',
+    padding: '10px 10px',
     border: '1px solid var(--card-border)',
     transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
     cursor: 'pointer',
@@ -975,8 +975,8 @@ const styles = {
     textDecoration: 'none',
   },
   cardIcon: {
-    width: 36,
-    height: 36,
+    width: 34,
+    height: 34,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
