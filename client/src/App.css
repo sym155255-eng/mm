@@ -50,6 +50,17 @@
   /* 缩小广告容器内边距 */
   .home-body > main > div[style*="border-radius: 16"] { padding: 16px !important; margin-bottom: 12px !important; }
 
+  /* 顶部搜索栏固定（overflow-x:hidden 会破坏 sticky，改用 fixed） */
+  .site-header {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+  }
+  /* 内容下移，避免被固定头遮住 */
+  .home-body { padding-top: 70px !important; }
+
   /* header 内层：允许换行，搜索框占满第二行 */
   .header-inner {
     flex-wrap: wrap !important;

@@ -81,7 +81,7 @@ export default function Home() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {/* Header */}
-      <header style={styles.header}>
+      <header className="site-header" style={styles.header}>
         <div className="header-inner" style={styles.headerInner}>
           <div className="header-logo" style={styles.logo}>
             <span style={{ fontSize: 28 }}>{settings.site_logo || '🧭'}</span>
