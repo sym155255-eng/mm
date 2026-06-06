@@ -68,7 +68,7 @@ export default function Ads() {
         <div style={s.modalBg} onClick={() => setModal(false)}>
           <div style={s.modal} onClick={e => e.stopPropagation()}>
             <h3 style={s.modalTitle}>{editing ? '编辑' : '新增'}广告/公告</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+            <div className="modal-grid2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
               <Field label="标题 *" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder="广告标题或公告内容" />
               <Field label="描述文字" value={form.description} onChange={v => setForm(f => ({ ...f, description: v }))} placeholder="副标题或补充说明..." />
               <Field label="角标文字（如 HOT、NEW、广告）" value={form.badge} onChange={v => setForm(f => ({ ...f, badge: v }))} placeholder="留空则不显示" />

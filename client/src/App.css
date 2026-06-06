@@ -1,3 +1,8 @@
+/* 窄屏：弹窗两列布局变单列，避免字段挤压 */
+@media (max-width: 680px) {
+  .modal-grid2 { grid-template-columns: 1fr !important; }
+}
+
 /* ===== 移动端适配 ===== */
 @media (max-width: 768px) {
   /* 桌面侧边栏 → 手机端变成左侧滑出抽屉 */

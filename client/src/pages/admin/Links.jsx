@@ -132,7 +132,7 @@ export default function Links() {
         <div style={s.modalBg} onClick={() => setModal(false)}>
           <div style={s.modal} onClick={e => e.stopPropagation()}>
             <h3 style={s.modalTitle}>{editing ? '编辑链接' : '新增链接'}</h3>
-            <div style={s.grid2}>
+            <div className="modal-grid2" style={s.grid2}>
               <Field label="标题 *" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder="网站名称" />
               <Field label="URL *" value={form.url} onChange={v => setForm(f => ({ ...f, url: v }))} placeholder="https://..." />
               <div style={{ marginBottom: 14 }}>
