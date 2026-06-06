@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { getDB } = require('../db');
 const { authMiddleware } = require('../middleware/auth');
 const { broadcast } = require('../sse');
+const { fetchFavicon } = require('../favicon');
 
 router.use(authMiddleware);
 
@@ -57,13 +58,26 @@ router.get('/links', (req, res) => {
 router.post('/links', (req, res) => {
   const { category_id, sub_category_id = null, title, url, icon = '', description = '', title_color = '', desc_color = '', badge = '', badge_color = '', sort_order = 0, visible = 1 } = req.body;
   const r = db().prepare('INSERT INTO links (category_id,sub_category_id,title,url,icon,description,title_color,desc_color,badge,badge_color,sort_order,visible) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').run(category_id || null, sub_category_id || null, title, url, icon, description, title_color, desc_color, badge, badge_color, sort_order, visible);
+  const newId = r.lastInsertRowid;
+  // 无自定义图标 → 后台抓取并存本地，完成后更新该链接
+  if (!icon && url) {
+    fetchFavicon(url).then(localPath => {
+      if (localPath) { db().prepare('UPDATE links SET icon=? WHERE id=?').run(localPath, newId); broadcast('update'); }
+    }).catch(() => {});
+  }
   broadcast('update');
-  res.json({ id: r.lastInsertRowid });
+  res.json({ id: newId });
 });
 
 router.put('/links/:id', (req, res) => {
   const { category_id, sub_category_id = null, title, url, icon, description, title_color = '', desc_color = '', badge = '', badge_color = '', sort_order, visible } = req.body;
   db().prepare('UPDATE links SET category_id=?,sub_category_id=?,title=?,url=?,icon=?,description=?,title_color=?,desc_color=?,badge=?,badge_color=?,sort_order=?,visible=? WHERE id=?').run(category_id || null, sub_category_id || null, title, url, icon, description, title_color, desc_color, badge, badge_color, sort_order, visible, req.params.id);
+  // 图标留空且填了网址 → 抓取本地图标
+  if (!icon && url) {
+    fetchFavicon(url).then(localPath => {
+      if (localPath) { db().prepare('UPDATE links SET icon=? WHERE id=?').run(localPath, req.params.id); broadcast('update'); }
+    }).catch(() => {});
+  }
   broadcast('update');
   res.json({ ok: true });
 });
@@ -72,6 +86,21 @@ router.delete('/links/:id', (req, res) => {
   db().prepare('DELETE FROM links WHERE id=?').run(req.params.id);
   broadcast('update');
   res.json({ ok: true });
+});
+
+// 批量重新抓取所有链接图标（含子链接），存到本地
+router.post('/refetch-icons', async (req, res) => {
+  const links = db().prepare('SELECT id, url FROM links').all();
+  let ok = 0;
+  for (const l of links) {
+    if (!l.url) continue;
+    try {
+      const p = await fetchFavicon(l.url);
+      if (p) { db().prepare('UPDATE links SET icon=? WHERE id=?').run(p, l.id); ok++; }
+    } catch {}
+  }
+  broadcast('update');
+  res.json({ ok: true, count: ok, total: links.length });
 });
 
 // ── Sub Categories ────────────────────────────────────────

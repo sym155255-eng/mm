@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getLinks, createLink, updateLink, deleteLink, getCategories, getSubLinks, createSubLink, updateSubLink, deleteSubLink, getSubCategories } from '../../api';
+import { getLinks, createLink, updateLink, deleteLink, getCategories, getSubLinks, createSubLink, updateSubLink, deleteSubLink, getSubCategories, refetchIcons } from '../../api';
 
 const empty = { category_id: '', sub_category_id: '', title: '', url: '', icon: '', description: '', title_color: '', desc_color: '', badge: '', badge_color: '', sort_order: 0, visible: 1 };
 
@@ -13,6 +13,20 @@ export default function Links() {
   const [filterCat, setFilterCat] = useState('');
   const [subLinks, setSubLinks] = useState([]);
   const [subCats, setSubCats] = useState([]);
+  const [refetching, setRefetching] = useState(false);
+
+  async function handleRefetch() {
+    if (!confirm('将重新抓取所有链接的图标并存到服务器本地，可能需要一点时间。继续？')) return;
+    setRefetching(true);
+    try {
+      const r = await refetchIcons();
+      alert(`完成！成功抓取 ${r.count}/${r.total} 个图标`);
+      load();
+    } catch (e) {
+      alert('抓取失败：' + e.message);
+    }
+    setRefetching(false);
+  }
 
   async function load() {
     const [links, categories, subCategories] = await Promise.all([getLinks(), getCategories(), getSubCategories()]);
@@ -70,7 +84,12 @@ export default function Links() {
     <div>
       <div style={s.hdr}>
         <h2 style={s.title}>链接管理</h2>
-        <button style={s.addBtn} onClick={openAdd}>+ 新增链接</button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button style={s.refetchBtn} disabled={refetching} onClick={handleRefetch}>
+            {refetching ? '抓取中…' : '🔄 重抓图标'}
+          </button>
+          <button style={s.addBtn} onClick={openAdd}>+ 新增链接</button>
+        </div>
       </div>
 
       <div style={s.filterBar}>
@@ -174,6 +193,7 @@ const s = {
   hdr: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   title: { fontSize: 20, fontWeight: 700 },
   addBtn: { background: 'var(--primary)', color: '#fff', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600 },
+  refetchBtn: { background: '#fff', color: '#374151', border: '1.5px solid #e5e7eb', padding: '8px 16px', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
   filterBar: { display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' },
   searchInput: { padding: '8px 14px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14, minWidth: 180, flex: 1 },
   select: { padding: '8px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14 },

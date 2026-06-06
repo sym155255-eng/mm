@@ -148,3 +148,9 @@ export async function deleteNotice(id) {
   const r = await fetch(`${BASE}/admin/notices/${id}`, { method: 'DELETE', headers: authHeaders() });
   return r.json();
 }
+
+// 批量重抓图标
+export async function refetchIcons() {
+  const r = await fetch(`${BASE}/admin/refetch-icons`, { method: 'POST', headers: authHeaders() });
+  return r.json();
+}

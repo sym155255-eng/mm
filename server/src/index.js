@@ -11,6 +11,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 本地图标目录
+app.use('/icons', express.static(path.join(__dirname, '../../data/icons')));
 app.use(express.static(path.join(__dirname, '../../client/dist')));
 
 app.use('/api/auth', require('./routes/auth'));
