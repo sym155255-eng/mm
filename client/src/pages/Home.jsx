@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchPublicData } from '../api';
+import { fetchPublicData, updateLink } from '../api';
 
 function applyTheme(settings) {
   const root = document.documentElement;
@@ -33,6 +33,16 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [menuOpen, setMenuOpen] = useState(false);
   const [popup, setPopup] = useState(null); // link object
+  const isAdmin = !!localStorage.getItem('nav_token'); // 是否已登录
+  const [editMode, setEditMode] = useState(false);     // 前端编辑模式
+  const [editLink, setEditLink] = useState(null);      // 正在编辑的链接
+
+  async function saveEditLink() {
+    if (!editLink) return;
+    await updateLink(editLink.id, editLink);
+    setEditLink(null);
+    load();
+  }
 
   const load = useCallback(async () => {
     const d = await fetchPublicData();
@@ -223,6 +233,8 @@ export default function Home() {
               items={items}
               subCategories={subCategories.filter(sc => sc.category_id === cat.id)}
               onOpen={setPopup}
+              editMode={editMode}
+              onEdit={setEditLink}
             />
           ))}
 
@@ -233,7 +245,7 @@ export default function Home() {
                   <h2 style={styles.sectionTitle}>其他</h2>
                 </div>
                 <div className="link-grid" style={styles.grid}>
-                  {uncategorized.map(link => <LinkCard key={link.id} link={link} onOpen={setPopup} />)}
+                  {uncategorized.map(link => <LinkCard key={link.id} link={link} onOpen={setPopup} editMode={editMode} onEdit={setEditLink} />)}
                 </div>
               </div>
             </section>
@@ -245,6 +257,38 @@ export default function Home() {
       <footer style={styles.footer}>
         <span>{settings.footer_text || '© 2025 我的导航'}</span>
       </footer>
+
+      {/* 登录后：浮动编辑模式开关 */}
+      {isAdmin && (
+        <button
+          onClick={() => setEditMode(v => !v)}
+          style={{ ...styles.editFab, background: editMode ? '#16a34a' : 'var(--primary)' }}
+        >
+          {editMode ? '✓ 完成编辑' : '✏️ 编辑模式'}
+        </button>
+      )}
+
+      {/* 就地编辑链接弹窗 */}
+      {editLink && (
+        <div style={styles.popupBg} onClick={() => setEditLink(null)}>
+          <div style={{ ...styles.popup, maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+            <div style={styles.popupHeader}>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>编辑链接</div>
+              <button onClick={() => setEditLink(null)} style={styles.popupClose}>✕</button>
+            </div>
+            <div style={{ padding: '16px 18px' }}>
+              <EditField label="标题" value={editLink.title} onChange={v => setEditLink(l => ({ ...l, title: v }))} />
+              <EditField label="网址" value={editLink.url} onChange={v => setEditLink(l => ({ ...l, url: v }))} />
+              <EditField label="描述" value={editLink.description || ''} onChange={v => setEditLink(l => ({ ...l, description: v }))} />
+              <EditField label="角标(留空不显示)" value={editLink.badge || ''} onChange={v => setEditLink(l => ({ ...l, badge: v }))} />
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
+                <button onClick={() => setEditLink(null)} style={styles.editCancelBtn}>取消</button>
+                <button onClick={saveEditLink} style={styles.editSaveBtn}>保存</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 子链接弹窗 —— 挂在顶层，不受卡片布局影响 */}
       {popup && (
@@ -293,7 +337,7 @@ export default function Home() {
   );
 }
 
-function CategorySection({ cat, items, subCategories, onOpen }) {
+function CategorySection({ cat, items, subCategories, onOpen, editMode, onEdit }) {
   const [activeTab, setActiveTab] = useState('all');
   const hasTabs = subCategories.length > 0;
 
@@ -327,7 +371,7 @@ function CategorySection({ cat, items, subCategories, onOpen }) {
         )}
 
         <div className="link-grid" style={styles.grid}>
-          {shownItems.map(link => <LinkCard key={link.id} link={link} onOpen={onOpen} />)}
+          {shownItems.map(link => <LinkCard key={link.id} link={link} onOpen={onOpen} editMode={editMode} onEdit={onEdit} />)}
         </div>
         {shownItems.length === 0 && (
           <div style={{ padding: '24px 0', textAlign: 'center', color: '#9ca3af', fontSize: 14 }}>该标签暂无链接</div>
@@ -337,28 +381,22 @@ function CategorySection({ cat, items, subCategories, onOpen }) {
   );
 }
 
-function LinkCard({ link, onOpen }) {
+function LinkCard({ link, onOpen, editMode, onEdit }) {
   const titleStyle = { ...styles.cardTitle, ...(link.title_color ? { color: link.title_color } : {}) };
   const descStyle  = { ...styles.cardDesc,  ...(link.desc_color  ? { color: link.desc_color  } : {}) };
   const hasSubs = link.sub_links && link.sub_links.length > 0;
 
-  if (hasSubs) {
-    return (
-      <div onClick={() => onOpen(link)} style={{ ...styles.card, position: 'relative', cursor: 'pointer' }}>
-        {link.badge && <span style={{ ...styles.badge, background: link.badge_color || 'var(--badge)' }}>{link.badge}</span>}
-        <div style={styles.cardIcon}>
-          <FaviconImg url={link.url} title={link.title} icon={link.icon} />
-        </div>
-        <div style={styles.cardContent}>
-          <div style={titleStyle}>{link.title}</div>
-          {link.description && <div style={descStyle}>{link.description}</div>}
-        </div>
-      </div>
-    );
-  }
+  const editBtn = editMode && (
+    <button
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit({ ...link }); }}
+      style={styles.cardEditBtn}
+      title="编辑此链接"
+    >✏️</button>
+  );
 
-  return (
-    <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ ...styles.card, position: 'relative' }}>
+  const inner = (
+    <>
+      {editBtn}
       {link.badge && <span style={{ ...styles.badge, background: link.badge_color || 'var(--badge)' }}>{link.badge}</span>}
       <div style={styles.cardIcon}>
         <FaviconImg url={link.url} title={link.title} icon={link.icon} />
@@ -367,7 +405,28 @@ function LinkCard({ link, onOpen }) {
         <div style={titleStyle}>{link.title}</div>
         {link.description && <div style={descStyle}>{link.description}</div>}
       </div>
-    </a>
+    </>
+  );
+
+  // 编辑模式下点击不跳转
+  if (editMode) {
+    return <div style={{ ...styles.card, position: 'relative' }}>{inner}</div>;
+  }
+  if (hasSubs) {
+    return <div onClick={() => onOpen(link)} style={{ ...styles.card, position: 'relative', cursor: 'pointer' }}>{inner}</div>;
+  }
+  return (
+    <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ ...styles.card, position: 'relative' }}>{inner}</a>
+  );
+}
+
+function EditField({ label, value, onChange }) {
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>{label}</label>
+      <input value={value} onChange={e => onChange(e.target.value)}
+        style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }} />
+    </div>
   );
 }
 
@@ -616,6 +675,38 @@ const styles = {
     borderRadius: 6,
     flexShrink: 0,
   },
+  cardEditBtn: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    border: 'none',
+    background: 'rgba(79,110,247,0.12)',
+    cursor: 'pointer',
+    fontSize: 13,
+    zIndex: 3,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editFab: {
+    position: 'fixed',
+    bottom: 24,
+    right: 24,
+    color: '#fff',
+    border: 'none',
+    borderRadius: 30,
+    padding: '12px 22px',
+    fontSize: 15,
+    fontWeight: 700,
+    cursor: 'pointer',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+    zIndex: 400,
+  },
+  editCancelBtn: { padding: '8px 18px', border: '1.5px solid #e5e7eb', borderRadius: 8, background: '#fff', fontSize: 14, cursor: 'pointer' },
+  editSaveBtn: { padding: '8px 20px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
   badge: {
     position: 'absolute',
     top: 6,
