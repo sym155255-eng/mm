@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../store/auth';
+
+const IDLE_MS = 10 * 60 * 1000; // 10 分钟无操作自动退出
 
 const navItems = [
   { to: '/admin/links', icon: '🔗', label: '链接管理' },
@@ -21,6 +23,26 @@ export default function AdminLayout() {
     signOut();
     nav('/login');
   }
+
+  // 10 分钟无操作自动退出
+  const timerRef = useRef(null);
+  useEffect(() => {
+    function reset() {
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        signOut();
+        nav('/login');
+        alert('已超过 10 分钟无操作，请重新登录');
+      }, IDLE_MS);
+    }
+    const events = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach(e => window.addEventListener(e, reset, { passive: true }));
+    reset(); // 进入后立即开始计时
+    return () => {
+      clearTimeout(timerRef.current);
+      events.forEach(e => window.removeEventListener(e, reset));
+    };
+  }, [signOut, nav]);
 
   return (
     <div style={s.wrap}>
