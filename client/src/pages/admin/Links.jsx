@@ -16,14 +16,14 @@ export default function Links() {
   const [refetching, setRefetching] = useState(false);
 
   async function handleRefetch() {
-    if (!confirm('将重新抓取所有链接的图标并存到服务器本地，可能需要一点时间。继续？')) return;
+    if (!confirm('将在后台重新抓取所有链接的高清图标存到本地，过程中图标会陆续更新。继续？')) return;
     setRefetching(true);
     try {
       const r = await refetchIcons();
-      alert(`完成！成功抓取 ${r.count}/${r.total} 个图标`);
-      load();
+      if (r.running) alert('已有抓取任务在进行中，请稍候');
+      else alert(`已开始后台抓取 ${r.total} 个图标，稍等片刻图标会陆续更新（无需等待）`);
     } catch (e) {
-      alert('抓取失败：' + e.message);
+      alert('启动失败：' + e.message);
     }
     setRefetching(false);
   }

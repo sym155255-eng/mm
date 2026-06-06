@@ -88,19 +88,25 @@ router.delete('/links/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-// 批量重新抓取所有链接图标（含子链接），存到本地
-router.post('/refetch-icons', async (req, res) => {
-  const links = db().prepare('SELECT id, url FROM links').all();
-  let ok = 0;
-  for (const l of links) {
-    if (!l.url) continue;
-    try {
-      const p = await fetchFavicon(l.url);
-      if (p) { db().prepare('UPDATE links SET icon=? WHERE id=?').run(p, l.id); ok++; }
-    } catch {}
-  }
-  broadcast('update');
-  res.json({ ok: true, count: ok, total: links.length });
+// 批量重新抓取所有链接图标 —— 后台异步处理，接口立即返回
+let refetchRunning = false;
+router.post('/refetch-icons', (req, res) => {
+  if (refetchRunning) return res.json({ ok: true, running: true, message: '已有抓取任务在进行中' });
+  const links = db().prepare('SELECT id, url FROM links').all().filter(l => l.url);
+  res.json({ ok: true, started: true, total: links.length });
+
+  // 后台跑，抓到一个更新一个，前端轮询/SSE 会自动刷新
+  refetchRunning = true;
+  (async () => {
+    for (const l of links) {
+      try {
+        const p = await fetchFavicon(l.url);
+        if (p) { db().prepare('UPDATE links SET icon=? WHERE id=?').run(p, l.id); broadcast('update'); }
+      } catch {}
+    }
+    refetchRunning = false;
+    broadcast('update');
+  })();
 });
 
 // ── Sub Categories ────────────────────────────────────────
