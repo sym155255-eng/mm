@@ -410,12 +410,14 @@ function LinkCard({ link, onOpen, editMode, onEdit }) {
   const inner = (
     <>
       {editBtn}
-      {link.badge && <span style={{ ...styles.badge, background: link.badge_color || 'var(--badge)' }}>{link.badge}</span>}
       <div style={styles.cardIcon}>
         <FaviconImg url={link.url} title={link.title} icon={link.icon} />
       </div>
       <div style={styles.cardContent}>
-        <div style={titleStyle}>{link.title}</div>
+        <div style={styles.titleRow}>
+          <span style={{ ...titleStyle, ...styles.titleText }}>{link.title}</span>
+          {link.badge && <span style={{ ...styles.badgeInline, background: link.badge_color || 'var(--badge)' }}>{link.badge}</span>}
+        </div>
         {link.description && <div style={descStyle}>{link.description}</div>}
       </div>
     </>
@@ -983,6 +985,18 @@ const styles = {
     flexShrink: 0,
   },
   cardContent: { flex: 1, minWidth: 0 },
+  titleRow: { display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 },
+  titleText: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0, flexShrink: 1 },
+  badgeInline: {
+    flexShrink: 0,
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: 700,
+    padding: '1px 5px',
+    borderRadius: 4,
+    lineHeight: 1.5,
+    whiteSpace: 'nowrap',
+  },
   cardTitle: {
     fontSize: 14,
     fontWeight: 600,
