@@ -365,11 +365,29 @@ function getDomain(url) {
 }
 
 function FaviconImg({ url, title, icon }) {
-  const [err, setErr] = useState(false);
-  // 国内可访问的 favicon 源（iowen），留空时自动获取
-  const src = icon || `https://api.iowen.cn/favicon/${getDomain(url)}.png`;
-  if (err) return <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--primary)' }}>{title[0]}</span>;
-  return <img src={src} alt={title} width={24} height={24} onError={() => setErr(true)} style={{ borderRadius: 6, objectFit: 'contain' }} />;
+  const domain = getDomain(url);
+  // 多源依次尝试：用户自定义 → google → iowen → 网站自带 favicon
+  const sources = [
+    icon,
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
+    `https://api.iowen.cn/favicon/${domain}.png`,
+    `https://${domain}/favicon.ico`,
+  ].filter(Boolean);
+  const [idx, setIdx] = useState(0);
+
+  if (idx >= sources.length) {
+    return <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--primary)' }}>{title[0]}</span>;
+  }
+  return (
+    <img
+      src={sources[idx]}
+      alt={title}
+      width={24}
+      height={24}
+      onError={() => setIdx(i => i + 1)}
+      style={{ borderRadius: 6, objectFit: 'contain' }}
+    />
+  );
 }
 
 const styles = {
