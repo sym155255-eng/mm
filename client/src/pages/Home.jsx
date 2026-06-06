@@ -373,7 +373,28 @@ function FaviconImg({ url, title, icon }) {
     `https://api.iowen.cn/favicon/${domain}.png`,
     `https://${domain}/favicon.ico`,
   ].filter(Boolean);
-  const [idx, setIdx] = useState(0);
+
+  const cacheKey = `fav:${domain}`;
+  // 初始化：若本地缓存过成功的源，直接从它开始（跳过会失败的源）
+  const [idx, setIdx] = useState(() => {
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached === '__fail__') return sources.length;        // 之前确认无图标 → 直接显示首字符
+      const found = cached ? sources.indexOf(cached) : -1;
+      return found >= 0 ? found : 0;
+    } catch { return 0; }
+  });
+
+  function handleLoad() {
+    try { localStorage.setItem(cacheKey, sources[idx]); } catch {}  // 记住成功的源
+  }
+  function handleError() {
+    setIdx(i => {
+      const next = i + 1;
+      if (next >= sources.length) { try { localStorage.setItem(cacheKey, '__fail__'); } catch {} }
+      return next;
+    });
+  }
 
   if (idx >= sources.length) {
     return <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--primary)' }}>{title[0]}</span>;
@@ -384,7 +405,8 @@ function FaviconImg({ url, title, icon }) {
       alt={title}
       width={24}
       height={24}
-      onError={() => setIdx(i => i + 1)}
+      onLoad={handleLoad}
+      onError={handleError}
       style={{ borderRadius: 6, objectFit: 'contain' }}
     />
   );
