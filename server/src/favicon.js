@@ -4,9 +4,30 @@ const path = require('path');
 const ICONS_DIR = path.join(__dirname, '../../data/icons');
 fs.mkdirSync(ICONS_DIR, { recursive: true });
 
+// 忽略自签名证书的 agent（IP/内网站点常用自签证书）
+let insecureAgent = null;
+try {
+  const { Agent } = require('undici');
+  insecureAgent = new Agent({ connect: { rejectUnauthorized: false } });
+} catch {}
+function fetchOpts(extra = {}) {
+  const o = { redirect: 'follow', headers: { 'User-Agent': 'Mozilla/5.0' }, ...extra };
+  if (insecureAgent) o.dispatcher = insecureAgent;
+  return o;
+}
+
 function getDomain(url) {
   try { return new URL(url).hostname; }
   catch { return (url || '').replace(/^https?:\/\//, '').split('/')[0]; }
+}
+// 完整 origin（含端口），用于直接从站点抓取
+function getOrigin(url) {
+  try { return new URL(url).origin; }
+  catch { return url.startsWith('http') ? url.split('/').slice(0, 3).join('/') : `https://${url}`; }
+}
+// 是否为 IP 地址（这类站点用不了第三方 favicon 服务）
+function isIP(host) {
+  return /^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.includes(':') === false && /^[0-9.]+$/.test(host);
 }
 function safeName(domain) {
   return domain.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -17,7 +38,7 @@ async function parseHtmlIcons(url) {
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 6000);
-    const res = await fetch(url, { signal: ctrl.signal, redirect: 'follow', headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const res = await fetch(url, fetchOpts({ signal: ctrl.signal }));
     clearTimeout(t);
     if (!res.ok) return [];
     const html = (await res.text()).slice(0, 60000); // 只看 <head> 区域
@@ -49,7 +70,7 @@ async function tryDownload(src, domain) {
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 8000);
-    const res = await fetch(src, { signal: ctrl.signal, redirect: 'follow', headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const res = await fetch(src, fetchOpts({ signal: ctrl.signal }));
     clearTimeout(t);
     if (!res.ok) return '';
     const ct = res.headers.get('content-type') || '';
@@ -71,20 +92,33 @@ async function fetchFavicon(url) {
   const domain = getDomain(url);
   if (!domain) return '';
   const fullUrl = url.startsWith('http') ? url : `https://${domain}`;
+  const origin = getOrigin(fullUrl);   // 含端口，如 https://1.2.3.4:52524
+  const ipLike = isIP(domain);
 
-  // 1) 解析网页 HTML 拿网站声明的高清图标（apple-touch-icon 等）
+  // 1) 解析网页 HTML 拿网站声明的图标（IP:端口 站点也能用，含端口）
   const htmlIcons = await parseHtmlIcons(fullUrl);
 
-  // 2) 聚合/高清源兜底
-  const fallbacks = [
-    `https://unavatar.io/${domain}?fallback=false`,          // 多源聚合，质量最好
-    `https://icons.duckduckgo.com/ip3/${domain}.ico`,        // DuckDuckGo，清晰
-    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`, // Google 高分辨率
-    `https://${domain}/apple-touch-icon.png`,                // 常见高清路径
-    `https://${domain}/favicon.ico`,
+  // 2) 直接从站点本身抓（IP/端口 站点唯一可行的方式）
+  const directSources = [
+    `${origin}/apple-touch-icon.png`,
+    `${origin}/apple-touch-icon-precomposed.png`,
+    `${origin}/favicon.ico`,
+    `${origin}/favicon.png`,
   ];
 
-  for (const src of [...htmlIcons, ...fallbacks]) {
+  // 3) 第三方聚合服务（只对真实域名有效，IP 跳过）
+  const thirdParty = ipLike ? [] : [
+    `https://unavatar.io/${domain}?fallback=false`,
+    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+  ];
+
+  // IP 站点优先直连，域名站点优先 HTML+第三方
+  const order = ipLike
+    ? [...htmlIcons, ...directSources]
+    : [...htmlIcons, ...thirdParty, ...directSources];
+
+  for (const src of order) {
     const local = await tryDownload(src, domain);
     if (local) return local;
   }
