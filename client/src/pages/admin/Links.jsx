@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getLinks, createLink, updateLink, deleteLink, getCategories, getSubLinks, createSubLink, updateSubLink, deleteSubLink, getSubCategories, refetchIcons } from '../../api';
+import { getLinks, createLink, updateLink, deleteLink, getCategories, getSubLinks, createSubLink, updateSubLink, deleteSubLink, getSubCategories, refetchIcons, uploadIcon } from '../../api';
 
 const empty = { category_id: '', sub_category_id: '', title: '', url: '', icon: '', description: '', title_color: '', desc_color: '', badge: '', badge_color: '', sort_order: 0, visible: 1 };
 
@@ -153,7 +153,7 @@ export default function Links() {
                   ))}
                 </select>
               </div>
-              <Field label="图标 URL (留空自动获取)" value={form.icon} onChange={v => setForm(f => ({ ...f, icon: v }))} placeholder="https://..." />
+              <IconField value={form.icon} onChange={v => setForm(f => ({ ...f, icon: v }))} />
               <Field label="描述" value={form.description} onChange={v => setForm(f => ({ ...f, description: v }))} placeholder="简短描述..." />
               <Field label="角标文字（如 HOT、NEW、推荐）" value={form.badge} onChange={v => setForm(f => ({ ...f, badge: v }))} placeholder="留空则不显示" />
               <Field label="排序" value={form.sort_order} type="number" onChange={v => setForm(f => ({ ...f, sort_order: +v }))} />
@@ -175,6 +175,43 @@ export default function Links() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function IconField({ value, onChange }) {
+  const [uploading, setUploading] = useState(false);
+  const inputRef = React.useRef(null);
+
+  async function handleFile(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadIcon(file);
+      if (res.path) onChange(res.path);
+      else alert('上传失败：' + (res.error || '未知错误'));
+    } catch (err) { alert('上传失败：' + err.message); }
+    setUploading(false);
+    e.target.value = '';
+  }
+
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 5, color: '#374151' }}>
+        图标（留空自动抓取，抓不到可手动上传）
+      </label>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        {value && <img src={value} alt="" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', border: '1px solid #e5e7eb', flexShrink: 0 }} onError={e => e.target.style.display='none'} />}
+        <input value={value} onChange={e => onChange(e.target.value)} placeholder="图片URL 或 点右侧上传"
+          style={{ flex: 1, padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14, minWidth: 0 }} />
+        <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
+        <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}
+          style={{ background: '#eff2ff', color: 'var(--primary)', border: 'none', borderRadius: 8, padding: '9px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
+          {uploading ? '上传中…' : '📁 上传'}
+        </button>
+        {value && <button type="button" onClick={() => onChange('')} style={{ background: '#fef2f2', color: '#dc2626', border: 'none', borderRadius: 8, padding: '9px 12px', fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>清除</button>}
+      </div>
     </div>
   );
 }

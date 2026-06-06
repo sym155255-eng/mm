@@ -1,12 +1,32 @@
 const router = require('express').Router();
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const { getDB } = require('../db');
 const { authMiddleware } = require('../middleware/auth');
 const { broadcast } = require('../sse');
-const { fetchFavicon } = require('../favicon');
+const { fetchFavicon, ICONS_DIR } = require('../favicon');
 
 router.use(authMiddleware);
 
 function db() { return getDB(); }
+
+// ── 图标上传 ──────────────────────────────────────────────
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, ICONS_DIR),
+    filename: (req, file, cb) => {
+      const ext = (path.extname(file.originalname) || '.png').toLowerCase();
+      cb(null, `up_${Date.now()}${ext}`);
+    },
+  }),
+  limits: { fileSize: 2 * 1024 * 1024 }, // 最大 2MB
+  fileFilter: (req, file, cb) => cb(null, file.mimetype.startsWith('image/')),
+});
+router.post('/upload-icon', upload.single('icon'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: '请上传图片文件' });
+  res.json({ ok: true, path: `/icons/${req.file.filename}` });
+});
 
 // ── Settings ──────────────────────────────────────────────
 router.get('/settings', (req, res) => {

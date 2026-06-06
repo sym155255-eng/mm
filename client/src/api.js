@@ -154,3 +154,15 @@ export async function refetchIcons() {
   const r = await fetch(`${BASE}/admin/refetch-icons`, { method: 'POST', headers: authHeaders() });
   return r.json();
 }
+
+// 上传图标图片
+export async function uploadIcon(file) {
+  const fd = new FormData();
+  fd.append('icon', file);
+  const r = await fetch(`${BASE}/admin/upload-icon`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${getToken()}` }, // 不要手动设 Content-Type
+    body: fd,
+  });
+  return r.json();
+}
