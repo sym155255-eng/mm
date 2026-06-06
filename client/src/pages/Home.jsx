@@ -963,10 +963,10 @@ const styles = {
   card: {
     display: 'flex',
     alignItems: 'center',
-    gap: 9,
+    gap: 8,
     background: 'var(--card-bg)',
     borderRadius: 10,
-    padding: '10px 10px',
+    padding: '9px 8px',
     border: '1px solid var(--card-border)',
     transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
     cursor: 'pointer',
@@ -975,8 +975,8 @@ const styles = {
     textDecoration: 'none',
   },
   cardIcon: {
-    width: 34,
-    height: 34,
+    width: 32,
+    height: 32,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -998,7 +998,7 @@ const styles = {
     whiteSpace: 'nowrap',
   },
   cardTitle: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: 600,
     color: 'var(--card-title)',
     overflow: 'hidden',
