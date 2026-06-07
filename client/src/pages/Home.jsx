@@ -162,6 +162,17 @@ export default function Home() {
 
         {/* Main content */}
         <main style={styles.main}>
+          {/* 横幅图片（在跑马灯上方） */}
+          {banners.length > 0 && (
+            <div className="banner-wrap" style={styles.bannerWrap}>
+              {banners.map(b => (
+                b.url
+                  ? <a key={b.id} href={b.url} target="_blank" rel="noopener noreferrer"><img src={b.image_url} alt="" style={styles.bannerImg} /></a>
+                  : <img key={b.id} src={b.image_url} alt="" style={styles.bannerImg} />
+              ))}
+            </div>
+          )}
+
           {/* 跑马灯 */}
           {notices.length > 0 && (() => {
             const speed = parseFloat(settings.marquee_speed) || 30;
@@ -192,17 +203,6 @@ export default function Home() {
               </div>
             );
           })()}
-
-          {/* 横幅图片 */}
-          {banners.length > 0 && (
-            <div className="banner-wrap" style={styles.bannerWrap}>
-              {banners.map(b => (
-                b.url
-                  ? <a key={b.id} href={b.url} target="_blank" rel="noopener noreferrer"><img src={b.image_url} alt="" style={styles.bannerImg} /></a>
-                  : <img key={b.id} src={b.image_url} alt="" style={styles.bannerImg} />
-              ))}
-            </div>
-          )}
 
           {/* Ads */}
           {settings.show_ads === '1' && topAds.length > 0 && (
