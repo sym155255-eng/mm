@@ -50,11 +50,14 @@
   .home-body > main { width: 100% !important; min-width: 0 !important; }
 
   /* 缩小分类区块上下间距 */
-  .home-body section { margin-bottom: 12px !important; }
+  .home-body section { margin-bottom: 8px !important; }
   /* 缩小分类容器内边距 */
-  .home-body section > div { padding: 16px 16px 18px !important; }
+  .home-body section > div { padding: 14px 14px 16px !important; }
   /* 缩小广告容器内边距 */
-  .home-body > main > div[style*="border-radius: 16"] { padding: 16px !important; margin-bottom: 12px !important; }
+  .home-body > main > div[style*="border-radius: 16"] { padding: 14px !important; margin-bottom: 8px !important; }
+  /* 导航栏/横幅 上下间距收紧 */
+  .nav-bar, .banner-wrap { margin-bottom: 8px !important; }
+  .home-body { gap: 8px !important; }
 
   /* 横幅图片手机端通栏显示（抵消 .home-body 的左右 10px 内边距）*/
   .banner-wrap {
