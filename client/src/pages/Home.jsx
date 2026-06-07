@@ -623,7 +623,7 @@ const styles = {
   navBar: {
     display: 'flex',
     flexWrap: 'wrap',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     gap: 6,
     background: 'var(--nav-bg, #2d2d2d)',
