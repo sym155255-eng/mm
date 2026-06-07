@@ -25,8 +25,8 @@ function applyTheme(settings) {
   if (settings.color_icon_bg)      root.style.setProperty('--icon-bg',      settings.color_icon_bg);
   if (settings.color_badge)        root.style.setProperty('--badge',        settings.color_badge);
   if (settings.color_nav_bg)       root.style.setProperty('--nav-bg',       settings.color_nav_bg);
-  if (settings.color_nav_item_bg)  root.style.setProperty('--nav-item-bg',  settings.color_nav_item_bg);
   if (settings.color_nav_text)     root.style.setProperty('--nav-text',     settings.color_nav_text);
+  root.style.setProperty('--nav-item-bg', 'transparent'); // 导航项固定无底色
   if (settings.site_title) document.title = settings.site_title;
 }
 
@@ -636,7 +636,7 @@ const styles = {
     alignItems: 'center',
     gap: 5,
     padding: '6px 18px',
-    background: 'var(--nav-item-bg, transparent)',
+    background: 'transparent',
     color: 'var(--nav-text, #fff)',
     borderRadius: 8,
     fontSize: 15,

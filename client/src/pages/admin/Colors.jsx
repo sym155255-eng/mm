@@ -15,9 +15,8 @@ const GLOBAL_GROUPS = [
   {
     title: '🧭 导航栏',
     keys: [
-      { key: 'color_nav_bg',     label: '导航栏背景',  default: '#ffffff' },
-      { key: 'color_nav_item_bg',label: '导航项背景',  default: '#f3f4f6' },
-      { key: 'color_nav_text',   label: '导航文字',    default: '#374151' },
+      { key: 'color_nav_bg',     label: '导航栏背景',  default: '#2d2d2d' },
+      { key: 'color_nav_text',   label: '导航文字',    default: '#ffffff' },
     ],
   },
   {
