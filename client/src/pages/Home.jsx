@@ -24,6 +24,9 @@ function applyTheme(settings) {
   if (settings.color_card_hover)   root.style.setProperty('--card-hover',   settings.color_card_hover);
   if (settings.color_icon_bg)      root.style.setProperty('--icon-bg',      settings.color_icon_bg);
   if (settings.color_badge)        root.style.setProperty('--badge',        settings.color_badge);
+  if (settings.color_nav_bg)       root.style.setProperty('--nav-bg',       settings.color_nav_bg);
+  if (settings.color_nav_item_bg)  root.style.setProperty('--nav-item-bg',  settings.color_nav_item_bg);
+  if (settings.color_nav_text)     root.style.setProperty('--nav-text',     settings.color_nav_text);
   if (settings.site_title) document.title = settings.site_title;
 }
 
@@ -621,7 +624,7 @@ const styles = {
     display: 'flex',
     flexWrap: 'wrap',
     gap: 10,
-    background: 'var(--section-bg, #fff)',
+    background: 'var(--nav-bg, #fff)',
     borderRadius: 12,
     padding: '14px 18px',
     marginBottom: 8,
@@ -631,8 +634,8 @@ const styles = {
     alignItems: 'center',
     gap: 5,
     padding: '8px 16px',
-    background: 'var(--tab-bg, #f3f4f6)',
-    color: 'var(--tab-text, #374151)',
+    background: 'var(--nav-item-bg, #f3f4f6)',
+    color: 'var(--nav-text, #374151)',
     borderRadius: 8,
     fontSize: 14,
     fontWeight: 600,
