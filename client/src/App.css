@@ -60,9 +60,9 @@
   .banner-wrap {
     margin-left: -10px !important;
     margin-right: -10px !important;
-    gap: 6px !important;
+    gap: 0 !important;
+    border-radius: 0 !important;
   }
-  .banner-wrap img { border-radius: 0 !important; }
 
   /* 顶部搜索栏固定（overflow-x:hidden 会破坏 sticky，改用 fixed） */
   .site-header {

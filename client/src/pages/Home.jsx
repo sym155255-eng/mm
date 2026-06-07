@@ -615,15 +615,15 @@ const styles = {
   bannerWrap: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 10,
+    gap: 0,
     marginBottom: 14,
+    borderRadius: 10,
+    overflow: 'hidden',
   },
   bannerImg: {
     width: '100%',
-    aspectRatio: '15 / 1',
+    height: 'auto',
     display: 'block',
-    borderRadius: 10,
-    objectFit: 'cover',
   },
   adsWrap: {
     background: '#fff',
