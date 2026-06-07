@@ -413,13 +413,6 @@ function CategorySection({ cat, items, subCategories, onOpen, editMode, onEdit }
         {shownItems.length === 0 && (
           <div style={{ padding: '24px 0', textAlign: 'center', color: '#9ca3af', fontSize: 14 }}>该标签暂无链接</div>
         )}
-        {hasMore && !expanded && (
-          <div style={{ textAlign: 'center', marginTop: 12 }}>
-            <button onClick={() => setExpanded(true)} style={styles.moreBtnWide}>
-              展开全部 {shownItems.length} 个 ▾
-            </button>
-          </div>
-        )}
       </div>
     </section>
   );
