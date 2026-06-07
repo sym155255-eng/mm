@@ -30,9 +30,16 @@ export default function Links() {
 
   async function load() {
     const [links, categories, subCategories] = await Promise.all([getLinks(), getCategories(), getSubCategories()]);
+    // token 失效时接口会返回非数组(错误对象)→ 跳回登录
+    if (!Array.isArray(links)) {
+      localStorage.removeItem('nav_token');
+      localStorage.removeItem('nav_user');
+      window.location.href = '/login';
+      return;
+    }
     setList(links);
-    setCats(categories);
-    setSubCats(subCategories);
+    setCats(Array.isArray(categories) ? categories : []);
+    setSubCats(Array.isArray(subCategories) ? subCategories : []);
   }
   useEffect(() => { load(); }, []);
 
