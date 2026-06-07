@@ -189,3 +189,21 @@ export async function deleteBanner(id) {
   const r = await fetch(`${BASE}/admin/banners/${id}`, { method: 'DELETE', headers: authHeaders() });
   return r.json();
 }
+
+// Navs (横向导航)
+export async function getNavs() {
+  const r = await fetch(`${BASE}/admin/navs`, { headers: authHeaders() });
+  return r.json();
+}
+export async function createNav(data) {
+  const r = await fetch(`${BASE}/admin/navs`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function updateNav(id, data) {
+  const r = await fetch(`${BASE}/admin/navs/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function deleteNav(id) {
+  const r = await fetch(`${BASE}/admin/navs/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}

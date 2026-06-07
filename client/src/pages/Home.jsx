@@ -76,7 +76,7 @@ export default function Home() {
     };
   }, [load]);
 
-  const { categories, links, settings, ads, subCategories = [], notices = [], banners = [] } = data;
+  const { categories, links, settings, ads, subCategories = [], notices = [], banners = [], navs = [] } = data;
   const topAds = ads.filter(a => a.position === 'top');
 
   const filteredLinks = links.filter(l => {
@@ -239,6 +239,18 @@ export default function Home() {
                   </a>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* 横向导航栏 */}
+          {navs.length > 0 && (
+            <div className="nav-bar" style={styles.navBar}>
+              {navs.map(n => (
+                <a key={n.id} href={n.url || '#'} target="_blank" rel="noopener noreferrer"
+                  style={{ ...styles.navItem, ...(n.color ? { color: n.color } : {}) }}>
+                  {n.icon && <span>{n.icon}</span>}{n.title}
+                </a>
+              ))}
             </div>
           )}
 
@@ -605,6 +617,28 @@ const styles = {
   marqueeViewport: { flex: 1, overflow: 'hidden', position: 'relative' },
   marqueeTrack: { display: 'flex', width: 'max-content', gap: 48, whiteSpace: 'nowrap', willChange: 'transform' },
   marqueeItem: { fontSize: 15, fontWeight: 700, textDecoration: 'none' },
+  navBar: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 10,
+    background: 'var(--section-bg, #fff)',
+    borderRadius: 12,
+    padding: '14px 18px',
+    marginBottom: 14,
+  },
+  navItem: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 5,
+    padding: '8px 16px',
+    background: 'var(--tab-bg, #f3f4f6)',
+    color: 'var(--tab-text, #374151)',
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    textDecoration: 'none',
+    whiteSpace: 'nowrap',
+  },
   bannerWrap: {
     display: 'flex',
     flexDirection: 'column',

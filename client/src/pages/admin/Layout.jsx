@@ -11,6 +11,7 @@ const navItems = [
   { to: '/admin/ads', icon: '📢', label: '广告管理' },
   { to: '/admin/notices', icon: '📣', label: '跑马灯管理' },
   { to: '/admin/banners', icon: '🖼️', label: '图片管理' },
+  { to: '/admin/navs', icon: '🧭', label: '导航管理' },
   { to: '/admin/colors', icon: '🎨', label: '颜色管理' },
   { to: '/admin/settings', icon: '⚙️', label: '网站设置' },
 ];

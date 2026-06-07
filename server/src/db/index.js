@@ -133,6 +133,18 @@ async function initDB() {
     )
   `);
   db._db.run(`
+    CREATE TABLE IF NOT EXISTS navs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      url TEXT DEFAULT '',
+      icon TEXT DEFAULT '',
+      color TEXT DEFAULT '',
+      visible INTEGER DEFAULT 1,
+      sort_order INTEGER DEFAULT 0
+    )
+  `);
+  db._save();
+  db._db.run(`
     CREATE TABLE IF NOT EXISTS banners (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       image_url TEXT NOT NULL,
