@@ -13,6 +13,11 @@ export async function fetchPublicData() {
   return r.json();
 }
 
+export async function fetchLinkDetail(id) {
+  const r = await fetch(`${BASE}/public/link/${id}`);
+  return r.json();
+}
+
 export async function login(username, password) {
   const r = await fetch(`${BASE}/auth/login`, {
     method: 'POST',

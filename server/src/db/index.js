@@ -183,6 +183,7 @@ async function initDB() {
     )
   `);
   db._save();
+  try { db._db.run(`ALTER TABLE links ADD COLUMN views INTEGER DEFAULT 0`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE links ADD COLUMN badge TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE links ADD COLUMN badge_color TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE ads ADD COLUMN badge TEXT DEFAULT ''`); db._save(); } catch {}

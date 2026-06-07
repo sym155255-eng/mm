@@ -451,11 +451,9 @@ function LinkCard({ link, onOpen, editMode, onEdit }) {
   if (editMode) {
     return <div style={{ ...styles.card, position: 'relative' }}>{inner}</div>;
   }
-  if (hasSubs) {
-    return <div onClick={() => onOpen(link)} style={{ ...styles.card, position: 'relative', cursor: 'pointer' }}>{inner}</div>;
-  }
+  // 点击卡片进入详情页
   return (
-    <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ ...styles.card, position: 'relative' }}>{inner}</a>
+    <Link to={`/sites/${link.id}`} style={{ ...styles.card, position: 'relative' }}>{inner}</Link>
   );
 }
 

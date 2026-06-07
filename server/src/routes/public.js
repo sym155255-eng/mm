@@ -1,6 +1,24 @@
 const router = require('express').Router();
 const { getDB } = require('../db');
 
+// 单个链接详情（浏览量 +1）
+router.get('/link/:id', (req, res) => {
+  const db = getDB();
+  const link = db.prepare('SELECT * FROM links WHERE id=?').get(req.params.id);
+  if (!link) return res.status(404).json({ error: '链接不存在' });
+  // 浏览量 +1
+  db.prepare('UPDATE links SET views=COALESCE(views,0)+1 WHERE id=?').run(req.params.id);
+  link.views = (link.views || 0) + 1;
+  // 分类、子分类名
+  const cat = link.category_id ? db.prepare('SELECT name FROM categories WHERE id=?').get(link.category_id) : null;
+  const sub = link.sub_category_id ? db.prepare('SELECT name FROM sub_categories WHERE id=?').get(link.sub_category_id) : null;
+  link.category_name = cat ? cat.name : '';
+  link.sub_category_name = sub ? sub.name : '';
+  // 子链接
+  link.sub_links = db.prepare('SELECT * FROM sub_links WHERE link_id=? ORDER BY sort_order,id').all(req.params.id);
+  res.json(link);
+});
+
 router.get('/data', (req, res) => {
   const db = getDB();
   const categories = db.prepare('SELECT * FROM categories WHERE visible=1 ORDER BY sort_order,id').all();
