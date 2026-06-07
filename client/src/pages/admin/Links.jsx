@@ -38,7 +38,12 @@ export default function Links() {
 
   function catName(id) { return cats.find(c => c.id === id)?.name || '未分类'; }
 
-  function openAdd() { setForm({ ...empty, category_id: filterCat || '' }); setEditing(null); setSubLinks([]); setModal(true); }
+  function openAdd() {
+    // 默认排到最前：取现有最小排序值再减 10
+    const minOrder = list.length ? Math.min(...list.map(l => l.sort_order || 0)) : 0;
+    setForm({ ...empty, category_id: filterCat || '', sort_order: minOrder - 10 });
+    setEditing(null); setSubLinks([]); setModal(true);
+  }
   async function openEdit(item) {
     setForm({ ...item });
     setEditing(item.id);
