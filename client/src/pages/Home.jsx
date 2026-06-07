@@ -620,6 +620,7 @@ const styles = {
   },
   bannerImg: {
     width: '100%',
+    height: 88,
     display: 'block',
     borderRadius: 10,
     objectFit: 'cover',

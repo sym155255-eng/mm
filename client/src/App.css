@@ -62,7 +62,7 @@
     margin-right: -10px !important;
     gap: 6px !important;
   }
-  .banner-wrap img { border-radius: 0 !important; }
+  .banner-wrap img { border-radius: 0 !important; height: 64px !important; }
 
   /* 顶部搜索栏固定（overflow-x:hidden 会破坏 sticky，改用 fixed） */
   .site-header {
