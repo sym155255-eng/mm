@@ -624,7 +624,7 @@ const styles = {
     background: 'var(--section-bg, #fff)',
     borderRadius: 12,
     padding: '14px 18px',
-    marginBottom: 14,
+    marginBottom: 8,
   },
   navItem: {
     display: 'inline-flex',
@@ -643,7 +643,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: 0,
-    marginBottom: 14,
+    marginBottom: 8,
     borderRadius: 10,
     overflow: 'hidden',
   },
@@ -657,7 +657,7 @@ const styles = {
     borderRadius: 16,
     border: '1px solid #f0e6c8',
     padding: '20px 28px 22px',
-    marginBottom: 14,
+    marginBottom: 8,
   },
   adsHeader: {
     display: 'flex',
@@ -984,7 +984,7 @@ const styles = {
     borderColor: 'var(--primary)',
   },
   main: { flex: 1, minWidth: 0 },
-  section: { marginBottom: 14 },
+  section: { marginBottom: 8 },
   sectionTitle: {
     fontSize: 13,
     fontWeight: 700,
