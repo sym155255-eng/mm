@@ -76,7 +76,7 @@ export default function Home() {
     };
   }, [load]);
 
-  const { categories, links, settings, ads, subCategories = [], notices = [] } = data;
+  const { categories, links, settings, ads, subCategories = [], notices = [], banners = [] } = data;
   const topAds = ads.filter(a => a.position === 'top');
 
   const filteredLinks = links.filter(l => {
@@ -192,6 +192,17 @@ export default function Home() {
               </div>
             );
           })()}
+
+          {/* 横幅图片 */}
+          {banners.length > 0 && (
+            <div style={styles.bannerWrap}>
+              {banners.map(b => (
+                b.url
+                  ? <a key={b.id} href={b.url} target="_blank" rel="noopener noreferrer"><img src={b.image_url} alt="" style={styles.bannerImg} /></a>
+                  : <img key={b.id} src={b.image_url} alt="" style={styles.bannerImg} />
+              ))}
+            </div>
+          )}
 
           {/* Ads */}
           {settings.show_ads === '1' && topAds.length > 0 && (
@@ -601,6 +612,18 @@ const styles = {
   marqueeViewport: { flex: 1, overflow: 'hidden', position: 'relative' },
   marqueeTrack: { display: 'flex', width: 'max-content', gap: 48, whiteSpace: 'nowrap', willChange: 'transform' },
   marqueeItem: { fontSize: 15, fontWeight: 700, textDecoration: 'none' },
+  bannerWrap: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+    marginBottom: 14,
+  },
+  bannerImg: {
+    width: '100%',
+    display: 'block',
+    borderRadius: 10,
+    objectFit: 'cover',
+  },
   adsWrap: {
     background: '#fff',
     borderRadius: 16,

@@ -166,3 +166,21 @@ export async function uploadIcon(file) {
   });
   return r.json();
 }
+
+// Banners (横幅图片)
+export async function getBanners() {
+  const r = await fetch(`${BASE}/admin/banners`, { headers: authHeaders() });
+  return r.json();
+}
+export async function createBanner(data) {
+  const r = await fetch(`${BASE}/admin/banners`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function updateBanner(id, data) {
+  const r = await fetch(`${BASE}/admin/banners/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function deleteBanner(id) {
+  const r = await fetch(`${BASE}/admin/banners/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}

@@ -11,6 +11,7 @@ import Settings from './pages/admin/Settings';
 import Colors from './pages/admin/Colors';
 import SubCategories from './pages/admin/SubCategories';
 import Notices from './pages/admin/Notices';
+import Banners from './pages/admin/Banners';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="sub-categories" element={<SubCategories />} />
           <Route path="ads" element={<Ads />} />
           <Route path="notices" element={<Notices />} />
+          <Route path="banners" element={<Banners />} />
           <Route path="colors" element={<Colors />} />
           <Route path="settings" element={<Settings />} />
         </Route>

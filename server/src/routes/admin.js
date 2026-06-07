@@ -20,7 +20,7 @@ const upload = multer({
       cb(null, `up_${Date.now()}${ext}`);
     },
   }),
-  limits: { fileSize: 2 * 1024 * 1024 }, // 最大 2MB
+  limits: { fileSize: 5 * 1024 * 1024 }, // 最大 5MB
   fileFilter: (req, file, cb) => cb(null, file.mimetype.startsWith('image/')),
 });
 router.post('/upload-icon', upload.single('icon'), (req, res) => {
@@ -220,6 +220,28 @@ router.put('/notices/:id', (req, res) => {
 });
 router.delete('/notices/:id', (req, res) => {
   db().prepare('DELETE FROM notices WHERE id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+// ── Banners (横幅图片) ─────────────────────────────────────
+router.get('/banners', (req, res) => {
+  res.json(db().prepare('SELECT * FROM banners ORDER BY sort_order,id').all());
+});
+router.post('/banners', (req, res) => {
+  const { image_url, url = '', visible = 1, sort_order = 0 } = req.body;
+  const r = db().prepare('INSERT INTO banners (image_url,url,visible,sort_order) VALUES (?,?,?,?)').run(image_url, url, visible, sort_order);
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
+});
+router.put('/banners/:id', (req, res) => {
+  const { image_url, url = '', visible, sort_order } = req.body;
+  db().prepare('UPDATE banners SET image_url=?,url=?,visible=?,sort_order=? WHERE id=?').run(image_url, url, visible, sort_order, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+router.delete('/banners/:id', (req, res) => {
+  db().prepare('DELETE FROM banners WHERE id=?').run(req.params.id);
   broadcast('update');
   res.json({ ok: true });
 });
