@@ -620,9 +620,10 @@ const styles = {
   },
   bannerImg: {
     width: '100%',
-    height: 'auto',
+    aspectRatio: '1200 / 160',
     display: 'block',
     borderRadius: 10,
+    objectFit: 'cover',
   },
   adsWrap: {
     background: '#fff',
