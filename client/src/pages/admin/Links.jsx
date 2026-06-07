@@ -67,23 +67,6 @@ export default function Links() {
     load();
   }
 
-  // 上移/下移：和当前列表里相邻的链接交换位置，整列表重新编号保存
-  async function handleMove(item, dir) {
-    const arr = [...filtered];
-    const i = arr.findIndex(x => x.id === item.id);
-    const j = i + dir;
-    if (j < 0 || j >= arr.length) return;
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-    // 按新顺序重新编号（10,20,30... 留间隔）
-    const updates = arr.map((x, idx) => ({ ...x, sort_order: (idx + 1) * 10 }));
-    // 乐观更新本地，立即看到效果
-    const map = {}; updates.forEach(u => map[u.id] = u.sort_order);
-    setList(prev => prev.map(l => map[l.id] != null ? { ...l, sort_order: map[l.id] } : l).sort((a, b) => (a.sort_order - b.sort_order) || (a.id - b.id)));
-    // 后台保存（只存被影响的）
-    for (const u of updates) await updateLink(u.id, u);
-    load();
-  }
-
   async function handleDelete(id) {
     if (!confirm('确认删除该链接？')) return;
     await deleteLink(id);
@@ -116,26 +99,18 @@ export default function Links() {
           {cats.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
         </select>
         <span style={s.countBadge}>{filtered.length} 条</span>
-        <span style={{ fontSize: 12, color: '#9ca3af' }}>↑↓ 调整顺序（建议先选某个分类再排序）</span>
       </div>
 
       <div style={s.table}>
         <div style={s.thead}>
-          <span style={{ width: 56 }}>排序</span>
           <span style={{ flex: 2 }}>标题</span>
           <span className="col-url" style={{ flex: 2 }}>URL</span>
           <span style={{ flex: 1 }}>分类</span>
           <span className="col-visible" style={{ width: 70, textAlign: 'center' }}>可见</span>
           <span style={{ width: 130, textAlign: 'right' }}>操作</span>
         </div>
-        {filtered.map((item, idx) => (
+        {filtered.map(item => (
           <div key={item.id} style={s.row}>
-            <span style={{ width: 56, display: 'flex', gap: 2 }}>
-              <button title="上移" disabled={idx === 0} onClick={() => handleMove(item, -1)}
-                style={{ ...s.moveBtn, opacity: idx === 0 ? 0.3 : 1 }}>↑</button>
-              <button title="下移" disabled={idx === filtered.length - 1} onClick={() => handleMove(item, 1)}
-                style={{ ...s.moveBtn, opacity: idx === filtered.length - 1 ? 0.3 : 1 }}>↓</button>
-            </span>
             <span style={{ flex: 2, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
             <span className="col-url" style={{ flex: 2, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12 }}>{item.url}</span>
             <span style={{ flex: 1, color: '#6b7280', fontSize: 13 }}>{catName(item.category_id)}</span>
