@@ -352,6 +352,7 @@ export default function Home() {
 
 function CategorySection({ cat, items, subCategories, onOpen, editMode, onEdit }) {
   const [activeTab, setActiveTab] = useState('all');
+  const [expanded, setExpanded] = useState(false);
   const hasTabs = subCategories.length > 0;
 
   // 当前标签页下的链接
@@ -359,11 +360,23 @@ function CategorySection({ cat, items, subCategories, onOpen, editMode, onEdit }
     ? items
     : items.filter(l => l.sub_category_id === activeTab);
 
+  // 折叠：超过 5 排默认收起（列数：手机2 / 平板3 / 电脑4）
+  const cols = typeof window !== 'undefined' && window.innerWidth <= 768 ? 2
+    : (typeof window !== 'undefined' && window.innerWidth <= 1024 ? 3 : 4);
+  const limit = cols * 5;
+  const hasMore = shownItems.length > limit;
+  const visibleItems = expanded ? shownItems : shownItems.slice(0, limit);
+
   return (
     <section className="fade-in" style={styles.section}>
       <div style={styles.sectionWrap}>
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>{cat.name}</h2>
+          {hasMore && (
+            <button onClick={() => setExpanded(v => !v)} style={styles.moreBtn}>
+              {expanded ? '收起 ▲' : `更多 ▾`}
+            </button>
+          )}
         </div>
 
         {/* 子分类标签页 */}
@@ -384,10 +397,17 @@ function CategorySection({ cat, items, subCategories, onOpen, editMode, onEdit }
         )}
 
         <div className="link-grid" style={styles.grid}>
-          {shownItems.map(link => <LinkCard key={link.id} link={link} onOpen={onOpen} editMode={editMode} onEdit={onEdit} />)}
+          {visibleItems.map(link => <LinkCard key={link.id} link={link} onOpen={onOpen} editMode={editMode} onEdit={onEdit} />)}
         </div>
         {shownItems.length === 0 && (
           <div style={{ padding: '24px 0', textAlign: 'center', color: '#9ca3af', fontSize: 14 }}>该标签暂无链接</div>
+        )}
+        {hasMore && !expanded && (
+          <div style={{ textAlign: 'center', marginTop: 12 }}>
+            <button onClick={() => setExpanded(true)} style={styles.moreBtnWide}>
+              展开全部 {shownItems.length} 个 ▾
+            </button>
+          </div>
         )}
       </div>
     </section>
@@ -933,6 +953,25 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 20,
+  },
+  moreBtn: {
+    background: 'transparent',
+    border: 'none',
+    color: 'var(--primary)',
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: 'pointer',
+    flexShrink: 0,
+  },
+  moreBtnWide: {
+    background: '#f3f4f6',
+    border: 'none',
+    color: '#374151',
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: 'pointer',
+    padding: '8px 24px',
+    borderRadius: 20,
   },
   tabBar: {
     display: 'flex',
