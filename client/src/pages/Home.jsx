@@ -195,7 +195,7 @@ export default function Home() {
 
           {/* 横幅图片 */}
           {banners.length > 0 && (
-            <div style={styles.bannerWrap}>
+            <div className="banner-wrap" style={styles.bannerWrap}>
               {banners.map(b => (
                 b.url
                   ? <a key={b.id} href={b.url} target="_blank" rel="noopener noreferrer"><img src={b.image_url} alt="" style={styles.bannerImg} /></a>

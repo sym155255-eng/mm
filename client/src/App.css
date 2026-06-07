@@ -56,6 +56,14 @@
   /* 缩小广告容器内边距 */
   .home-body > main > div[style*="border-radius: 16"] { padding: 16px !important; margin-bottom: 12px !important; }
 
+  /* 横幅图片手机端通栏显示（抵消 .home-body 的左右 10px 内边距）*/
+  .banner-wrap {
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+    gap: 6px !important;
+  }
+  .banner-wrap img { border-radius: 0 !important; }
+
   /* 顶部搜索栏固定（overflow-x:hidden 会破坏 sticky，改用 fixed） */
   .site-header {
     position: fixed !important;
