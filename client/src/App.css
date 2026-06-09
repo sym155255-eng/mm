@@ -114,7 +114,7 @@
 
   /* 卡片网格间距收紧 */
   .link-grid, .ads-row {
-    gap: 10px !important;
+    gap: 6px !important;
   }
 
   /* 分类容器/广告容器内边距减小 */
@@ -158,7 +158,7 @@
 @media (max-width: 768px) {
   .link-grid > a, .link-grid > div,
   .ads-row > a {
-    padding: 10px 12px !important;
-    gap: 10px !important;
+    padding: 7px 10px !important;
+    gap: 8px !important;
   }
 }
