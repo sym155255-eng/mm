@@ -36,7 +36,6 @@ const GLOBAL_GROUPS = [
       { key: 'color_card_bg',       label: '卡片背景',    default: '#f7f8fa' },
       { key: 'color_card_border',   label: '卡片边框',    default: '#f0f1f3' },
       { key: 'color_card_hover',    label: '卡片悬停背景',default: '#ffffff' },
-      { key: 'color_icon_bg',       label: '图标底色',    default: '#ffffff' },
     ],
   },
   {
