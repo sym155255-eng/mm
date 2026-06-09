@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getNavs, createNav, updateNav, deleteNav } from '../../api';
 
-const empty = { title: '', url: '', icon: '', color: '', visible: 1, sort_order: 0 };
+const empty = { title: '', url: '', icon: '', color: '', content: '', visible: 1, sort_order: 0 };
 
 export default function Navs() {
   const [list, setList] = useState([]);
@@ -80,7 +80,14 @@ export default function Navs() {
           <div style={s.modal} onClick={e => e.stopPropagation()}>
             <h3 style={s.modalTitle}>{editing ? '编辑' : '新增'}导航</h3>
             <Field label="名称 *" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder="如 优惠活动" />
-            <Field label="链接 URL" value={form.url} onChange={v => setForm(f => ({ ...f, url: v }))} placeholder="https://..." />
+            <Field label="链接 URL（填了自定义内容则优先显示内容页）" value={form.url} onChange={v => setForm(f => ({ ...f, url: v }))} placeholder="https://..." />
+            <div style={{ marginBottom: 14 }}>
+              <label style={s.fieldLabel}>自定义内容页（支持 HTML，填了就点击进入内容页而非外链）</label>
+              <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
+                placeholder="留空则点击跳转上面的链接；填入文字/HTML 则显示为独立内容页"
+                rows={5}
+                style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }} />
+            </div>
             <Field label="图标 emoji（可选）" value={form.icon} onChange={v => setForm(f => ({ ...f, icon: v }))} placeholder="🔥" />
             <div style={{ marginBottom: 14 }}>
               <label style={s.fieldLabel}>文字颜色</label>

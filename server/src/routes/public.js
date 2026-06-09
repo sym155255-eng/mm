@@ -19,6 +19,14 @@ router.get('/link/:id', (req, res) => {
   res.json(link);
 });
 
+// 单个导航详情（自定义内容页）
+router.get('/nav/:id', (req, res) => {
+  const db = getDB();
+  const nav = db.prepare('SELECT * FROM navs WHERE id=?').get(req.params.id);
+  if (!nav) return res.status(404).json({ error: '导航不存在' });
+  res.json(nav);
+});
+
 router.get('/data', (req, res) => {
   const db = getDB();
   const categories = db.prepare('SELECT * FROM categories WHERE visible=1 ORDER BY sort_order,id').all();

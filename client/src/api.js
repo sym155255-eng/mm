@@ -18,6 +18,11 @@ export async function fetchLinkDetail(id) {
   return r.json();
 }
 
+export async function fetchNavDetail(id) {
+  const r = await fetch(`${BASE}/public/nav/${id}`);
+  return r.json();
+}
+
 export async function login(username, password) {
   const r = await fetch(`${BASE}/auth/login`, {
     method: 'POST',

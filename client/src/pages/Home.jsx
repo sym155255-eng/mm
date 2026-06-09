@@ -248,12 +248,18 @@ export default function Home() {
           {/* 横向导航栏 */}
           {navs.length > 0 && (
             <div className="nav-bar" style={styles.navBar}>
-              {navs.map(n => (
-                <a key={n.id} href={n.url || '#'} target="_blank" rel="noopener noreferrer"
-                  style={{ ...styles.navItem, ...(n.color ? { color: n.color } : {}) }}>
-                  {n.icon && <span>{n.icon}</span>}{n.title}
-                </a>
-              ))}
+              {navs.map(n => {
+                const style = { ...styles.navItem, ...(n.color ? { color: n.color } : {}) };
+                // 有自定义内容 → 跳内容页；否则开外链
+                if (n.content && n.content.trim()) {
+                  return <Link key={n.id} to={`/page/${n.id}`} style={style}>{n.icon && <span>{n.icon}</span>}{n.title}</Link>;
+                }
+                return (
+                  <a key={n.id} href={n.url || '#'} target="_blank" rel="noopener noreferrer" style={style}>
+                    {n.icon && <span>{n.icon}</span>}{n.title}
+                  </a>
+                );
+              })}
             </div>
           )}
 

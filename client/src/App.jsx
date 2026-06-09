@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './store/auth';
 import Home from './pages/Home';
 import SiteDetail from './pages/SiteDetail';
+import NavPage from './pages/NavPage';
 import Login from './pages/Login';
 import AdminLayout from './pages/admin/Layout';
 import Categories from './pages/admin/Categories';
@@ -26,6 +27,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/sites/:id" element={<SiteDetail />} />
+        <Route path="/page/:id" element={<NavPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<PrivateRoute><AdminLayout /></PrivateRoute>}>
           <Route index element={<Navigate to="/admin/links" replace />} />

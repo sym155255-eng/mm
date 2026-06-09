@@ -251,14 +251,14 @@ router.get('/navs', (req, res) => {
   res.json(db().prepare('SELECT * FROM navs ORDER BY sort_order,id').all());
 });
 router.post('/navs', (req, res) => {
-  const { title, url = '', icon = '', color = '', visible = 1, sort_order = 0 } = req.body;
-  const r = db().prepare('INSERT INTO navs (title,url,icon,color,visible,sort_order) VALUES (?,?,?,?,?,?)').run(title, url, icon, color, visible, sort_order);
+  const { title, url = '', icon = '', color = '', content = '', visible = 1, sort_order = 0 } = req.body;
+  const r = db().prepare('INSERT INTO navs (title,url,icon,color,content,visible,sort_order) VALUES (?,?,?,?,?,?,?)').run(title, url, icon, color, content, visible, sort_order);
   broadcast('update');
   res.json({ id: r.lastInsertRowid });
 });
 router.put('/navs/:id', (req, res) => {
-  const { title, url = '', icon = '', color = '', visible, sort_order } = req.body;
-  db().prepare('UPDATE navs SET title=?,url=?,icon=?,color=?,visible=?,sort_order=? WHERE id=?').run(title, url, icon, color, visible, sort_order, req.params.id);
+  const { title, url = '', icon = '', color = '', content = '', visible, sort_order } = req.body;
+  db().prepare('UPDATE navs SET title=?,url=?,icon=?,color=?,content=?,visible=?,sort_order=? WHERE id=?').run(title, url, icon, color, content, visible, sort_order, req.params.id);
   broadcast('update');
   res.json({ ok: true });
 });
