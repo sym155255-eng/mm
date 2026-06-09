@@ -5,22 +5,23 @@ import { useAuth } from '../../store/auth';
 const IDLE_MS = 10 * 60 * 1000; // 10 分钟无操作自动退出
 
 const navItems = [
-  { to: '/admin/links', icon: '🔗', label: '链接管理' },
-  { to: '/admin/categories', icon: '📂', label: '分类管理' },
-  { to: '/admin/sub-categories', icon: '🏷️', label: '子分类管理' },
-  { to: '/admin/ads', icon: '📢', label: '广告管理' },
-  { to: '/admin/notices', icon: '📣', label: '跑马灯管理' },
-  { to: '/admin/banners', icon: '🖼️', label: '图片管理' },
-  { to: '/admin/navs', icon: '🧭', label: '导航管理' },
-  { to: '/admin/pages', icon: '📄', label: '页面管理' },
-  { to: '/admin/colors', icon: '🎨', label: '颜色管理' },
-  { to: '/admin/settings', icon: '⚙️', label: '网站设置' },
+  { to: '/admin/links', icon: '🔗', label: '链接管理', group: 1 },
+  { to: '/admin/categories', icon: '📂', label: '分类管理', group: 1 },
+  { to: '/admin/sub-categories', icon: '🏷️', label: '子分类管理', group: 1 },
+  { to: '/admin/navs', icon: '🧭', label: '导航管理', group: 1 },
+  { to: '/admin/pages', icon: '📄', label: '页面管理', group: 1 },
+  { to: '/admin/ads', icon: '📢', label: '广告管理', group: 1 },
+  { to: '/admin/notices', icon: '📣', label: '跑马灯管理', group: 1 },
+  { to: '/admin/banners', icon: '🖼️', label: '图片管理', group: 1 },
+  { to: '/admin/colors', icon: '🎨', label: '颜色管理', group: 1 },
+  { to: '/admin/settings', icon: '⚙️', label: '网站设置', group: 1 },
 ];
 
 export default function AdminLayout() {
   const { user, signOut } = useAuth();
   const nav = useNavigate();
   const [sideOpen, setSideOpen] = useState(false);
+  const [menuGroup, setMenuGroup] = useState(1); // 当前后台菜单分组（1 / 2）
 
   function handleLogout() {
     signOut();
@@ -56,13 +57,17 @@ export default function AdminLayout() {
       <aside className={`admin-sidebar${sideOpen ? ' open' : ''}`} style={s.sidebar}>
         <div style={s.sideTop}>
           <div style={s.brandIcon}>🧭</div>
-          <div>
+          <div style={{ flex: 1 }}>
             <div style={s.brandName}>导航管理</div>
             <div style={s.brandUser}>{user?.username}</div>
           </div>
+          <div style={s.groupSwitch}>
+            <button style={{ ...s.groupBtn, ...(menuGroup === 1 ? s.groupBtnActive : {}) }} onClick={() => setMenuGroup(1)}>1</button>
+            <button style={{ ...s.groupBtn, ...(menuGroup === 2 ? s.groupBtnActive : {}) }} onClick={() => setMenuGroup(2)}>2</button>
+          </div>
         </div>
         <nav style={s.nav}>
-          {navItems.map(item => (
+          {navItems.filter(item => item.group === menuGroup).map(item => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -112,9 +117,12 @@ const s = {
     transition: 'transform 0.25s',
   },
   sideTop: { padding: '24px 20px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #2d3350' },
-  brandIcon: { fontSize: 28 },
-  brandName: { fontWeight: 700, fontSize: 15 },
-  brandUser: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
+  groupSwitch: { display: 'flex', gap: 8 },
+  groupBtn: { width: 32, height: 32, borderRadius: 8, border: '1px solid #3a4060', background: 'transparent', color: '#94a3b8', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 },
+  groupBtnActive: { background: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' },
+  brandIcon: { fontSize: 22 },
+  brandName: { fontWeight: 700, fontSize: 13 },
+  brandUser: { fontSize: 11, color: '#94a3b8', marginTop: 1 },
   nav: { flex: 1, padding: '12px 10px' },
   navItem: {
     display: 'flex', alignItems: 'center', gap: 10,
