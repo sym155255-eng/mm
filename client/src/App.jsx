@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './store/auth';
 import Home from './pages/Home';
 import SiteDetail from './pages/SiteDetail';
 import NavPage from './pages/NavPage';
+import PageView from './pages/PageView';
+import Pages from './pages/admin/Pages';
 import Login from './pages/Login';
 import AdminLayout from './pages/admin/Layout';
 import Categories from './pages/admin/Categories';
@@ -28,6 +30,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/sites/:id" element={<SiteDetail />} />
         <Route path="/page/:id" element={<NavPage />} />
+        <Route path="/p/:id" element={<PageView />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<PrivateRoute><AdminLayout /></PrivateRoute>}>
           <Route index element={<Navigate to="/admin/links" replace />} />
@@ -38,6 +41,7 @@ export default function App() {
           <Route path="notices" element={<Notices />} />
           <Route path="banners" element={<Banners />} />
           <Route path="navs" element={<Navs />} />
+          <Route path="pages" element={<Pages />} />
           <Route path="colors" element={<Colors />} />
           <Route path="settings" element={<Settings />} />
         </Route>

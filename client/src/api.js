@@ -212,3 +212,25 @@ export async function deleteNav(id) {
   const r = await fetch(`${BASE}/admin/navs/${id}`, { method: 'DELETE', headers: authHeaders() });
   return r.json();
 }
+
+// Pages (独立页面)
+export async function fetchPageView(id) {
+  const r = await fetch(`${BASE}/public/page-view/${id}`);
+  return r.json();
+}
+export async function getPages() {
+  const r = await fetch(`${BASE}/admin/pages`, { headers: authHeaders() });
+  return r.json();
+}
+export async function createPage(data) {
+  const r = await fetch(`${BASE}/admin/pages`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function updatePage(id, data) {
+  const r = await fetch(`${BASE}/admin/pages/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function deletePage(id) {
+  const r = await fetch(`${BASE}/admin/pages/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}

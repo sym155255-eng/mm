@@ -268,4 +268,26 @@ router.delete('/navs/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Pages (独立页面) ───────────────────────────────────────
+router.get('/pages', (req, res) => {
+  res.json(db().prepare('SELECT * FROM pages ORDER BY sort_order,id').all());
+});
+router.post('/pages', (req, res) => {
+  const { title, content = '', visible = 1, sort_order = 0 } = req.body;
+  const r = db().prepare('INSERT INTO pages (title,content,visible,sort_order) VALUES (?,?,?,?)').run(title, content, visible, sort_order);
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
+});
+router.put('/pages/:id', (req, res) => {
+  const { title, content = '', visible, sort_order } = req.body;
+  db().prepare('UPDATE pages SET title=?,content=?,visible=?,sort_order=? WHERE id=?').run(title, content, visible, sort_order, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+router.delete('/pages/:id', (req, res) => {
+  db().prepare('DELETE FROM pages WHERE id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
 module.exports = router;

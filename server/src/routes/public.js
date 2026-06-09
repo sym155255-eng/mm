@@ -19,6 +19,14 @@ router.get('/link/:id', (req, res) => {
   res.json(link);
 });
 
+// 单个独立页面
+router.get('/page-view/:id', (req, res) => {
+  const db = getDB();
+  const page = db.prepare('SELECT * FROM pages WHERE id=?').get(req.params.id);
+  if (!page) return res.status(404).json({ error: '页面不存在' });
+  res.json(page);
+});
+
 // 单个导航详情（自定义内容页）
 router.get('/nav/:id', (req, res) => {
   const db = getDB();
