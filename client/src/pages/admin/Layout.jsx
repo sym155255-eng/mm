@@ -28,23 +28,40 @@ export default function AdminLayout() {
     nav('/login');
   }
 
-  // 10 分钟无操作自动退出
+  // 10 分钟无操作自动退出（手机端可靠：基于"最后操作时间戳"核对，
+  // 不只依赖 setTimeout——手机切后台/锁屏会暂停定时器，回到页面时主动核对）
+  const lastActiveRef = useRef(Date.now());
   const timerRef = useRef(null);
   useEffect(() => {
-    function reset() {
+    function doLogout() {
       clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
-        signOut();
-        nav('/login');
-        alert('已超过 10 分钟无操作，请重新登录');
-      }, IDLE_MS);
+      signOut();
+      nav('/login');
+      alert('已超过 10 分钟无操作，请重新登录');
+    }
+    function check() {
+      if (Date.now() - lastActiveRef.current >= IDLE_MS) doLogout();
+    }
+    function reset() {
+      lastActiveRef.current = Date.now();
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(doLogout, IDLE_MS);
+    }
+    function onVisible() {
+      if (document.visibilityState === 'visible') check(); // 回到页面立即核对
     }
     const events = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
     events.forEach(e => window.addEventListener(e, reset, { passive: true }));
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', check);
+    const ticker = setInterval(check, 30 * 1000); // 兜底：每 30 秒核对一次
     reset(); // 进入后立即开始计时
     return () => {
       clearTimeout(timerRef.current);
+      clearInterval(ticker);
       events.forEach(e => window.removeEventListener(e, reset));
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', check);
     };
   }, [signOut, nav]);
 
