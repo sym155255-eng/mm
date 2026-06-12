@@ -28,6 +28,19 @@ router.post('/upload-icon', upload.single('icon'), (req, res) => {
   res.json({ ok: true, path: `/icons/${req.file.filename}` });
 });
 
+// 从网址抓取图标（站点 favicon / 高清图标），存本地返回路径
+router.post('/fetch-icon', async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: '请提供网址' });
+  try {
+    const p = await fetchFavicon(url);
+    if (p) return res.json({ ok: true, path: p });
+    res.status(404).json({ error: '没抓到图标，可手动上传' });
+  } catch (e) {
+    res.status(500).json({ error: '抓取失败：' + e.message });
+  }
+});
+
 // ── Settings ──────────────────────────────────────────────
 router.get('/settings', (req, res) => {
   const rows = db().prepare('SELECT * FROM settings').all();
@@ -286,6 +299,84 @@ router.put('/pages/:id', (req, res) => {
 });
 router.delete('/pages/:id', (req, res) => {
   db().prepare('DELETE FROM pages WHERE id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+// ── 第二页：分区(p2_sections) ──────────────────────────────
+router.get('/p2/sections', (req, res) => {
+  res.json(db().prepare('SELECT * FROM p2_sections ORDER BY sort_order,id').all());
+});
+router.post('/p2/sections', (req, res) => {
+  const { title, color = '#2a6fb0', sort_order = 0, visible = 1 } = req.body;
+  const r = db().prepare('INSERT INTO p2_sections (title,color,sort_order,visible) VALUES (?,?,?,?)').run(title, color, sort_order, visible);
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
+});
+router.put('/p2/sections/:id', (req, res) => {
+  const { title, color = '#2a6fb0', sort_order = 0, visible = 1 } = req.body;
+  db().prepare('UPDATE p2_sections SET title=?,color=?,sort_order=?,visible=? WHERE id=?').run(title, color, sort_order, visible, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+router.delete('/p2/sections/:id', (req, res) => {
+  db().prepare('DELETE FROM p2_sections WHERE id=?').run(req.params.id);
+  db().prepare('DELETE FROM p2_boards WHERE section_id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+// ── 第二页：子版块(p2_boards) ──────────────────────────────
+router.get('/p2/boards', (req, res) => {
+  res.json(db().prepare('SELECT * FROM p2_boards ORDER BY sort_order,id').all());
+});
+router.post('/p2/boards', (req, res) => {
+  const { section_id, title, icon = '', badge = '', threads = '', posts = '', last_post = '', url = '', sort_order = 0, visible = 1 } = req.body;
+  const r = db().prepare('INSERT INTO p2_boards (section_id,title,icon,badge,threads,posts,last_post,url,sort_order,visible) VALUES (?,?,?,?,?,?,?,?,?,?)').run(section_id, title, icon, badge, threads, posts, last_post, url, sort_order, visible);
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
+});
+router.put('/p2/boards/:id', (req, res) => {
+  const { section_id, title, icon = '', badge = '', threads = '', posts = '', last_post = '', url = '', sort_order = 0, visible = 1 } = req.body;
+  db().prepare('UPDATE p2_boards SET section_id=?,title=?,icon=?,badge=?,threads=?,posts=?,last_post=?,url=?,sort_order=?,visible=? WHERE id=?').run(section_id, title, icon, badge, threads, posts, last_post, url, sort_order, visible, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+router.delete('/p2/boards/:id', (req, res) => {
+  db().prepare('DELETE FROM p2_boards WHERE id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+// ── 第二页：帖子(p2_posts) ─────────────────────────────────
+const POST_COLS = 'section_id,board_id,avatar,title,tag,tag_color,category,author,author_vip,post_time,last_user,last_time,comments,url,sort_order,visible';
+function postVals(b) {
+  // 选了子版块时，所属分区自动取该版块的分区
+  let sectionId = b.section_id;
+  if (b.board_id) {
+    const board = db().prepare('SELECT section_id FROM p2_boards WHERE id=?').get(b.board_id);
+    if (board) sectionId = board.section_id;
+  }
+  return [sectionId, b.board_id || null, b.avatar || '', b.title, b.tag || '', b.tag_color || '#ff7a45', b.category || '', b.author || '',
+    b.author_vip ? 1 : 0, b.post_time || '', b.last_user || '', b.last_time || '', b.comments || '', b.url || '', b.sort_order || 0, b.visible == null ? 1 : b.visible];
+}
+router.get('/p2/posts', (req, res) => {
+  res.json(db().prepare('SELECT * FROM p2_posts ORDER BY sort_order,id').all());
+});
+router.post('/p2/posts', (req, res) => {
+  const r = db().prepare(`INSERT INTO p2_posts (${POST_COLS}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(...postVals(req.body));
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
+});
+router.put('/p2/posts/:id', (req, res) => {
+  const b = req.body;
+  db().prepare(`UPDATE p2_posts SET section_id=?,board_id=?,avatar=?,title=?,tag=?,tag_color=?,category=?,author=?,author_vip=?,post_time=?,last_user=?,last_time=?,comments=?,url=?,sort_order=?,visible=? WHERE id=?`)
+    .run(...postVals(b), req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+router.delete('/p2/posts/:id', (req, res) => {
+  db().prepare('DELETE FROM p2_posts WHERE id=?').run(req.params.id);
   broadcast('update');
   res.json({ ok: true });
 });

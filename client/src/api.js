@@ -13,6 +13,60 @@ export async function fetchPublicData() {
   return r.json();
 }
 
+// 第二页（论坛板块样式）
+export async function fetchPage2() {
+  const r = await fetch(`${BASE}/public/page2`);
+  return r.json();
+}
+export async function getP2Sections() {
+  const r = await fetch(`${BASE}/admin/p2/sections`, { headers: authHeaders() });
+  return r.json();
+}
+export async function createP2Section(data) {
+  const r = await fetch(`${BASE}/admin/p2/sections`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function updateP2Section(id, data) {
+  const r = await fetch(`${BASE}/admin/p2/sections/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function deleteP2Section(id) {
+  const r = await fetch(`${BASE}/admin/p2/sections/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}
+export async function getP2Boards() {
+  const r = await fetch(`${BASE}/admin/p2/boards`, { headers: authHeaders() });
+  return r.json();
+}
+export async function createP2Board(data) {
+  const r = await fetch(`${BASE}/admin/p2/boards`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function updateP2Board(id, data) {
+  const r = await fetch(`${BASE}/admin/p2/boards/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function deleteP2Board(id) {
+  const r = await fetch(`${BASE}/admin/p2/boards/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}
+export async function getP2Posts() {
+  const r = await fetch(`${BASE}/admin/p2/posts`, { headers: authHeaders() });
+  return r.json();
+}
+export async function createP2Post(data) {
+  const r = await fetch(`${BASE}/admin/p2/posts`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function updateP2Post(id, data) {
+  const r = await fetch(`${BASE}/admin/p2/posts/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function deleteP2Post(id) {
+  const r = await fetch(`${BASE}/admin/p2/posts/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}
+
 export async function fetchLinkDetail(id) {
   const r = await fetch(`${BASE}/public/link/${id}`);
   return r.json();
@@ -174,6 +228,12 @@ export async function uploadIcon(file) {
     headers: { Authorization: `Bearer ${getToken()}` }, // 不要手动设 Content-Type
     body: fd,
   });
+  return r.json();
+}
+
+// 从网址抓取图标
+export async function fetchIconFromUrl(url) {
+  const r = await fetch(`${BASE}/admin/fetch-icon`, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ url }) });
   return r.json();
 }
 

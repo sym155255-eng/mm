@@ -35,6 +35,24 @@ router.get('/nav/:id', (req, res) => {
   res.json(nav);
 });
 
+// 第二页（论坛板块样式）数据：分区 + 子版块
+router.get('/page2', (req, res) => {
+  const db = getDB();
+  const sections = db.prepare('SELECT * FROM p2_sections WHERE visible=1 ORDER BY sort_order,id').all();
+  const boards = db.prepare('SELECT * FROM p2_boards WHERE visible=1 ORDER BY sort_order,id').all();
+  const posts = db.prepare('SELECT * FROM p2_posts WHERE visible=1 ORDER BY sort_order,id').all();
+  const bySection = {};
+  boards.forEach(b => { (bySection[b.section_id] = bySection[b.section_id] || []).push(b); });
+  const postsBySection = {};
+  posts.forEach(p => { (postsBySection[p.section_id] = postsBySection[p.section_id] || []).push(p); });
+  const settings = db.prepare('SELECT * FROM settings').all();
+  const settingsObj = {};
+  settings.forEach(s => settingsObj[s.key] = s.value);
+  const banners = db.prepare('SELECT * FROM banners WHERE visible=1 ORDER BY sort_order,id').all();
+  const notices = db.prepare('SELECT * FROM notices WHERE visible=1 ORDER BY sort_order,id').all();
+  res.json({ sections: sections.map(s => ({ ...s, boards: bySection[s.id] || [], posts: postsBySection[s.id] || [] })), settings: settingsObj, banners, notices });
+});
+
 router.get('/data', (req, res) => {
   const db = getDB();
   const categories = db.prepare('SELECT * FROM categories WHERE visible=1 ORDER BY sort_order,id').all();

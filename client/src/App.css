@@ -161,4 +161,17 @@
     padding: 7px 10px !important;
     gap: 8px !important;
   }
+  /* 第二页论坛板块：手机单列 */
+  .forum-grid { grid-template-columns: 1fr !important; }
+}
+
+/* 第二页论坛板块：平板 2 列 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .forum-grid { grid-template-columns: repeat(2,1fr) !important; }
+}
+
+/* 第二页手机版 播报跑马灯 */
+@keyframes p2marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
 }

@@ -15,6 +15,11 @@ const navItems = [
   { to: '/admin/banners', icon: '🖼️', label: '图片管理', group: 1 },
   { to: '/admin/colors', icon: '🎨', label: '颜色管理', group: 1 },
   { to: '/admin/settings', icon: '⚙️', label: '网站设置', group: 1 },
+  // 组 2：第二页（/home2 论坛样式）独立管理
+  { to: '/admin/p2/sections', icon: '🗂️', label: '分区管理', group: 2 },
+  { to: '/admin/p2/boards', icon: '📋', label: '子版块管理', group: 2 },
+  { to: '/admin/p2/posts', icon: '📝', label: '帖子管理', group: 2 },
+  { to: '/admin/p2/colors', icon: '🎨', label: '颜色管理', group: 2 },
 ];
 
 export default function AdminLayout() {
@@ -84,6 +89,12 @@ export default function AdminLayout() {
           </div>
         </div>
         <nav style={s.nav}>
+          {menuGroup === 2 && (
+            <div style={s.groupHint}>
+              第二页（论坛样式·独立）
+              <a href="/home2" target="_blank" style={s.viewLink}>查看第二页 ↗</a>
+            </div>
+          )}
           {navItems.filter(item => item.group === menuGroup).map(item => (
             <NavLink
               key={item.to}
@@ -141,6 +152,8 @@ const s = {
   brandName: { fontWeight: 700, fontSize: 13 },
   brandUser: { fontSize: 11, color: '#94a3b8', marginTop: 1 },
   nav: { flex: 1, padding: '12px 10px' },
+  groupHint: { display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 12px 12px', fontSize: 12, color: '#64748b' },
+  viewLink: { color: 'var(--primary)', fontSize: 12, fontWeight: 600, textDecoration: 'none' },
   navItem: {
     display: 'flex', alignItems: 'center', gap: 10,
     padding: '10px 14px', borderRadius: 8,

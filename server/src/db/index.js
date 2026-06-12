@@ -207,6 +207,55 @@ async function initDB() {
   `);
   db._save();
   try { db._db.run(`ALTER TABLE navs ADD COLUMN content TEXT DEFAULT ''`); db._save(); } catch {}
+  // 第二页（论坛板块样式）：分区 + 子版块
+  db._db.run(`
+    CREATE TABLE IF NOT EXISTS p2_sections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      color TEXT DEFAULT '#2a6fb0',
+      sort_order INTEGER DEFAULT 0,
+      visible INTEGER DEFAULT 1
+    )
+  `);
+  db._save();
+  db._db.run(`
+    CREATE TABLE IF NOT EXISTS p2_boards (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      section_id INTEGER NOT NULL REFERENCES p2_sections(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      icon TEXT DEFAULT '',
+      badge TEXT DEFAULT '',
+      threads TEXT DEFAULT '',
+      posts TEXT DEFAULT '',
+      last_post TEXT DEFAULT '',
+      url TEXT DEFAULT '',
+      sort_order INTEGER DEFAULT 0,
+      visible INTEGER DEFAULT 1
+    )
+  `);
+  db._save();
+  db._db.run(`
+    CREATE TABLE IF NOT EXISTS p2_posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      section_id INTEGER NOT NULL REFERENCES p2_sections(id) ON DELETE CASCADE,
+      avatar TEXT DEFAULT '',
+      title TEXT NOT NULL,
+      tag TEXT DEFAULT '',
+      tag_color TEXT DEFAULT '#ff7a45',
+      category TEXT DEFAULT '',
+      author TEXT DEFAULT '',
+      author_vip INTEGER DEFAULT 0,
+      post_time TEXT DEFAULT '',
+      last_user TEXT DEFAULT '',
+      last_time TEXT DEFAULT '',
+      comments TEXT DEFAULT '',
+      url TEXT DEFAULT '',
+      sort_order INTEGER DEFAULT 0,
+      visible INTEGER DEFAULT 1
+    )
+  `);
+  db._save();
+  try { db._db.run(`ALTER TABLE p2_posts ADD COLUMN board_id INTEGER`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE links ADD COLUMN views INTEGER DEFAULT 0`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE links ADD COLUMN badge TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE links ADD COLUMN badge_color TEXT DEFAULT ''`); db._save(); } catch {}
