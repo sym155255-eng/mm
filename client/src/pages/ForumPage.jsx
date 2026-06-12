@@ -44,17 +44,24 @@ export default function ForumPage() {
 
 /* ───────────── 手机版（社区 App 风格）───────────── */
 function MobileView({ sections, settings, banners, notices, loading }) {
-  const boards = sections.flatMap(s => s.boards.map(b => ({ ...b, secColor: s.color })));
-  const posts = sections.flatMap(s => s.posts.map(p => ({ ...p, secColor: s.color })));
-  const noticeText = notices.map(n => n.text).join('　|　');
+  const [activeSec, setActiveSec] = useState(null);     // 选中的分区：图标区只显示它的子版块
+  const [activeBoard, setActiveBoard] = useState(null); // 选中的子版块：帖子列表只显示它的帖子
+  const allBoards = sections.flatMap(s => s.boards.map(b => ({ ...b, secColor: s.color })));
+  const boards = activeSec == null ? allBoards : allBoards.filter(b => b.section_id === activeSec);
+  const allPosts = sections.flatMap(s => s.posts.map(p => ({ ...p, secColor: s.color })));
+  const posts = activeBoard != null
+    ? allPosts.filter(p => p.board_id === activeBoard)
+    : (activeSec != null ? allPosts.filter(p => p.section_id === activeSec) : allPosts);
 
   return (
     <div style={{ minHeight: '100vh', background: '#f4f5f7', paddingBottom: 64 }}>
       {/* 黄色顶栏 */}
       <header style={m.header}>
-        <Link to="/" style={m.brand}>{settings.site_title || '社区'}</Link>
+        {localStorage.getItem('nav_token')
+          ? <Link to="/admin" style={m.brand}>☰</Link>
+          : <span style={{ ...m.brand, cursor: 'default' }}>☰</span>}
         <div style={m.search}><span style={{ opacity: .5 }}>🔍</span><span style={{ color: '#9aa0a6', fontSize: 13 }}>{settings.search_placeholder || '请输入搜索内容'}</span></div>
-        <div style={m.avatarTop}>{settings.site_logo || '🙂'}</div>
+        <Link to="/" style={m.avatarTop}>↩</Link>
       </header>
 
       {/* 横幅 */}
@@ -64,39 +71,59 @@ function MobileView({ sections, settings, banners, notices, loading }) {
         </a>
       )}
 
-      {/* 圆形图标导航（子版块） */}
+      {/* 圆形图标导航（子版块）：点击在下方显示该版块的帖子列表 */}
       {boards.length > 0 && (
         <div style={m.iconNav}>
-          {boards.slice(0, 10).map(b => {
-            const Tag = b.url ? 'a' : 'div';
-            return (
-              <Tag key={b.id} {...(b.url ? { href: b.url, target: '_blank', rel: 'noopener noreferrer' } : {})} style={m.iconItem}>
-                <div style={{ ...m.iconCircle, background: (b.secColor || '#ff9800') }}>
-                  <Ico icon={b.icon} fallback="💬" size={24} imgStyle={{ width: 30, height: 30, objectFit: 'cover', borderRadius: '50%' }} />
-                </div>
-                <span style={m.iconLabel}>{b.title}</span>
-              </Tag>
-            );
-          })}
+          {boards.slice(0, 10).map(b => (
+            <div key={b.id} style={{ ...m.iconItem, cursor: 'pointer' }}
+              onClick={() => setActiveBoard(v => v === b.id ? null : b.id)}>
+              <div style={{ ...m.iconCircle, ...(activeBoard === b.id ? { background: '#fff3cd', boxShadow: '0 0 0 2px #ffc400' } : {}) }}>
+                <Ico icon={b.icon} fallback="💬" size={24} imgStyle={{ width: 30, height: 30, objectFit: 'cover', borderRadius: '50%' }} />
+              </div>
+              <span style={{ ...m.iconLabel, ...(activeBoard === b.id ? { color: '#d48806', fontWeight: 700 } : {}) }}>{b.title}</span>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* 播报（跑马灯） */}
-      {noticeText && (
-        <div style={m.notice}>
-          <span style={m.noticeTag}>📢 新播报</span>
-          <div style={m.noticeTrack}><span style={m.noticeText}>{noticeText}</span></div>
-        </div>
-      )}
+      {/* 跑马灯（与主页同款霓虹流光） */}
+      {notices.length > 0 && (() => {
+        const speed = parseFloat(settings.marquee_speed) || 30;
+        const grad = settings.marquee_gradient;
+        const gradOn = grad && grad.includes(',');
+        const colors = gradOn ? grad.split(',') : [];
+        const gradStr = gradOn ? `linear-gradient(90deg, ${[...colors, colors[0]].join(', ')})` : '';
+        const gradVars = gradOn ? { '--grad': gradStr } : {};
+        let base = [...notices];
+        while (base.length < 12) base = [...base, ...notices];
+        const loopItems = [...base, ...base];
+        return (
+          <div className="marquee-neon" style={m.marquee}>
+            <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+              <div className="marquee-track" style={{ display: 'flex', width: 'max-content', gap: 48, whiteSpace: 'nowrap', willChange: 'transform', animationDuration: `${speed}s` }}>
+                {loopItems.map((n, i) => {
+                  const itemStyle = { fontSize: 14, fontWeight: 700, textDecoration: 'none', ...gradVars, ...(gradOn ? {} : { color: n.color || '#facc15' }) };
+                  const cls = gradOn ? 'marquee-grad' : '';
+                  return n.url
+                    ? <a key={i} className={cls} href={n.url} target="_blank" rel="noopener noreferrer" style={itemStyle}>{n.text}</a>
+                    : <span key={i} className={cls} style={itemStyle}>{n.text}</span>;
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
-      {/* 话题标签（分区） */}
+      {/* 话题标签（分区）：点击后上方图标区只显示该分区的子版块 */}
       {sections.length > 0 && (
         <div style={m.tags}>
           {sections.map(sec => (
-            <a key={sec.id} href={`#sec-${sec.id}`} style={m.tagChip}>
+            <div key={sec.id}
+              style={{ ...m.tagChip, cursor: 'pointer', ...(activeSec === sec.id ? { background: '#fff7e0' } : {}) }}
+              onClick={() => { setActiveSec(v => v === sec.id ? null : sec.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
               <span style={{ ...m.tagDot, background: sec.color || '#ff9800' }} />
-              <span style={{ color: sec.color || '#444', fontWeight: 600 }}>#{sec.title}#</span>
-            </a>
+              <span style={{ color: sec.color || '#444', fontWeight: 600 }}>{sec.title}</span>
+            </div>
           ))}
         </div>
       )}
@@ -104,7 +131,7 @@ function MobileView({ sections, settings, banners, notices, loading }) {
       {/* 信息流（帖子） */}
       <div style={{ background: '#fff', marginTop: 8 }}>
         {loading && <div style={m.tip}>加载中…</div>}
-        {!loading && posts.length === 0 && <div style={m.tip}>暂无内容，请在后台「2」中添加子版块/帖子</div>}
+        {!loading && posts.length === 0 && <div style={m.tip}>{activeBoard != null ? '该版块暂无帖子' : '暂无内容，请在后台「2」中添加子版块/帖子'}</div>}
         {posts.map(p => {
           const Row = p.url ? 'a' : 'div';
           return (
@@ -227,18 +254,15 @@ function DesktopView({ sections, settings, loading }) {
 
 const m = {
   header: { background: '#ffc400', position: 'sticky', top: 0, zIndex: 20, display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px' },
-  brand: { fontWeight: 800, fontSize: 16, color: '#7a4f00', textDecoration: 'none', flexShrink: 0, maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  brand: { fontWeight: 800, fontSize: 22, color: '#7a4f00', textDecoration: 'none', flexShrink: 0, lineHeight: 1, padding: '4px 2px' },
   search: { flex: 1, background: '#fff', borderRadius: 20, height: 34, display: 'flex', alignItems: 'center', gap: 6, padding: '0 12px' },
-  avatarTop: { width: 34, height: 34, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 },
+  avatarTop: { width: 34, height: 34, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: '#7a4f00', textDecoration: 'none', flexShrink: 0 },
   banner: { width: '100%', display: 'block' },
   iconNav: { background: '#fff', display: 'flex', flexWrap: 'wrap', padding: '14px 6px 4px' },
   iconItem: { width: '20%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, marginBottom: 14, textDecoration: 'none', color: '#333' },
   iconCircle: { width: 46, height: 46, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', overflow: 'hidden' },
   iconLabel: { fontSize: 12, color: '#444', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  notice: { background: '#fff7e6', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', marginTop: 8 },
-  noticeTag: { color: '#fa8c16', fontSize: 13, fontWeight: 700, flexShrink: 0 },
-  noticeTrack: { flex: 1, overflow: 'hidden', whiteSpace: 'nowrap' },
-  noticeText: { display: 'inline-block', fontSize: 13, color: '#8c6d1f', animation: 'p2marquee 18s linear infinite', paddingLeft: '100%' },
+  marquee: { display: 'flex', alignItems: 'center', gap: 10, background: 'linear-gradient(135deg, #1e1b2e, #2d2640)', border: '2px solid #a855f7', borderRadius: 999, padding: '9px 16px', margin: '8px 10px 0', overflow: 'hidden' },
   tags: { background: '#fff', marginTop: 8, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, padding: 1 },
   tagChip: { display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', textDecoration: 'none', fontSize: 14, background: '#fff' },
   tagDot: { width: 22, height: 22, borderRadius: 6, flexShrink: 0, display: 'inline-block' },
