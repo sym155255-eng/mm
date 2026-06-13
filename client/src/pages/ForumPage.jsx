@@ -80,7 +80,7 @@ function MobileView({ sections, settings, banners, notices, loading }) {
               <div style={{ ...m.iconCircle, ...(activeBoard === b.id ? { background: '#fff3cd', boxShadow: '0 0 0 2px #ffc400' } : {}) }}>
                 <Ico icon={b.icon} fallback="💬" size={24} imgStyle={{ width: 30, height: 30, objectFit: 'cover', borderRadius: '50%' }} />
               </div>
-              <span style={{ ...m.iconLabel, ...(activeBoard === b.id ? { color: '#d48806', fontWeight: 700 } : {}) }}>{b.title}</span>
+              <span style={{ ...m.iconLabel, ...(b.title_color ? { color: b.title_color } : {}), ...(activeBoard === b.id ? { color: '#d48806', fontWeight: 700 } : {}) }}>{b.title}</span>
             </div>
           ))}
         </div>
@@ -133,19 +133,18 @@ function MobileView({ sections, settings, banners, notices, loading }) {
         {loading && <div style={m.tip}>加载中…</div>}
         {!loading && posts.length === 0 && <div style={m.tip}>{activeBoard != null ? '该版块暂无帖子' : '暂无内容，请在后台「2」中添加子版块/帖子'}</div>}
         {posts.map(p => {
-          const Row = p.url ? 'a' : 'div';
+          const hasContent = p.content && p.content.trim();
+          const Row = hasContent ? Link : (p.url ? 'a' : 'div');
+          const rowProps = hasContent ? { to: `/post/${p.id}` } : (p.url ? { href: p.url, target: '_blank', rel: 'noopener noreferrer' } : {});
           return (
-            <Row key={p.id} {...(p.url ? { href: p.url, target: '_blank', rel: 'noopener noreferrer' } : {})} style={m.feedItem}>
+            <Row key={p.id} {...rowProps} style={m.feedItem}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={m.feedTitleLine}>
                   {p.tag && <span style={{ ...m.feedTag, background: (p.tag_color || '#ff7a45') + '22', color: p.tag_color || '#ff7a45' }}>{p.tag}</span>}
-                  <span style={{ ...m.feedTitle, ...(settings.p2_title_color ? { color: settings.p2_title_color } : {}) }}>{p.title}</span>
+                  <span style={{ ...m.feedTitle, ...((p.title_color || settings.p2_title_color) ? { color: p.title_color || settings.p2_title_color } : {}) }}>{p.title}</span>
                 </div>
                 <div style={m.feedMeta}>
                   {p.category && <span style={{ color: '#5b8def' }}>{p.category}</span>}
-                  {p.author && <span>{p.author}{p.author_vip ? <span style={m.vip}>V</span> : null}</span>}
-                  {p.post_time && <span>{p.post_time}</span>}
-                  {(p.comments !== '' && p.comments != null) && <span>💬 {p.comments}</span>}
                 </div>
               </div>
               {p.avatar && (
@@ -200,13 +199,9 @@ function DesktopView({ sections, settings, loading }) {
                   <>
                     <div style={s.ico}><Ico icon={b.icon} fallback="💬" size={26} imgStyle={s.icoImg} /></div>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ ...s.tt, ...(settings.p2_title_color ? { color: settings.p2_title_color } : {}) }}>
+                      <p style={{ ...s.tt, ...((b.title_color || settings.p2_title_color) ? { color: b.title_color || settings.p2_title_color } : {}) }}>
                         {b.title}
-                        {b.badge && <span style={{ ...s.badge, ...(settings.p2_badge_color ? { color: settings.p2_badge_color } : {}) }}>({b.badge})</span>}
-                      </p>
-                      <p style={s.meta}>
-                        主题: <span style={settings.p2_threads_color ? { color: settings.p2_threads_color } : undefined}>{b.threads || 0}</span>, 帖数: <span style={settings.p2_posts_color ? { color: settings.p2_posts_color } : undefined}>{b.posts || 0}</span>
-                        {b.last_post ? <><br /><span style={settings.p2_lastpost_color ? { color: settings.p2_lastpost_color } : undefined}>最后发表: {b.last_post}</span></> : null}
+                        {b.badge && <span style={{ ...s.badge, ...(settings.p2_badge_color ? { color: settings.p2_badge_color } : {}) }}>{b.badge}</span>}
                       </p>
                     </div>
                   </>
@@ -221,20 +216,19 @@ function DesktopView({ sections, settings, loading }) {
             {sec.posts && sec.posts.length > 0 && (
               <div style={s.postList}>
                 {sec.posts.map(p => {
-                  const Row = p.url ? 'a' : 'div';
+                  const hasContent = p.content && p.content.trim();
+                  const Row = hasContent ? Link : (p.url ? 'a' : 'div');
+                  const rowProps = hasContent ? { to: `/post/${p.id}` } : (p.url ? { href: p.url, target: '_blank', rel: 'noopener noreferrer' } : {});
                   return (
-                    <Row key={p.id} {...(p.url ? { href: p.url, target: '_blank', rel: 'noopener noreferrer' } : {})} style={s.post}>
+                    <Row key={p.id} {...rowProps} style={s.post}>
                       <div style={s.avatar}><Ico icon={p.avatar} fallback="👤" size={24} imgStyle={s.avatarImg} /></div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={s.postTitleLine}>
-                          <span style={s.postTitle}>{p.title}</span>
+                          <span style={{ ...s.postTitle, ...((p.title_color || settings.p2_title_color) ? { color: p.title_color || settings.p2_title_color } : {}) }}>{p.title}</span>
                           {p.tag && <span style={{ ...s.postTag, background: (p.tag_color || '#ff7a45') + '22', color: p.tag_color || '#ff7a45' }}>{p.tag}</span>}
                         </div>
                         <div style={s.postMeta}>
                           {p.category && <span style={s.postCat}>{p.category}</span>}
-                          {p.author && <span style={s.postAuthor}>{p.author}{p.author_vip ? <span style={s.vip}>V</span> : null}</span>}
-                          {p.post_time && <span>{p.post_time}</span>}
-                          {p.last_user && <span style={{ color: '#9aa7b5' }}>↩ {p.last_user} 发表了评论 {p.last_time}</span>}
                         </div>
                       </div>
                       {(p.comments !== '' && p.comments != null) && (

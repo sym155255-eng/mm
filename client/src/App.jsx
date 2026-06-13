@@ -6,6 +6,7 @@ import SiteDetail from './pages/SiteDetail';
 import NavPage from './pages/NavPage';
 import PageView from './pages/PageView';
 import ForumPage from './pages/ForumPage';
+import PostDetail from './pages/PostDetail';
 import P2Sections from './pages/admin/P2Sections';
 import P2Boards from './pages/admin/P2Boards';
 import P2Colors from './pages/admin/P2Colors';
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/sites/:id" element={<SiteDetail />} />
         <Route path="/home2" element={<ForumPage />} />
+        <Route path="/post/:id" element={<PostDetail />} />
         <Route path="/page/:id" element={<NavPage />} />
         <Route path="/p/:id" element={<PageView />} />
         <Route path="/login" element={<Login />} />

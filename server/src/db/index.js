@@ -256,6 +256,9 @@ async function initDB() {
   `);
   db._save();
   try { db._db.run(`ALTER TABLE p2_posts ADD COLUMN board_id INTEGER`); db._save(); } catch {}
+  try { db._db.run(`ALTER TABLE p2_posts ADD COLUMN content TEXT DEFAULT ''`); db._save(); } catch {}
+  try { db._db.run(`ALTER TABLE p2_boards ADD COLUMN title_color TEXT DEFAULT ''`); db._save(); } catch {}
+  try { db._db.run(`ALTER TABLE p2_posts ADD COLUMN title_color TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE links ADD COLUMN views INTEGER DEFAULT 0`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE links ADD COLUMN badge TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE links ADD COLUMN badge_color TEXT DEFAULT ''`); db._save(); } catch {}

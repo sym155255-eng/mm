@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getP2Posts, createP2Post, updateP2Post, deleteP2Post, getP2Sections, getP2Boards, uploadIcon } from '../../api';
+import RichEditor from '../../components/RichEditor';
 
-const empty = { section_id: '', board_id: '', avatar: '', title: '', tag: '', tag_color: '#ff7a45', category: '', author: '', author_vip: 0, post_time: '', last_user: '', last_time: '', comments: '', url: '', sort_order: 0, visible: 1 };
+const empty = { section_id: '', board_id: '', avatar: '', title: '', tag: '', tag_color: '#ff7a45', category: '', author: '', author_vip: 0, post_time: '', last_user: '', last_time: '', comments: '', url: '', content: '', title_color: '', sort_order: 0, visible: 1 };
 
 // 系统自带头像库（emoji）
 const AVATAR_LIBRARY = [
@@ -116,20 +117,23 @@ export default function P2Posts() {
                 </div>
               </div>
               <Field label="分类（如 白嫖 / 综合 / 交流）" value={form.category} onChange={v => setForm(f => ({ ...f, category: v }))} />
-              <Field label="作者" value={form.author} onChange={v => setForm(f => ({ ...f, author: v }))} placeholder="如 老哥" />
-              <Field label="发帖时间" value={form.post_time} onChange={v => setForm(f => ({ ...f, post_time: v }))} placeholder="如 2月前 / 2025-4-30" />
-              <Field label="最后评论人" value={form.last_user} onChange={v => setForm(f => ({ ...f, last_user: v }))} placeholder="如 阿操" />
-              <Field label="最后评论时间" value={form.last_time} onChange={v => setForm(f => ({ ...f, last_time: v }))} placeholder="如 2分钟前" />
-              <Field label="评论数" value={form.comments} onChange={v => setForm(f => ({ ...f, comments: v }))} placeholder="如 2.2k" />
               <Field label="点击跳转链接" value={form.url} onChange={v => setForm(f => ({ ...f, url: v }))} placeholder="https://..." />
               <Field label="排序" type="number" value={form.sort_order} onChange={v => setForm(f => ({ ...f, sort_order: +v }))} />
+              <div style={{ marginBottom: 14 }}>
+                <label style={s.fieldLabel}>标题颜色（留空用默认）</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input type="color" value={form.title_color || '#222222'} onChange={e => setForm(f => ({ ...f, title_color: e.target.value }))} style={{ width: 38, height: 32, border: 'none', borderRadius: 6, cursor: 'pointer', padding: 2 }} />
+                  <input value={form.title_color || ''} onChange={e => setForm(f => ({ ...f, title_color: e.target.value }))} placeholder="留空用默认" style={{ ...s.input, flex: 1 }} />
+                  {form.title_color && <button type="button" onClick={() => setForm(f => ({ ...f, title_color: '' }))} style={{ background: '#f3f4f6', color: '#6b7280', border: 'none', borderRadius: 6, padding: '7px 10px', fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>清除</button>}
+                </div>
+              </div>
             </div>
             <AvatarField value={form.avatar} onChange={v => setForm(f => ({ ...f, avatar: v }))} />
+            <div style={{ marginBottom: 16 }}>
+              <label style={s.fieldLabel}>正文内容（富文本，点帖子进入详情页查看）</label>
+              <RichEditor value={form.content} onChange={v => setForm(f => ({ ...f, content: v }))} placeholder="在此输入帖子正文，可加粗、配色、插图、列表…" />
+            </div>
             <div style={{ display: 'flex', gap: 20, marginBottom: 18 }}>
-              <label style={s.checkLabel}>
-                <input type="checkbox" checked={!!form.author_vip} onChange={e => setForm(f => ({ ...f, author_vip: e.target.checked ? 1 : 0 }))} />
-                <span>作者带 V 标</span>
-              </label>
               <label style={s.checkLabel}>
                 <input type="checkbox" checked={!!form.visible} onChange={e => setForm(f => ({ ...f, visible: e.target.checked ? 1 : 0 }))} />
                 <span>显示此帖</span>
@@ -212,7 +216,7 @@ const s = {
   iconBtn: { width: 34, height: 34, fontSize: 20, lineHeight: 1, border: '1px solid transparent', borderRadius: 8, background: 'transparent', cursor: 'pointer', padding: 0 },
   iconBtnActive: { background: '#eff2ff', borderColor: 'var(--primary)' },
   modalBg: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 16 },
-  modal: { background: '#fff', borderRadius: 14, padding: '28px', width: '100%', maxWidth: 640, boxShadow: '0 20px 60px rgba(0,0,0,0.15)', maxHeight: '90vh', overflowY: 'auto' },
+  modal: { background: '#fff', borderRadius: 14, padding: '28px', width: '100%', maxWidth: 760, boxShadow: '0 20px 60px rgba(0,0,0,0.15)', maxHeight: '92vh', overflowY: 'auto' },
   modalTitle: { fontSize: 17, fontWeight: 700, marginBottom: 20 },
   fieldLabel: { display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 5, color: '#374151' },
   checkLabel: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer' },

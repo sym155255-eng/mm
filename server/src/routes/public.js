@@ -53,6 +53,17 @@ router.get('/page2', (req, res) => {
   res.json({ sections: sections.map(s => ({ ...s, boards: bySection[s.id] || [], posts: postsBySection[s.id] || [] })), settings: settingsObj, banners, notices });
 });
 
+// 第二页 单个帖子详情
+router.get('/post/:id', (req, res) => {
+  const db = getDB();
+  const post = db.prepare('SELECT * FROM p2_posts WHERE id=?').get(req.params.id);
+  if (!post) return res.status(404).json({ error: '帖子不存在' });
+  const settings = db.prepare('SELECT * FROM settings').all();
+  const settingsObj = {};
+  settings.forEach(s => settingsObj[s.key] = s.value);
+  res.json({ ...post, settings: settingsObj });
+});
+
 router.get('/data', (req, res) => {
   const db = getDB();
   const categories = db.prepare('SELECT * FROM categories WHERE visible=1 ORDER BY sort_order,id').all();

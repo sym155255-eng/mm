@@ -331,14 +331,14 @@ router.get('/p2/boards', (req, res) => {
   res.json(db().prepare('SELECT * FROM p2_boards ORDER BY sort_order,id').all());
 });
 router.post('/p2/boards', (req, res) => {
-  const { section_id, title, icon = '', badge = '', threads = '', posts = '', last_post = '', url = '', sort_order = 0, visible = 1 } = req.body;
-  const r = db().prepare('INSERT INTO p2_boards (section_id,title,icon,badge,threads,posts,last_post,url,sort_order,visible) VALUES (?,?,?,?,?,?,?,?,?,?)').run(section_id, title, icon, badge, threads, posts, last_post, url, sort_order, visible);
+  const { section_id, title, icon = '', badge = '', threads = '', posts = '', last_post = '', url = '', title_color = '', sort_order = 0, visible = 1 } = req.body;
+  const r = db().prepare('INSERT INTO p2_boards (section_id,title,icon,badge,threads,posts,last_post,url,title_color,sort_order,visible) VALUES (?,?,?,?,?,?,?,?,?,?,?)').run(section_id, title, icon, badge, threads, posts, last_post, url, title_color, sort_order, visible);
   broadcast('update');
   res.json({ id: r.lastInsertRowid });
 });
 router.put('/p2/boards/:id', (req, res) => {
-  const { section_id, title, icon = '', badge = '', threads = '', posts = '', last_post = '', url = '', sort_order = 0, visible = 1 } = req.body;
-  db().prepare('UPDATE p2_boards SET section_id=?,title=?,icon=?,badge=?,threads=?,posts=?,last_post=?,url=?,sort_order=?,visible=? WHERE id=?').run(section_id, title, icon, badge, threads, posts, last_post, url, sort_order, visible, req.params.id);
+  const { section_id, title, icon = '', badge = '', threads = '', posts = '', last_post = '', url = '', title_color = '', sort_order = 0, visible = 1 } = req.body;
+  db().prepare('UPDATE p2_boards SET section_id=?,title=?,icon=?,badge=?,threads=?,posts=?,last_post=?,url=?,title_color=?,sort_order=?,visible=? WHERE id=?').run(section_id, title, icon, badge, threads, posts, last_post, url, title_color, sort_order, visible, req.params.id);
   broadcast('update');
   res.json({ ok: true });
 });
@@ -349,7 +349,7 @@ router.delete('/p2/boards/:id', (req, res) => {
 });
 
 // ── 第二页：帖子(p2_posts) ─────────────────────────────────
-const POST_COLS = 'section_id,board_id,avatar,title,tag,tag_color,category,author,author_vip,post_time,last_user,last_time,comments,url,sort_order,visible';
+const POST_COLS = 'section_id,board_id,avatar,title,tag,tag_color,category,author,author_vip,post_time,last_user,last_time,comments,url,content,title_color,sort_order,visible';
 function postVals(b) {
   // 选了子版块时，所属分区自动取该版块的分区
   let sectionId = b.section_id;
@@ -358,19 +358,19 @@ function postVals(b) {
     if (board) sectionId = board.section_id;
   }
   return [sectionId, b.board_id || null, b.avatar || '', b.title, b.tag || '', b.tag_color || '#ff7a45', b.category || '', b.author || '',
-    b.author_vip ? 1 : 0, b.post_time || '', b.last_user || '', b.last_time || '', b.comments || '', b.url || '', b.sort_order || 0, b.visible == null ? 1 : b.visible];
+    b.author_vip ? 1 : 0, b.post_time || '', b.last_user || '', b.last_time || '', b.comments || '', b.url || '', b.content || '', b.title_color || '', b.sort_order || 0, b.visible == null ? 1 : b.visible];
 }
 router.get('/p2/posts', (req, res) => {
   res.json(db().prepare('SELECT * FROM p2_posts ORDER BY sort_order,id').all());
 });
 router.post('/p2/posts', (req, res) => {
-  const r = db().prepare(`INSERT INTO p2_posts (${POST_COLS}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(...postVals(req.body));
+  const r = db().prepare(`INSERT INTO p2_posts (${POST_COLS}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(...postVals(req.body));
   broadcast('update');
   res.json({ id: r.lastInsertRowid });
 });
 router.put('/p2/posts/:id', (req, res) => {
   const b = req.body;
-  db().prepare(`UPDATE p2_posts SET section_id=?,board_id=?,avatar=?,title=?,tag=?,tag_color=?,category=?,author=?,author_vip=?,post_time=?,last_user=?,last_time=?,comments=?,url=?,sort_order=?,visible=? WHERE id=?`)
+  db().prepare(`UPDATE p2_posts SET section_id=?,board_id=?,avatar=?,title=?,tag=?,tag_color=?,category=?,author=?,author_vip=?,post_time=?,last_user=?,last_time=?,comments=?,url=?,content=?,title_color=?,sort_order=?,visible=? WHERE id=?`)
     .run(...postVals(b), req.params.id);
   broadcast('update');
   res.json({ ok: true });

@@ -175,3 +175,8 @@
   0% { transform: translateX(0); }
   100% { transform: translateX(-100%); }
 }
+
+/* 富文本编辑器空内容占位 */
+.rich-editable:empty:before { content: attr(data-placeholder); color: #b6bcc6; }
+.rich-editable img { max-width: 100%; height: auto; }
+.rich-editable blockquote { border-left: 3px solid #d1d5db; margin: 8px 0; padding: 4px 12px; color: #6b7280; background: #f9fafb; }

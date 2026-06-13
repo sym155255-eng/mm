@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getP2Boards, createP2Board, updateP2Board, deleteP2Board, getP2Sections, uploadIcon } from '../../api';
 
-const empty = { section_id: '', title: '', icon: '', badge: '', threads: '', posts: '', last_post: '', url: '', sort_order: 0, visible: 1 };
+const empty = { section_id: '', title: '', icon: '', badge: '', threads: '', posts: '', last_post: '', url: '', title_color: '', sort_order: 0, visible: 1 };
 
 // 系统自带图标库（emoji）
 const ICON_LIBRARY = [
@@ -103,7 +103,7 @@ export default function P2Boards() {
               {!it.icon ? <span style={{ fontSize: 18 }}>💬</span>
                 : /^(\/|https?:|data:)/.test(it.icon) ? <img src={it.icon} alt="" style={{ width: 30, height: 30, borderRadius: 6, objectFit: 'cover' }} /> : <span style={{ fontSize: 22 }}>{it.icon}</span>}
             </span>
-            <span style={{ flex: 1, fontWeight: 600 }}>{it.title}{it.badge && <span style={{ color: '#e64340', marginLeft: 4 }}>({it.badge})</span>}</span>
+            <span style={{ flex: 1, fontWeight: 600 }}>{it.title}{it.badge && <span style={{ color: '#e64340', marginLeft: 4 }}>{it.badge}</span>}</span>
             <span style={{ width: 110, color: '#6b7280', fontSize: 13 }}>{secName(it.section_id)}</span>
             <span style={{ width: 120, color: '#9ca3af', fontSize: 12 }}>{it.threads || 0} / {it.posts || 0}</span>
             <span style={{ width: 110, textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
@@ -129,11 +129,9 @@ export default function P2Boards() {
               </div>
               <Field label="标题 *" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder="如 站务公告" />
               <Field label="红色数字角标（可选）" value={form.badge} onChange={v => setForm(f => ({ ...f, badge: v }))} placeholder="如 2" />
-              <Field label="主题数" value={form.threads} onChange={v => setForm(f => ({ ...f, threads: v }))} placeholder="如 63 或 3万" />
-              <Field label="帖数" value={form.posts} onChange={v => setForm(f => ({ ...f, posts: v }))} placeholder="如 1189" />
-              <Field label="最后发表（可选）" value={form.last_post} onChange={v => setForm(f => ({ ...f, last_post: v }))} placeholder="如 2026-5-16 我爱老电影" />
               <Field label="点击跳转链接（可选）" value={form.url} onChange={v => setForm(f => ({ ...f, url: v }))} placeholder="https://..." />
               <Field label="排序" type="number" value={form.sort_order} onChange={v => setForm(f => ({ ...f, sort_order: +v }))} />
+              <ColorField label="标题颜色（留空用默认）" value={form.title_color} onChange={v => setForm(f => ({ ...f, title_color: v }))} />
             </div>
             <IconField value={form.icon} onChange={v => setForm(f => ({ ...f, icon: v }))} />
             <label style={s.checkLabel}>
@@ -156,6 +154,19 @@ function Field({ label, value, onChange, type = 'text', placeholder }) {
     <div style={{ marginBottom: 14 }}>
       <label style={s.fieldLabel}>{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={s.input} />
+    </div>
+  );
+}
+
+function ColorField({ label, value, onChange }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={s.fieldLabel}>{label}</label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <input type="color" value={value || '#222222'} onChange={e => onChange(e.target.value)} style={{ width: 38, height: 32, border: 'none', borderRadius: 6, cursor: 'pointer', padding: 2 }} />
+        <input value={value || ''} onChange={e => onChange(e.target.value)} placeholder="留空用默认" style={{ ...s.input, flex: 1 }} />
+        {value && <button type="button" onClick={() => onChange('')} style={{ background: '#f3f4f6', color: '#6b7280', border: 'none', borderRadius: 6, padding: '7px 10px', fontSize: 12, cursor: 'pointer', flexShrink: 0 }}>清除</button>}
+      </div>
     </div>
   );
 }

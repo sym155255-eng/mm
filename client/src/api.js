@@ -18,6 +18,10 @@ export async function fetchPage2() {
   const r = await fetch(`${BASE}/public/page2`);
   return r.json();
 }
+export async function fetchP2Post(id) {
+  const r = await fetch(`${BASE}/public/post/${id}`);
+  return r.json();
+}
 export async function getP2Sections() {
   const r = await fetch(`${BASE}/admin/p2/sections`, { headers: authHeaders() });
   return r.json();
