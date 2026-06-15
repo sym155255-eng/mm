@@ -172,10 +172,10 @@
   /* 手机端广告·圆形图标样式（仅当后台选样式2时加 .ad-circle） */
   .ads-row.ad-circle { display: flex !important; flex-wrap: wrap !important; gap: 0 !important; overflow: visible !important; }
   .ads-row.ad-circle > .ad-card {
-    width: 25% !important; flex: none !important;
+    width: 20% !important; flex: none !important;
     flex-direction: column !important; align-items: center !important; text-align: center !important;
     background: transparent !important; border: none !important; box-shadow: none !important;
-    padding: 10px 4px !important; gap: 6px !important; min-width: 0 !important;
+    padding: 4px 4px !important; gap: 4px !important; min-width: 0 !important;
   }
   .ads-row.ad-circle > .ad-card .ad-ic {
     width: 50px !important; height: 50px !important; border-radius: 50% !important;

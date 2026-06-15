@@ -210,9 +210,9 @@ export default function Home() {
 
           {/* Ads */}
           {settings.show_ads === '1' && topAds.length > 0 && (() => {
-            const adCols = typeof window !== 'undefined' && window.innerWidth <= 768 ? 2
-              : (typeof window !== 'undefined' && window.innerWidth <= 1024 ? 4 : 5);
-            const adLimit = adCols * 2; // 折叠：2 排
+            const isMob = typeof window !== 'undefined' && window.innerWidth <= 768;
+            const adCols = isMob ? 2 : (typeof window !== 'undefined' && window.innerWidth <= 1024 ? 4 : 5);
+            const adLimit = isMob ? 10 : adCols * 2; // 手机显示10个，电脑/平板2排
             const adHasMore = topAds.length > adLimit;
             const visibleAds = adsExpanded ? topAds : topAds.slice(0, adLimit);
             return (
