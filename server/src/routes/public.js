@@ -70,6 +70,7 @@ router.get('/data', (req, res) => {
   const subCategories = db.prepare('SELECT * FROM sub_categories ORDER BY sort_order,id').all();
   const links = db.prepare('SELECT * FROM links WHERE visible=1 ORDER BY sort_order,id').all();
   const subLinks = db.prepare('SELECT * FROM sub_links ORDER BY sort_order,id').all();
+  const adSubLinks = db.prepare('SELECT * FROM ad_sub_links ORDER BY sort_order,id').all();
   const settings = db.prepare('SELECT * FROM settings').all();
   const ads = db.prepare('SELECT * FROM ads WHERE visible=1 ORDER BY sort_order,id').all();
   const notices = db.prepare('SELECT * FROM notices WHERE visible=1 ORDER BY sort_order,id').all();
@@ -84,7 +85,12 @@ router.get('/data', (req, res) => {
   subLinks.forEach(sl => { if (!subMap[sl.link_id]) subMap[sl.link_id] = []; subMap[sl.link_id].push(sl); });
   const linksWithSub = links.map(l => ({ ...l, sub_links: subMap[l.id] || [] }));
 
-  res.json({ categories, subCategories, links: linksWithSub, settings: settingsObj, ads, notices, banners, navs });
+  // 把子链接挂到对应广告上
+  const adSubMap = {};
+  adSubLinks.forEach(sl => { if (!adSubMap[sl.ad_id]) adSubMap[sl.ad_id] = []; adSubMap[sl.ad_id].push(sl); });
+  const adsWithSub = ads.map(a => ({ ...a, sub_links: adSubMap[a.id] || [] }));
+
+  res.json({ categories, subCategories, links: linksWithSub, settings: settingsObj, ads: adsWithSub, notices, banners, navs });
 });
 
 module.exports = router;

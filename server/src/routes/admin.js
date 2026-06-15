@@ -211,6 +211,29 @@ router.put('/ads/:id', (req, res) => {
 
 router.delete('/ads/:id', (req, res) => {
   db().prepare('DELETE FROM ads WHERE id=?').run(req.params.id);
+  db().prepare('DELETE FROM ad_sub_links WHERE ad_id=?').run(req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
+// 广告子链接
+router.get('/ads/:id/sub', (req, res) => {
+  res.json(db().prepare('SELECT * FROM ad_sub_links WHERE ad_id=? ORDER BY sort_order,id').all(req.params.id));
+});
+router.post('/ads/:id/sub', (req, res) => {
+  const { title, url, icon = '', sort_order = 0 } = req.body;
+  const r = db().prepare('INSERT INTO ad_sub_links (ad_id,title,url,icon,sort_order) VALUES (?,?,?,?,?)').run(req.params.id, title, url, icon, sort_order);
+  broadcast('update');
+  res.json({ id: r.lastInsertRowid });
+});
+router.put('/ad-sub/:id', (req, res) => {
+  const { title, url, icon = '', sort_order = 0 } = req.body;
+  db().prepare('UPDATE ad_sub_links SET title=?,url=?,icon=?,sort_order=? WHERE id=?').run(title, url, icon, sort_order, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+router.delete('/ad-sub/:id', (req, res) => {
+  db().prepare('DELETE FROM ad_sub_links WHERE id=?').run(req.params.id);
   broadcast('update');
   res.json({ ok: true });
 });

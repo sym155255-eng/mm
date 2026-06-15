@@ -198,6 +198,23 @@ export async function deleteAd(id) {
   const r = await fetch(`${BASE}/admin/ads/${id}`, { method: 'DELETE', headers: authHeaders() });
   return r.json();
 }
+// 广告子链接
+export async function getAdSubLinks(adId) {
+  const r = await fetch(`${BASE}/admin/ads/${adId}/sub`, { headers: authHeaders() });
+  return r.json();
+}
+export async function createAdSubLink(adId, data) {
+  const r = await fetch(`${BASE}/admin/ads/${adId}/sub`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function updateAdSubLink(id, data) {
+  const r = await fetch(`${BASE}/admin/ad-sub/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function deleteAdSubLink(id) {
+  const r = await fetch(`${BASE}/admin/ad-sub/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}
 
 // Notices (跑马灯)
 export async function getNotices() {

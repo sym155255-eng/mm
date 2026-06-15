@@ -221,26 +221,32 @@ export default function Home() {
                 </div>
               </div>
               {/* 卡片横向滚动 */}
-              <div className="ads-row" style={styles.adsRow}>
-                {topAds.map(ad => (
-                  <a key={ad.id} href={ad.url || '#'} target="_blank" rel="noopener noreferrer" style={styles.adCard}>
-                    {ad.badge && (
-                      <span style={{ ...styles.adBadge, background: ad.badge_color || 'var(--badge)' }}>{ad.badge}</span>
-                    )}
-                    <div style={styles.adCardIcon}>
-                      {ad.image_url
-                        ? <img src={ad.image_url} alt={ad.title} style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain' }} />
-                        : <span style={{ fontSize: 18 }}>📢</span>
-                      }
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ ...styles.adCardTitle, ...(ad.title_color ? { color: ad.title_color } : {}) }}>{ad.title}</div>
-                      {ad.description && (
-                        <div style={{ ...styles.adCardDesc, ...(ad.desc_color ? { color: ad.desc_color } : {}) }}>{ad.description}</div>
+              <div className={`ads-row${settings.mobile_ad_style === '2' ? ' ad-circle' : ''}`} style={styles.adsRow}>
+                {topAds.map(ad => {
+                  const hasSub = ad.sub_links && ad.sub_links.length > 0;
+                  const inner = (
+                    <>
+                      {ad.badge && (
+                        <span style={{ ...styles.adBadge, background: ad.badge_color || 'var(--badge)' }}>{ad.badge}</span>
                       )}
-                    </div>
-                  </a>
-                ))}
+                      <div className="ad-ic" style={styles.adCardIcon}>
+                        {ad.image_url
+                          ? <img src={ad.image_url} alt={ad.title} style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain' }} />
+                          : <span style={{ fontSize: 18 }}>📢</span>
+                        }
+                      </div>
+                      <div className="ad-tx" style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ ...styles.adCardTitle, ...(ad.title_color ? { color: ad.title_color } : {}) }}>{ad.title}{hasSub && <span style={{ fontSize: 11, color: '#9ca3af', marginLeft: 4 }}>▾</span>}</div>
+                        {ad.description && (
+                          <div style={{ ...styles.adCardDesc, ...(ad.desc_color ? { color: ad.desc_color } : {}) }}>{ad.description}</div>
+                        )}
+                      </div>
+                    </>
+                  );
+                  return hasSub
+                    ? <div key={ad.id} className="ad-card" style={{ ...styles.adCard, cursor: 'pointer' }} onClick={() => setPopup({ ...ad, icon: ad.image_url })}>{inner}</div>
+                    : <a key={ad.id} className="ad-card" href={ad.url || '#'} target="_blank" rel="noopener noreferrer" style={styles.adCard}>{inner}</a>;
+                })}
               </div>
             </div>
           )}
@@ -352,18 +358,20 @@ export default function Home() {
               <button onClick={() => setPopup(null)} style={styles.popupClose}>✕</button>
             </div>
             <div style={styles.popupLinks}>
-              <a href={popup.url} target="_blank" rel="noopener noreferrer" style={styles.popupItem} onClick={() => setPopup(null)}>
-                <div style={{ ...styles.cardIcon, width: 28, height: 28 }}>
-                  <FaviconImg url={popup.url} title={popup.title} icon={popup.icon} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--primary)' }}>{popup.title}</div>
-                  <div style={{ fontSize: 11, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{popup.url}</div>
-                </div>
-                <span style={styles.popupTag}>主站</span>
-              </a>
-              <div style={{ height: 1, background: '#f3f4f6' }} />
-              {popup.sub_links.map(sl => (
+              {popup.url && (
+                <a href={popup.url} target="_blank" rel="noopener noreferrer" style={styles.popupItem} onClick={() => setPopup(null)}>
+                  <div style={{ ...styles.cardIcon, width: 28, height: 28 }}>
+                    <FaviconImg url={popup.url} title={popup.title} icon={popup.icon} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--primary)' }}>{popup.title}</div>
+                    <div style={{ fontSize: 11, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{popup.url}</div>
+                  </div>
+                  <span style={styles.popupTag}>主站</span>
+                </a>
+              )}
+              {popup.url && <div style={{ height: 1, background: '#f3f4f6' }} />}
+              {(popup.sub_links || []).map(sl => (
                 <a key={sl.id} href={sl.url} target="_blank" rel="noopener noreferrer" style={styles.popupItem} onClick={() => setPopup(null)}>
                   <div style={{ ...styles.cardIcon, width: 28, height: 28 }}>
                     <FaviconImg url={sl.url} title={sl.title} icon={sl.icon} />

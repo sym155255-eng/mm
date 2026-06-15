@@ -75,8 +75,10 @@ export default function Banners() {
                 style={{ flex: 1, padding: '7px 10px', border: '1.5px solid #e5e7eb', borderRadius: 6, fontSize: 13, minWidth: 0 }} />
               <button onClick={() => move(b, -1)} disabled={i === 0} style={s.smBtn}>↑</button>
               <button onClick={() => move(b, 1)} disabled={i === list.length - 1} style={s.smBtn}>↓</button>
-              <button onClick={() => toggleVisible(b)} style={{ ...s.smBtn, color: b.visible ? '#16a34a' : '#9ca3af', width: 'auto', padding: '0 10px' }}>
-                {b.visible ? '显示' : '隐藏'}
+              <button onClick={() => toggleVisible(b)} title="点击切换显示/隐藏"
+                style={{ ...s.smBtn, width: 'auto', padding: '0 14px', fontWeight: 600, border: 'none',
+                  background: b.visible ? '#dcfce7' : '#f3f4f6', color: b.visible ? '#16a34a' : '#9ca3af' }}>
+                {b.visible ? '✓ 显示' : '✕ 隐藏'}
               </button>
               <button onClick={() => handleDelete(b.id)} style={s.delBtn}>删除</button>
             </div>

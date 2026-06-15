@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../store/auth';
+import { getSettings, saveSettings } from '../../api';
 
 const IDLE_MS = 10 * 60 * 1000; // 10 分钟无操作自动退出
 
@@ -27,6 +28,15 @@ export default function AdminLayout() {
   const nav = useNavigate();
   const [sideOpen, setSideOpen] = useState(false);
   const [menuGroup, setMenuGroup] = useState(1); // 当前后台菜单分组（1 / 2）
+  const [adStyle, setAdStyle] = useState('1');   // 手机广告样式 1=卡片 2=圆形
+
+  useEffect(() => {
+    getSettings().then(s => setAdStyle(s?.mobile_ad_style === '2' ? '2' : '1')).catch(() => {});
+  }, []);
+  async function changeAdStyle(v) {
+    setAdStyle(v);
+    try { await saveSettings({ mobile_ad_style: v }); } catch {}
+  }
 
   function handleLogout() {
     signOut();
@@ -119,6 +129,13 @@ export default function AdminLayout() {
         <header className="admin-topbar" style={s.topbar}>
           <button className="admin-menu-btn" style={s.menuBtn} onClick={() => setSideOpen(v => !v)}>☰</button>
           <span style={s.pageTitle}>后台管理系统</span>
+          <div style={s.adStyleWrap}>
+            <span style={s.adStyleLabel}>手机广告</span>
+            <div style={s.adSwitch}>
+              <button style={{ ...s.adBtn, ...(adStyle === '1' ? s.adBtnActive : {}) }} onClick={() => changeAdStyle('1')} title="卡片样式">1</button>
+              <button style={{ ...s.adBtn, ...(adStyle === '2' ? s.adBtnActive : {}) }} onClick={() => changeAdStyle('2')} title="圆形图标样式">2</button>
+            </div>
+          </div>
           <span style={s.userChip}>{user?.username}</span>
         </header>
         <div style={s.content}>
@@ -145,24 +162,24 @@ const s = {
     transition: 'transform 0.25s',
   },
   sideTop: { padding: '24px 20px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #2d3350' },
-  groupSwitch: { display: 'flex', gap: 8 },
-  groupBtn: { width: 32, height: 32, borderRadius: 8, border: '1px solid #3a4060', background: 'transparent', color: '#94a3b8', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 },
-  groupBtnActive: { background: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' },
+  groupSwitch: { display: 'inline-flex', background: '#2a3050', borderRadius: 9, padding: 3, gap: 2 },
+  groupBtn: { width: 30, height: 26, borderRadius: 6, border: 'none', background: 'transparent', color: '#94a3b8', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, transition: 'all .15s' },
+  groupBtnActive: { background: 'var(--primary)', color: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.25)' },
   brandIcon: { fontSize: 22 },
   brandName: { fontWeight: 700, fontSize: 13 },
   brandUser: { fontSize: 11, color: '#94a3b8', marginTop: 1 },
-  nav: { flex: 1, padding: '12px 10px' },
+  nav: { flex: 1, padding: '12px 10px', overflowY: 'auto', minHeight: 0 },
   groupHint: { display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 12px 12px', fontSize: 12, color: '#64748b' },
   viewLink: { color: 'var(--primary)', fontSize: 12, fontWeight: 600, textDecoration: 'none' },
   navItem: {
     display: 'flex', alignItems: 'center', gap: 10,
-    padding: '10px 14px', borderRadius: 8,
+    padding: '6px 14px', borderRadius: 8,
     fontSize: 14, color: '#94a3b8',
     textDecoration: 'none', transition: 'all 0.15s',
-    marginBottom: 4,
+    marginBottom: 1,
   },
   navActive: { background: 'var(--primary)', color: '#fff' },
-  sideBottom: { padding: '12px 10px', borderTop: '1px solid #2d3350', display: 'flex', flexDirection: 'column', gap: 6 },
+  sideBottom: { padding: '12px 10px', borderTop: '1px solid #2d3350', display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 },
   sideBtn: {
     display: 'block', padding: '8px 14px', borderRadius: 8,
     fontSize: 13, color: '#94a3b8', background: 'none', border: 'none',
@@ -178,6 +195,11 @@ const s = {
   },
   menuBtn: { background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', display: 'none', marginRight: 4 },
   pageTitle: { fontWeight: 600, fontSize: 15, flex: 1 },
+  adStyleWrap: { display: 'flex', alignItems: 'center', gap: 8, marginRight: 12 },
+  adStyleLabel: { fontSize: 12, color: '#9ca3af' },
+  adSwitch: { display: 'inline-flex', background: '#eef1f6', borderRadius: 8, padding: 2, gap: 2 },
+  adBtn: { width: 28, height: 24, border: 'none', background: 'transparent', color: '#6b7280', fontSize: 13, fontWeight: 700, cursor: 'pointer', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 },
+  adBtnActive: { background: 'var(--primary)', color: '#fff' },
   userChip: { background: '#eff2ff', color: 'var(--primary)', padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600 },
   content: { flex: 1, padding: '28px 24px', maxWidth: 1200 },
 };

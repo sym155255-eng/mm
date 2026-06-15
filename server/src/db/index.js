@@ -255,6 +255,17 @@ async function initDB() {
     )
   `);
   db._save();
+  db._db.run(`
+    CREATE TABLE IF NOT EXISTS ad_sub_links (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ad_id INTEGER NOT NULL REFERENCES ads(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      url TEXT NOT NULL,
+      icon TEXT DEFAULT '',
+      sort_order INTEGER DEFAULT 0
+    )
+  `);
+  db._save();
   try { db._db.run(`ALTER TABLE p2_posts ADD COLUMN board_id INTEGER`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE p2_posts ADD COLUMN content TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE p2_boards ADD COLUMN title_color TEXT DEFAULT ''`); db._save(); } catch {}
