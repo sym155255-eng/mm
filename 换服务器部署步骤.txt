@@ -1,0 +1,83 @@
+============================================================
+ 换服务器 / 重装后 —— 完整部署步骤
+============================================================
+
+【核心概念】
+带 token 的备份地址 = 三段拼起来：
+  https://  +  你的token  +  @github.com/aa1558686/nav-db-backup.git
+  - 你的token：github_pat_xxxx 开头那一长串（GitHub 生成的"钥匙"）
+  - @github.com/.../...git：仓库地址，固定不变
+  - 凡是下面写"你的token"的地方，都换成 github_pat_ 那一段，@github.com 别动
+
+【相关仓库】
+  - 代码仓库（公开）：  https://github.com/aa1558686/sss.git
+  - 数据备份仓库（私有）：https://github.com/aa1558686/nav-db-backup.git
+
+------------------------------------------------------------
+ 第 ① 步：装环境（Node + git + pm2）
+------------------------------------------------------------
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt install -y nodejs git && npm install -g pm2
+
+验证：node -v   （出现 v20.x 即可）
+
+------------------------------------------------------------
+ 第 ② 步：拉代码 + 构建 + 启动
+------------------------------------------------------------
+cd ~ && git clone https://github.com/aa1558686/sss.git ddd
+cd ddd/client && npm install && npm run build
+cd ../server && npm install --omit=dev
+pm2 start src/index.js --name nav-site
+pm2 save
+pm2 startup systemd -u root --hp /root     # 按提示再粘贴它输出的那条命令
+
+------------------------------------------------------------
+ 第 ③ 步：恢复旧数据（从备份仓库拉回 nav.db）
+------------------------------------------------------------
+cd ~ && git clone https://你的token@github.com/aa1558686/nav-db-backup.git
+cp nav-db-backup/nav.db ~/ddd/data/nav.db
+pm2 restart nav-site
+
+（全新站点不想恢复旧数据，可跳过本步，数据库会自动新建，
+  管理员默认 admin / admin123）
+
+------------------------------------------------------------
+ 第 ④ 步：开启自动备份（.env）
+------------------------------------------------------------
+printf '%s\n' 'BACKUP_REPO=https://你的token@github.com/aa1558686/nav-db-backup.git' 'BACKUP_INTERVAL_MIN=60' > ~/ddd/server/.env
+pm2 restart nav-site
+
+验证：pm2 logs nav-site --lines 5
+  看到 "💾 自动备份已启用" 和稍后 "💾 数据库已自动备份到 GitHub" 即成功
+  （看完按 Ctrl+C 退出）
+
+------------------------------------------------------------
+ 第 ⑤ 步：域名反代 + HTTPS（1Panel 面板里操作）
+------------------------------------------------------------
+ 1) 装 1Panel：
+    curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh -o quick_start.sh && bash quick_start.sh
+    装完记下 面板地址/用户/密码
+ 2) 1Panel → 网站 → 创建 → 反向代理
+      域名：1558686.xyz
+      代理地址：http://127.0.0.1:3001
+ 3) 证书 → Acme账户(填邮箱) → 申请证书(域名 1558686.xyz，验证方式 HTTP)
+ 4) 网站 → HTTPS → 启用 + 选刚签发的证书 + 强制 HTTPS
+ （前提：域名 DNS 已解析到新服务器 IP）
+
+------------------------------------------------------------
+ 日常更新代码
+------------------------------------------------------------
+cd ~/ddd && bash update.sh
+（自动 git pull + 构建 + 重启，数据不动）
+
+------------------------------------------------------------
+ token 失效/泄露 怎么换
+------------------------------------------------------------
+ 1) GitHub → 头像 → Settings → Developer settings →
+    Personal access tokens → Fine-grained tokens
+    把旧的 Revoke，再 Generate new token：
+      - 有效期 No expiration
+      - Only select repositories → 选 nav-db-backup
+      - Permissions → Contents → Read and write
+ 2) 用新 token 重写 .env（同第④步），pm2 restart nav-site
+
+============================================================

@@ -1,3 +1,12 @@
+/* 卡片网格列数：电脑5 / 平板3 / 手机2 */
+.link-grid, .ads-row { grid-template-columns: repeat(5, 1fr); }
+@media (min-width: 769px) and (max-width: 1024px) {
+  .link-grid, .ads-row { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 768px) {
+  .link-grid, .ads-row { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* 弹窗始终保持两列；窄屏收紧内边距和间距给字段更多空间 */
 @media (max-width: 680px) {
   .modal-grid2 { gap: 0 10px !important; }
@@ -160,9 +169,6 @@
     padding: 7px 10px !important;
     gap: 8px !important;
   }
-  /* 第二页论坛板块：手机单列 */
-  .forum-grid { grid-template-columns: 1fr !important; }
-
   /* 手机端广告·圆形图标样式（仅当后台选样式2时加 .ad-circle） */
   .ads-row.ad-circle { display: flex !important; flex-wrap: wrap !important; gap: 0 !important; overflow: visible !important; }
   .ads-row.ad-circle > .ad-card {
@@ -179,19 +185,3 @@
   .ads-row.ad-circle > .ad-card .ad-tx { flex: none !important; width: 100% !important; }
   .ads-row.ad-circle > .ad-card .ad-tx > div:nth-child(2) { display: none !important; } /* 隐藏描述 */
 }
-
-/* 第二页论坛板块：平板 2 列 */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .forum-grid { grid-template-columns: repeat(2,1fr) !important; }
-}
-
-/* 第二页手机版 播报跑马灯 */
-@keyframes p2marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
-}
-
-/* 富文本编辑器空内容占位 */
-.rich-editable:empty:before { content: attr(data-placeholder); color: #b6bcc6; }
-.rich-editable img { max-width: 100%; height: auto; }
-.rich-editable blockquote { border-left: 3px solid #d1d5db; margin: 8px 0; padding: 4px 12px; color: #6b7280; background: #f9fafb; }

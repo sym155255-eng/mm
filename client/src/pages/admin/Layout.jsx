@@ -16,18 +16,16 @@ const navItems = [
   { to: '/admin/banners', icon: '🖼️', label: '图片管理', group: 1 },
   { to: '/admin/colors', icon: '🎨', label: '颜色管理', group: 1 },
   { to: '/admin/settings', icon: '⚙️', label: '网站设置', group: 1 },
-  // 组 2：第二页（/home2 论坛样式）独立管理
-  { to: '/admin/p2/sections', icon: '🗂️', label: '分区管理', group: 2 },
-  { to: '/admin/p2/boards', icon: '📋', label: '子版块管理', group: 2 },
-  { to: '/admin/p2/posts', icon: '📝', label: '帖子管理', group: 2 },
-  { to: '/admin/p2/colors', icon: '🎨', label: '颜色管理', group: 2 },
+  // 分组 2：第二页（/home2 共享同一套数据）
+  { to: '/admin/categories', icon: '📂', label: '分类管理', group: 2 },
+  { to: '/admin/links', icon: '🔗', label: '链接管理', group: 2 },
 ];
 
 export default function AdminLayout() {
   const { user, signOut } = useAuth();
   const nav = useNavigate();
   const [sideOpen, setSideOpen] = useState(false);
-  const [menuGroup, setMenuGroup] = useState(1); // 当前后台菜单分组（1 / 2）
+  const [menuGroup, setMenuGroup] = useState(1); // 侧边栏分组 1 / 2
   const [adStyle, setAdStyle] = useState('1');   // 手机广告样式 1=卡片 2=圆形
 
   useEffect(() => {
@@ -101,7 +99,7 @@ export default function AdminLayout() {
         <nav style={s.nav}>
           {menuGroup === 2 && (
             <div style={s.groupHint}>
-              第二页（论坛样式·独立）
+              第二页（独立）管理
               <a href="/home2" target="_blank" style={s.viewLink}>查看第二页 ↗</a>
             </div>
           )}

@@ -8,66 +8,9 @@ function authHeaders() {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` };
 }
 
-export async function fetchPublicData() {
-  const r = await fetch(`${BASE}/public/data`);
-  return r.json();
-}
-
-// 第二页（论坛板块样式）
-export async function fetchPage2() {
-  const r = await fetch(`${BASE}/public/page2`);
-  return r.json();
-}
-export async function fetchP2Post(id) {
-  const r = await fetch(`${BASE}/public/post/${id}`);
-  return r.json();
-}
-export async function getP2Sections() {
-  const r = await fetch(`${BASE}/admin/p2/sections`, { headers: authHeaders() });
-  return r.json();
-}
-export async function createP2Section(data) {
-  const r = await fetch(`${BASE}/admin/p2/sections`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
-  return r.json();
-}
-export async function updateP2Section(id, data) {
-  const r = await fetch(`${BASE}/admin/p2/sections/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
-  return r.json();
-}
-export async function deleteP2Section(id) {
-  const r = await fetch(`${BASE}/admin/p2/sections/${id}`, { method: 'DELETE', headers: authHeaders() });
-  return r.json();
-}
-export async function getP2Boards() {
-  const r = await fetch(`${BASE}/admin/p2/boards`, { headers: authHeaders() });
-  return r.json();
-}
-export async function createP2Board(data) {
-  const r = await fetch(`${BASE}/admin/p2/boards`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
-  return r.json();
-}
-export async function updateP2Board(id, data) {
-  const r = await fetch(`${BASE}/admin/p2/boards/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
-  return r.json();
-}
-export async function deleteP2Board(id) {
-  const r = await fetch(`${BASE}/admin/p2/boards/${id}`, { method: 'DELETE', headers: authHeaders() });
-  return r.json();
-}
-export async function getP2Posts() {
-  const r = await fetch(`${BASE}/admin/p2/posts`, { headers: authHeaders() });
-  return r.json();
-}
-export async function createP2Post(data) {
-  const r = await fetch(`${BASE}/admin/p2/posts`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
-  return r.json();
-}
-export async function updateP2Post(id, data) {
-  const r = await fetch(`${BASE}/admin/p2/posts/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
-  return r.json();
-}
-export async function deleteP2Post(id) {
-  const r = await fetch(`${BASE}/admin/p2/posts/${id}`, { method: 'DELETE', headers: authHeaders() });
+export async function fetchPublicData(group) {
+  const q = group ? `?group=${encodeURIComponent(group)}` : '';
+  const r = await fetch(`${BASE}/public/data${q}`);
   return r.json();
 }
 
@@ -110,8 +53,9 @@ export async function saveSettings(data) {
 }
 
 // Categories
-export async function getCategories() {
-  const r = await fetch(`${BASE}/admin/categories`, { headers: authHeaders() });
+export async function getCategories(group) {
+  const q = group ? `?group=${encodeURIComponent(group)}` : '';
+  const r = await fetch(`${BASE}/admin/categories${q}`, { headers: authHeaders() });
   return r.json();
 }
 export async function createCategory(data) {
@@ -128,8 +72,9 @@ export async function deleteCategory(id) {
 }
 
 // Links
-export async function getLinks() {
-  const r = await fetch(`${BASE}/admin/links`, { headers: authHeaders() });
+export async function getLinks(group) {
+  const q = group ? `?group=${encodeURIComponent(group)}` : '';
+  const r = await fetch(`${BASE}/admin/links${q}`, { headers: authHeaders() });
   return r.json();
 }
 export async function createLink(data) {

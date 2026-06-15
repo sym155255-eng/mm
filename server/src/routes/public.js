@@ -35,40 +35,14 @@ router.get('/nav/:id', (req, res) => {
   res.json(nav);
 });
 
-// 第二页（论坛板块样式）数据：分区 + 子版块
-router.get('/page2', (req, res) => {
-  const db = getDB();
-  const sections = db.prepare('SELECT * FROM p2_sections WHERE visible=1 ORDER BY sort_order,id').all();
-  const boards = db.prepare('SELECT * FROM p2_boards WHERE visible=1 ORDER BY sort_order,id').all();
-  const posts = db.prepare('SELECT * FROM p2_posts WHERE visible=1 ORDER BY sort_order,id').all();
-  const bySection = {};
-  boards.forEach(b => { (bySection[b.section_id] = bySection[b.section_id] || []).push(b); });
-  const postsBySection = {};
-  posts.forEach(p => { (postsBySection[p.section_id] = postsBySection[p.section_id] || []).push(p); });
-  const settings = db.prepare('SELECT * FROM settings').all();
-  const settingsObj = {};
-  settings.forEach(s => settingsObj[s.key] = s.value);
-  const banners = db.prepare('SELECT * FROM banners WHERE visible=1 ORDER BY sort_order,id').all();
-  const notices = db.prepare('SELECT * FROM notices WHERE visible=1 ORDER BY sort_order,id').all();
-  res.json({ sections: sections.map(s => ({ ...s, boards: bySection[s.id] || [], posts: postsBySection[s.id] || [] })), settings: settingsObj, banners, notices });
-});
-
-// 第二页 单个帖子详情
-router.get('/post/:id', (req, res) => {
-  const db = getDB();
-  const post = db.prepare('SELECT * FROM p2_posts WHERE id=?').get(req.params.id);
-  if (!post) return res.status(404).json({ error: '帖子不存在' });
-  const settings = db.prepare('SELECT * FROM settings').all();
-  const settingsObj = {};
-  settings.forEach(s => settingsObj[s.key] = s.value);
-  res.json({ ...post, settings: settingsObj });
-});
-
 router.get('/data', (req, res) => {
   const db = getDB();
-  const categories = db.prepare('SELECT * FROM categories WHERE visible=1 ORDER BY sort_order,id').all();
+  const group = req.query.group || 'home';
+  const categories = db.prepare("SELECT * FROM categories WHERE visible=1 AND IFNULL(page_group,'home')=? ORDER BY sort_order,id").all(group);
+  const catIds = new Set(categories.map(c => c.id));
   const subCategories = db.prepare('SELECT * FROM sub_categories ORDER BY sort_order,id').all();
-  const links = db.prepare('SELECT * FROM links WHERE visible=1 ORDER BY sort_order,id').all();
+  const allLinks = db.prepare('SELECT * FROM links WHERE visible=1 ORDER BY sort_order,id').all();
+  const links = allLinks.filter(l => catIds.has(l.category_id) || (group === 'home' && !l.category_id));
   const subLinks = db.prepare('SELECT * FROM sub_links ORDER BY sort_order,id').all();
   const adSubLinks = db.prepare('SELECT * FROM ad_sub_links ORDER BY sort_order,id').all();
   const settings = db.prepare('SELECT * FROM settings').all();

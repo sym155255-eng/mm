@@ -3,7 +3,7 @@ import { getLinks, createLink, updateLink, deleteLink, getCategories, getSubLink
 
 const empty = { category_id: '', sub_category_id: '', title: '', url: '', icon: '', description: '', title_color: '', desc_color: '', badge: '', badge_color: '', sort_order: 0, visible: 1 };
 
-export default function Links() {
+export default function Links({ group = 'home' }) {
   const [list, setList] = useState([]);
   const [cats, setCats] = useState([]);
   const [form, setForm] = useState(empty);
@@ -29,7 +29,7 @@ export default function Links() {
   }
 
   async function load() {
-    const [links, categories, subCategories] = await Promise.all([getLinks(), getCategories(), getSubCategories()]);
+    const [links, categories, subCategories] = await Promise.all([getLinks(group), getCategories(group), getSubCategories()]);
     // token 失效时接口会返回非数组(错误对象)→ 跳回登录
     if (!Array.isArray(links)) {
       localStorage.removeItem('nav_token');
@@ -41,7 +41,7 @@ export default function Links() {
     setCats(Array.isArray(categories) ? categories : []);
     setSubCats(Array.isArray(subCategories) ? subCategories : []);
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [group]);
 
   function catName(id) { return cats.find(c => c.id === id)?.name || '未分类'; }
 

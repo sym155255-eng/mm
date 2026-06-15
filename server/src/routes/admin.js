@@ -60,19 +60,21 @@ router.put('/settings', (req, res) => {
 
 // ── Categories ────────────────────────────────────────────
 router.get('/categories', (req, res) => {
+  const g = req.query.group;
+  if (g) return res.json(db().prepare("SELECT * FROM categories WHERE IFNULL(page_group,'home')=? ORDER BY sort_order,id").all(g));
   res.json(db().prepare('SELECT * FROM categories ORDER BY sort_order,id').all());
 });
 
 router.post('/categories', (req, res) => {
-  const { name, icon = '🔗', sort_order = 0, visible = 1 } = req.body;
-  const r = db().prepare('INSERT INTO categories (name,icon,sort_order,visible) VALUES (?,?,?,?)').run(name, icon, sort_order, visible);
+  const { name, icon = '🔗', sort_order = 0, visible = 1, page_group = 'home' } = req.body;
+  const r = db().prepare('INSERT INTO categories (name,icon,sort_order,visible,page_group) VALUES (?,?,?,?,?)').run(name, icon, sort_order, visible, page_group);
   broadcast('update');
   res.json({ id: r.lastInsertRowid });
 });
 
 router.put('/categories/:id', (req, res) => {
-  const { name, icon, sort_order, visible } = req.body;
-  db().prepare('UPDATE categories SET name=?,icon=?,sort_order=?,visible=? WHERE id=?').run(name, icon, sort_order, visible, req.params.id);
+  const { name, icon, sort_order, visible, page_group = 'home' } = req.body;
+  db().prepare('UPDATE categories SET name=?,icon=?,sort_order=?,visible=?,page_group=? WHERE id=?').run(name, icon, sort_order, visible, page_group, req.params.id);
   broadcast('update');
   res.json({ ok: true });
 });
@@ -85,7 +87,13 @@ router.delete('/categories/:id', (req, res) => {
 
 // ── Links ─────────────────────────────────────────────────
 router.get('/links', (req, res) => {
-  res.json(db().prepare('SELECT * FROM links ORDER BY sort_order,id').all());
+  const g = req.query.group;
+  const all = db().prepare('SELECT * FROM links ORDER BY sort_order,id').all();
+  if (g) {
+    const cats = db().prepare("SELECT id FROM categories WHERE IFNULL(page_group,'home')=?").all(g).map(c => c.id);
+    return res.json(all.filter(l => cats.includes(l.category_id) || (g === 'home' && !l.category_id)));
+  }
+  res.json(all);
 });
 
 router.post('/links', (req, res) => {
@@ -322,84 +330,6 @@ router.put('/pages/:id', (req, res) => {
 });
 router.delete('/pages/:id', (req, res) => {
   db().prepare('DELETE FROM pages WHERE id=?').run(req.params.id);
-  broadcast('update');
-  res.json({ ok: true });
-});
-
-// ── 第二页：分区(p2_sections) ──────────────────────────────
-router.get('/p2/sections', (req, res) => {
-  res.json(db().prepare('SELECT * FROM p2_sections ORDER BY sort_order,id').all());
-});
-router.post('/p2/sections', (req, res) => {
-  const { title, color = '#2a6fb0', sort_order = 0, visible = 1 } = req.body;
-  const r = db().prepare('INSERT INTO p2_sections (title,color,sort_order,visible) VALUES (?,?,?,?)').run(title, color, sort_order, visible);
-  broadcast('update');
-  res.json({ id: r.lastInsertRowid });
-});
-router.put('/p2/sections/:id', (req, res) => {
-  const { title, color = '#2a6fb0', sort_order = 0, visible = 1 } = req.body;
-  db().prepare('UPDATE p2_sections SET title=?,color=?,sort_order=?,visible=? WHERE id=?').run(title, color, sort_order, visible, req.params.id);
-  broadcast('update');
-  res.json({ ok: true });
-});
-router.delete('/p2/sections/:id', (req, res) => {
-  db().prepare('DELETE FROM p2_sections WHERE id=?').run(req.params.id);
-  db().prepare('DELETE FROM p2_boards WHERE section_id=?').run(req.params.id);
-  broadcast('update');
-  res.json({ ok: true });
-});
-
-// ── 第二页：子版块(p2_boards) ──────────────────────────────
-router.get('/p2/boards', (req, res) => {
-  res.json(db().prepare('SELECT * FROM p2_boards ORDER BY sort_order,id').all());
-});
-router.post('/p2/boards', (req, res) => {
-  const { section_id, title, icon = '', badge = '', threads = '', posts = '', last_post = '', url = '', title_color = '', sort_order = 0, visible = 1 } = req.body;
-  const r = db().prepare('INSERT INTO p2_boards (section_id,title,icon,badge,threads,posts,last_post,url,title_color,sort_order,visible) VALUES (?,?,?,?,?,?,?,?,?,?,?)').run(section_id, title, icon, badge, threads, posts, last_post, url, title_color, sort_order, visible);
-  broadcast('update');
-  res.json({ id: r.lastInsertRowid });
-});
-router.put('/p2/boards/:id', (req, res) => {
-  const { section_id, title, icon = '', badge = '', threads = '', posts = '', last_post = '', url = '', title_color = '', sort_order = 0, visible = 1 } = req.body;
-  db().prepare('UPDATE p2_boards SET section_id=?,title=?,icon=?,badge=?,threads=?,posts=?,last_post=?,url=?,title_color=?,sort_order=?,visible=? WHERE id=?').run(section_id, title, icon, badge, threads, posts, last_post, url, title_color, sort_order, visible, req.params.id);
-  broadcast('update');
-  res.json({ ok: true });
-});
-router.delete('/p2/boards/:id', (req, res) => {
-  db().prepare('DELETE FROM p2_boards WHERE id=?').run(req.params.id);
-  broadcast('update');
-  res.json({ ok: true });
-});
-
-// ── 第二页：帖子(p2_posts) ─────────────────────────────────
-const POST_COLS = 'section_id,board_id,avatar,title,tag,tag_color,category,author,author_vip,post_time,last_user,last_time,comments,url,content,title_color,sort_order,visible';
-function postVals(b) {
-  // 选了子版块时，所属分区自动取该版块的分区
-  let sectionId = b.section_id;
-  if (b.board_id) {
-    const board = db().prepare('SELECT section_id FROM p2_boards WHERE id=?').get(b.board_id);
-    if (board) sectionId = board.section_id;
-  }
-  return [sectionId, b.board_id || null, b.avatar || '', b.title, b.tag || '', b.tag_color || '#ff7a45', b.category || '', b.author || '',
-    b.author_vip ? 1 : 0, b.post_time || '', b.last_user || '', b.last_time || '', b.comments || '', b.url || '', b.content || '', b.title_color || '', b.sort_order || 0, b.visible == null ? 1 : b.visible];
-}
-router.get('/p2/posts', (req, res) => {
-  res.json(db().prepare('SELECT * FROM p2_posts ORDER BY sort_order,id').all());
-});
-router.post('/p2/posts', (req, res) => {
-  const r = db().prepare(`INSERT INTO p2_posts (${POST_COLS}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(...postVals(req.body));
-  broadcast('update');
-  res.json({ id: r.lastInsertRowid });
-});
-router.put('/p2/posts/:id', (req, res) => {
-  const b = req.body;
-  db().prepare(`UPDATE p2_posts SET section_id=?,board_id=?,avatar=?,title=?,tag=?,tag_color=?,category=?,author=?,author_vip=?,post_time=?,last_user=?,last_time=?,comments=?,url=?,content=?,title_color=?,sort_order=?,visible=? WHERE id=?`)
-    .run(...postVals(b), req.params.id);
-  broadcast('update');
-  res.json({ ok: true });
-});
-router.delete('/p2/posts/:id', (req, res) => {
-  db().prepare('DELETE FROM p2_posts WHERE id=?').run(req.params.id);
   broadcast('update');
   res.json({ ok: true });
 });

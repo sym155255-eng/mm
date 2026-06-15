@@ -3,22 +3,23 @@ import { getCategories, createCategory, updateCategory, deleteCategory } from '.
 
 const empty = { name: '', icon: '🔗', sort_order: 0, visible: 1 };
 
-export default function Categories() {
+export default function Categories({ group = 'home' }) {
   const [list, setList] = useState([]);
   const [form, setForm] = useState(empty);
   const [editing, setEditing] = useState(null);
   const [modal, setModal] = useState(false);
 
-  async function load() { setList(await getCategories()); }
-  useEffect(() => { load(); }, []);
+  async function load() { setList(await getCategories(group)); }
+  useEffect(() => { load(); }, [group]);
 
-  function openAdd() { setForm(empty); setEditing(null); setModal(true); }
+  function openAdd() { setForm({ ...empty, page_group: group }); setEditing(null); setModal(true); }
   function openEdit(cat) { setForm({ ...cat }); setEditing(cat.id); setModal(true); }
 
   async function handleSave() {
     if (!form.name.trim()) return;
-    if (editing) await updateCategory(editing, form);
-    else await createCategory(form);
+    const payload = { ...form, page_group: form.page_group || group };
+    if (editing) await updateCategory(editing, payload);
+    else await createCategory(payload);
     setModal(false);
     load();
   }

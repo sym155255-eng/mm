@@ -5,12 +5,7 @@ import Home from './pages/Home';
 import SiteDetail from './pages/SiteDetail';
 import NavPage from './pages/NavPage';
 import PageView from './pages/PageView';
-import ForumPage from './pages/ForumPage';
-import PostDetail from './pages/PostDetail';
-import P2Sections from './pages/admin/P2Sections';
-import P2Boards from './pages/admin/P2Boards';
-import P2Colors from './pages/admin/P2Colors';
-import P2Posts from './pages/admin/P2Posts';
+import Page2 from './pages/Page2';
 import Pages from './pages/admin/Pages';
 import Login from './pages/Login';
 import AdminLayout from './pages/admin/Layout';
@@ -34,9 +29,8 @@ export default function App() {
     <AuthProvider>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/home2" element={<Page2 />} />
         <Route path="/sites/:id" element={<SiteDetail />} />
-        <Route path="/home2" element={<ForumPage />} />
-        <Route path="/post/:id" element={<PostDetail />} />
         <Route path="/page/:id" element={<NavPage />} />
         <Route path="/p/:id" element={<PageView />} />
         <Route path="/login" element={<Login />} />
@@ -52,10 +46,6 @@ export default function App() {
           <Route path="pages" element={<Pages />} />
           <Route path="colors" element={<Colors />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="p2/sections" element={<P2Sections />} />
-          <Route path="p2/boards" element={<P2Boards />} />
-          <Route path="p2/posts" element={<P2Posts />} />
-          <Route path="p2/colors" element={<P2Colors />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

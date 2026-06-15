@@ -35,6 +35,7 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [adsExpanded, setAdsExpanded] = useState(false); // 广告折叠
   const [popup, setPopup] = useState(null); // link object
   const isAdmin = !!localStorage.getItem('nav_token'); // 是否已登录
   const [editMode, setEditMode] = useState(false);     // 前端编辑模式
@@ -208,7 +209,13 @@ export default function Home() {
           })()}
 
           {/* Ads */}
-          {settings.show_ads === '1' && topAds.length > 0 && (
+          {settings.show_ads === '1' && topAds.length > 0 && (() => {
+            const adCols = typeof window !== 'undefined' && window.innerWidth <= 768 ? 2
+              : (typeof window !== 'undefined' && window.innerWidth <= 1024 ? 4 : 5);
+            const adLimit = adCols * 2; // 折叠：2 排
+            const adHasMore = topAds.length > adLimit;
+            const visibleAds = adsExpanded ? topAds : topAds.slice(0, adLimit);
+            return (
             <div style={styles.adsWrap}>
               {/* 标题栏 */}
               <div style={styles.adsHeader}>
@@ -216,13 +223,15 @@ export default function Home() {
                   <span style={styles.adsDot} />
                   <span style={styles.adsTitle}>{settings.ads_section_title || '精品推荐 / 赞助合作商'}</span>
                 </div>
-                <div style={styles.adsHeaderRight}>
-                  <span style={styles.adsLabel}>SPONSORS AD</span>
-                </div>
+                {adHasMore && (
+                  <button style={styles.adsMoreBtn} onClick={() => setAdsExpanded(v => !v)}>
+                    {adsExpanded ? '收起 ▴' : '更多 ▾'}
+                  </button>
+                )}
               </div>
               {/* 卡片横向滚动 */}
               <div className={`ads-row${settings.mobile_ad_style === '2' ? ' ad-circle' : ''}`} style={styles.adsRow}>
-                {topAds.map(ad => {
+                {visibleAds.map(ad => {
                   const hasSub = ad.sub_links && ad.sub_links.length > 0;
                   const inner = (
                     <>
@@ -249,7 +258,8 @@ export default function Home() {
                 })}
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* 横向导航栏 */}
           {navs.length > 0 && (
@@ -400,10 +410,10 @@ function CategorySection({ cat, items, subCategories, onOpen, editMode, onEdit }
     ? items
     : items.filter(l => l.sub_category_id === activeTab);
 
-  // 折叠：超过 5 排默认收起（列数：手机2 / 平板3 / 电脑4）
+  // 折叠：超过 5 排默认收起（列数：手机2 / 平板3 / 电脑5）
   const cols = typeof window !== 'undefined' && window.innerWidth <= 768 ? 2
-    : (typeof window !== 'undefined' && window.innerWidth <= 1024 ? 3 : 4);
-  const limit = cols * 5;
+    : (typeof window !== 'undefined' && window.innerWidth <= 1024 ? 4 : 5);
+  const limit = cols * 4; // 电脑 5×4=20，平板 4×4=16，手机 2×4=8
   const hasMore = shownItems.length > limit;
   const visibleItems = expanded ? shownItems : shownItems.slice(0, limit);
 
@@ -693,6 +703,7 @@ const styles = {
     boxShadow: '0 0 0 2px #fde68a',
   },
   adsTitle: { fontSize: 13, fontWeight: 700, color: '#78350f' },
+  adsMoreBtn: { background: 'transparent', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
   adsHeaderRight: { display: 'flex', alignItems: 'center', gap: 10 },
   adsLabel: { fontSize: 11, color: '#9ca3af', letterSpacing: 1 },
   adsRow: {
@@ -903,7 +914,7 @@ const styles = {
     alignItems: 'flex-start',
   },
   sidebar: {
-    width: 180,
+    width: 140,
     flexShrink: 0,
     background: '#fff',
     borderRadius: 'var(--radius)',
