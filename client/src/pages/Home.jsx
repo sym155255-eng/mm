@@ -606,10 +606,10 @@ const styles = {
     alignItems: 'center',
     gap: 16,
   },
-  logo: { display: 'flex', alignItems: 'center', gap: 10 },
+  logo: { display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 },
   siteTitle: { fontWeight: 700, fontSize: 18, color: 'var(--site-title)' },
   siteSubtitle: { fontSize: 12, color: 'var(--text-muted)' },
-  headerRight: { display: 'flex', alignItems: 'center', gap: 12, marginLeft: 'auto', flexShrink: 0 },
+  headerRight: { display: 'flex', alignItems: 'center', gap: 12, flex: 1, justifyContent: 'flex-end', flexShrink: 0 },
   adminBtn: {
     background: 'var(--primary)',
     color: '#fff',
@@ -870,8 +870,8 @@ const styles = {
     border: '1.5px solid var(--border)',
     borderRadius: 40,
     padding: '8px 18px',
-    flex: 1,
-    maxWidth: 480,
+    flex: '0 1 480px',
+    width: '100%',
     transition: 'border-color 0.2s, background 0.2s',
   },
   searchInput: {

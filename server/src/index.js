@@ -1,8 +1,26 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+
+// 加载 server/.env（迷你解析，无需依赖）
+try {
+  const envPath = path.join(__dirname, '../.env');
+  if (fs.existsSync(envPath)) {
+    fs.readFileSync(envPath, 'utf8').split('\n').forEach(line => {
+      const m = line.match(/^\s*([\w.]+)\s*=\s*(.*)\s*$/);
+      if (m && !process.env[m[1]]) {
+        let v = m[2].trim();
+        if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
+        process.env[m[1]] = v;
+      }
+    });
+  }
+} catch {}
+
 const { initDB } = require('./db');
 const { sseHandler } = require('./sse');
+const { startAutoBackup } = require('./backup');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -29,6 +47,7 @@ initDB().then(() => {
     console.log(`\n✅ 导航站运行在 http://localhost:${PORT}`);
     console.log(`   管理后台: http://localhost:${PORT}/admin`);
     console.log(`   账号: admin  密码: admin123\n`);
+    startAutoBackup();
   });
 }).catch(err => {
   console.error('数据库初始化失败:', err);
