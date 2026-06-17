@@ -65,19 +65,23 @@ export default function SiteDetail() {
 
         {/* 卡片 */}
         <div style={s.card}>
-          <div style={{ ...s.titleRow, flexWrap: 'wrap' }}>
+          <div className="detail-title-row" style={{ ...s.titleRow, flexWrap: 'wrap' }}>
             <img src={icon} alt="" style={s.icon} onError={e => e.target.style.visibility = 'hidden'} />
             <h1 style={s.title}>{link.title}</h1>
             {link.category_name && (
-              <span style={s.tag}>📁 {link.sub_category_name || link.category_name}</span>
+              <span className="detail-tag" style={s.tag}>📁 {link.sub_category_name || link.category_name}</span>
             )}
             <button className="detail-open-btn" style={s.openBtn} onClick={openSite}>打开网站 ›</button>
-            {/* 子链接：与标题同一行 */}
-            {(link.sub_links || []).map(sl => (
-              <a key={sl.id} className="detail-sub-link" href={sl.url} target="_blank" rel="noopener noreferrer" style={s.subLink}>
-                🔗 {sl.title}
-              </a>
-            ))}
+            {/* 子链接：与标题同一行；移动端单独占一行横向排列 */}
+            {link.sub_links && link.sub_links.length > 0 && (
+              <div className="detail-sub-wrap" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {link.sub_links.map(sl => (
+                  <a key={sl.id} className="detail-sub-link" href={sl.url} target="_blank" rel="noopener noreferrer" style={s.subLink}>
+                    🔗 {sl.title}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           <div style={s.meta}>

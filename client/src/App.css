@@ -188,15 +188,29 @@
   .ads-row.ad-circle > .ad-card .ad-tx > div { justify-content: center !important; text-align: center !important; } /* 标题居中对齐图标 */
   .ads-row.ad-circle > .ad-card .ad-tx > div:nth-child(2) { display: none !important; } /* 隐藏描述 */
 
+  /* 详情页：移动端标题行收紧，让标题/按钮/分类一行放下 */
+  .detail-title-row { gap: 8px !important; }
   /* 详情页：移动端「打开网站」按钮调小 */
   .detail-open-btn {
-    padding: 9px 18px !important;
-    font-size: 14px !important;
-    border-radius: 8px !important;
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+    border-radius: 7px !important;
   }
-  /* 详情页：移动端子链接按钮调大 */
+  .detail-tag {
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+  }
+  /* 详情页：移动端子链接单独占一行、横向排列（放不下可横滑） */
+  .detail-sub-wrap {
+    flex-basis: 100% !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .detail-sub-wrap::-webkit-scrollbar { display: none; }
   .detail-sub-link {
-    padding: 9px 18px !important;
-    font-size: 15px !important;
+    flex: 0 0 auto !important;
+    padding: 9px 16px !important;
+    font-size: 14px !important;
   }
 }
