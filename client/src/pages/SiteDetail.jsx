@@ -65,9 +65,19 @@ export default function SiteDetail() {
 
         {/* 卡片 */}
         <div style={s.card}>
-          <div style={s.titleRow}>
+          <div style={{ ...s.titleRow, flexWrap: 'wrap' }}>
             <img src={icon} alt="" style={s.icon} onError={e => e.target.style.visibility = 'hidden'} />
             <h1 style={s.title}>{link.title}</h1>
+            {link.category_name && (
+              <span style={s.tag}>📁 {link.sub_category_name || link.category_name}</span>
+            )}
+            <button style={s.openBtn} onClick={openSite}>打开网站 ›</button>
+            {/* 子链接：与标题同一行 */}
+            {(link.sub_links || []).map(sl => (
+              <a key={sl.id} href={sl.url} target="_blank" rel="noopener noreferrer" style={s.subLink}>
+                🔗 {sl.title}
+              </a>
+            ))}
           </div>
 
           <div style={s.meta}>
@@ -76,28 +86,6 @@ export default function SiteDetail() {
           </div>
 
           {link.description && <p style={s.desc}>{link.description}</p>}
-
-          <button style={s.openBtn} onClick={openSite}>打开网站 ›</button>
-
-          {link.category_name && (
-            <div style={{ marginTop: 16 }}>
-              <span style={s.tag}>📁 {link.sub_category_name || link.category_name}</span>
-            </div>
-          )}
-
-          {/* 子链接 */}
-          {link.sub_links && link.sub_links.length > 0 && (
-            <div style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#374151', marginBottom: 10 }}>相关链接</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {link.sub_links.map(sl => (
-                  <a key={sl.id} href={sl.url} target="_blank" rel="noopener noreferrer" style={s.subLink}>
-                    🔗 {sl.title}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         <button onClick={() => nav(-1)} style={s.backBtn}>← 返回</button>
@@ -122,8 +110,8 @@ const s = {
   title: { fontSize: 22, fontWeight: 700, color: 'var(--text)', margin: 0 },
   meta: { display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 13, color: '#9ca3af', marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid #f3f4f6' },
   desc: { fontSize: 15, color: '#374151', lineHeight: 1.7, marginBottom: 20 },
-  openBtn: { background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 28px', fontSize: 16, fontWeight: 700, cursor: 'pointer', width: '100%' },
+  openBtn: { background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 28px', fontSize: 16, fontWeight: 700, cursor: 'pointer', display: 'block' },
   tag: { display: 'inline-block', background: '#eff2ff', color: 'var(--primary)', padding: '5px 14px', borderRadius: 20, fontSize: 13, fontWeight: 500 },
-  subLink: { display: 'block', padding: '10px 14px', background: '#f7f8fa', borderRadius: 8, textDecoration: 'none', color: 'var(--primary)', fontSize: 14 },
+  subLink: { padding: '6px 12px', background: '#f7f8fa', borderRadius: 16, textDecoration: 'none', color: 'var(--primary)', fontSize: 13, whiteSpace: 'nowrap' },
   backBtn: { marginTop: 18, background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '10px 20px', fontSize: 14, cursor: 'pointer', color: '#374151' },
 };
