@@ -71,10 +71,10 @@ export default function SiteDetail() {
             {link.category_name && (
               <span style={s.tag}>📁 {link.sub_category_name || link.category_name}</span>
             )}
-            <button style={s.openBtn} onClick={openSite}>打开网站 ›</button>
+            <button className="detail-open-btn" style={s.openBtn} onClick={openSite}>打开网站 ›</button>
             {/* 子链接：与标题同一行 */}
             {(link.sub_links || []).map(sl => (
-              <a key={sl.id} href={sl.url} target="_blank" rel="noopener noreferrer" style={s.subLink}>
+              <a key={sl.id} className="detail-sub-link" href={sl.url} target="_blank" rel="noopener noreferrer" style={s.subLink}>
                 🔗 {sl.title}
               </a>
             ))}
@@ -112,6 +112,6 @@ const s = {
   desc: { fontSize: 15, color: '#374151', lineHeight: 1.7, marginBottom: 20 },
   openBtn: { background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 28px', fontSize: 16, fontWeight: 700, cursor: 'pointer', display: 'block' },
   tag: { display: 'inline-block', background: '#eff2ff', color: 'var(--primary)', padding: '5px 14px', borderRadius: 20, fontSize: 13, fontWeight: 500 },
-  subLink: { padding: '6px 12px', background: '#f7f8fa', borderRadius: 16, textDecoration: 'none', color: 'var(--primary)', fontSize: 13, whiteSpace: 'nowrap' },
+  subLink: { padding: '10px 20px', background: '#f7f8fa', borderRadius: 20, textDecoration: 'none', color: 'var(--primary)', fontSize: 15, whiteSpace: 'nowrap' },
   backBtn: { marginTop: 18, background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '10px 20px', fontSize: 14, cursor: 'pointer', color: '#374151' },
 };

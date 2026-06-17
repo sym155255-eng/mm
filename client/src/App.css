@@ -187,4 +187,16 @@
   .ads-row.ad-circle > .ad-card .ad-tx { flex: none !important; width: 100% !important; }
   .ads-row.ad-circle > .ad-card .ad-tx > div { justify-content: center !important; text-align: center !important; } /* 标题居中对齐图标 */
   .ads-row.ad-circle > .ad-card .ad-tx > div:nth-child(2) { display: none !important; } /* 隐藏描述 */
+
+  /* 详情页：移动端「打开网站」按钮调小 */
+  .detail-open-btn {
+    padding: 9px 18px !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+  }
+  /* 详情页：移动端子链接按钮调大 */
+  .detail-sub-link {
+    padding: 9px 18px !important;
+    font-size: 15px !important;
+  }
 }
