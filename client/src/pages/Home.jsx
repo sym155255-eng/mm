@@ -192,7 +192,6 @@ export default function Home() {
             const loopItems = [...base, ...base]; // 整体复制一份做无缝循环
             return (
               <div className="marquee-neon" style={styles.marquee}>
-                <span style={styles.marqueeIcon}>📣</span>
                 <div style={styles.marqueeViewport}>
                   <div className="marquee-track" style={{ ...styles.marqueeTrack, animationDuration: `${speed}s` }}>
                     {loopItems.map((n, i) => {
@@ -211,8 +210,10 @@ export default function Home() {
           {/* Ads */}
           {settings.show_ads === '1' && topAds.length > 0 && (() => {
             const isMob = typeof window !== 'undefined' && window.innerWidth <= 768;
-            const adCols = isMob ? 2 : (typeof window !== 'undefined' && window.innerWidth <= 1024 ? 4 : 5);
-            const adLimit = isMob ? 10 : adCols * 2; // 手机显示10个，电脑/平板2排
+            // 手机圆形：≥10个一行5，<10个一行4
+            const mobCols = topAds.length >= 10 ? 5 : 4;
+            const adCols = isMob ? mobCols : (typeof window !== 'undefined' && window.innerWidth <= 1024 ? 4 : 5);
+            const adLimit = adCols * 2; // 统一显示 2 排
             const adHasMore = topAds.length > adLimit;
             const visibleAds = adsExpanded ? topAds : topAds.slice(0, adLimit);
             return (
@@ -230,7 +231,7 @@ export default function Home() {
                 )}
               </div>
               {/* 卡片横向滚动 */}
-              <div className={`ads-row${settings.mobile_ad_style === '2' ? ' ad-circle' : ''}`} style={styles.adsRow}>
+              <div className={`ads-row${settings.mobile_ad_style === '2' ? ' ad-circle' : ''}${topAds.length >= 10 ? ' ad-c5' : ' ad-c4'}`} style={styles.adsRow}>
                 {visibleAds.map(ad => {
                   const hasSub = ad.sub_links && ad.sub_links.length > 0;
                   const inner = (
@@ -636,14 +637,14 @@ const styles = {
     background: 'linear-gradient(135deg, #1e1b2e, #2d2640)',
     border: '2px solid #a855f7',
     borderRadius: 999,
-    padding: '12px 22px',
+    padding: '6px 16px',
     marginBottom: 6,
     overflow: 'hidden',
   },
   marqueeIcon: { fontSize: 18, flexShrink: 0 },
   marqueeViewport: { flex: 1, overflow: 'hidden', position: 'relative' },
   marqueeTrack: { display: 'flex', width: 'max-content', gap: 48, whiteSpace: 'nowrap', willChange: 'transform' },
-  marqueeItem: { fontSize: 15, fontWeight: 700, textDecoration: 'none' },
+  marqueeItem: { fontSize: 14, fontWeight: 700, textDecoration: 'none' },
   navBar: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -652,18 +653,18 @@ const styles = {
     gap: 4,
     background: 'var(--nav-bg, #2d2d2d)',
     borderRadius: 10,
-    padding: '5px 14px',
+    padding: '2px 12px',
     marginBottom: 6,
   },
   navItem: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: 5,
-    padding: '5px 16px',
+    padding: '4px 14px',
     background: 'transparent',
     color: 'var(--nav-text, #fff)',
     borderRadius: 8,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: 600,
     textDecoration: 'none',
     whiteSpace: 'nowrap',

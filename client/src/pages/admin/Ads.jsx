@@ -36,6 +36,11 @@ export default function Ads() {
     load();
   }
 
+  async function toggleVisible(item) {
+    await updateAd(item.id, { ...item, visible: item.visible ? 0 : 1 });
+    load();
+  }
+
   return (
     <div>
       <div style={s.hdr}>
@@ -58,9 +63,10 @@ export default function Ads() {
             <span style={{ flex: 2, fontWeight: 600 }}>{item.title}</span>
             <span style={{ flex: 1, color: '#6b7280', fontSize: 13 }}>{item.position === 'top' ? '顶部' : '其他'}</span>
             <span style={{ width: 80, textAlign: 'center' }}>
-              <span style={{ ...s.badge, background: item.visible ? '#d1fae5' : '#f3f4f6', color: item.visible ? '#065f46' : '#6b7280' }}>
-                {item.visible ? '显示' : '隐藏'}
-              </span>
+              <button onClick={() => toggleVisible(item)} title="点击切换显示/隐藏"
+                style={{ ...s.badge, border: 'none', cursor: 'pointer', background: item.visible ? '#dcfce7' : '#f3f4f6', color: item.visible ? '#16a34a' : '#9ca3af' }}>
+                {item.visible ? '✓ 显示' : '✕ 隐藏'}
+              </button>
             </span>
             <span style={{ width: 120, textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button style={s.editBtn} onClick={() => openEdit(item)}>编辑</button>

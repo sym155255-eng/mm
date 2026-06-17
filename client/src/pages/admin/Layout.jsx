@@ -19,6 +19,8 @@ const navItems = [
   // 分组 2：第二页（/home2 共享同一套数据）
   { to: '/admin/categories', icon: '📂', label: '分类管理', group: 2 },
   { to: '/admin/links', icon: '🔗', label: '链接管理', group: 2 },
+  { to: '/admin/p2/colors', icon: '🎨', label: '颜色管理', group: 2 },
+  { to: '/admin/p2/settings', icon: '🖼️', label: '第二页设置', group: 2 },
 ];
 
 export default function AdminLayout() {

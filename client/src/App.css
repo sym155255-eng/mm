@@ -171,8 +171,10 @@
   }
   /* 手机端广告·圆形图标样式（仅当后台选样式2时加 .ad-circle） */
   .ads-row.ad-circle { display: flex !important; flex-wrap: wrap !important; gap: 0 !important; overflow: visible !important; }
+  .ads-row.ad-circle.ad-c5 > .ad-card { width: 20% !important; }  /* 一行5个 */
+  .ads-row.ad-circle.ad-c4 > .ad-card { width: 25% !important; }  /* 一行4个 */
   .ads-row.ad-circle > .ad-card {
-    width: 20% !important; flex: none !important;
+    flex: none !important;
     flex-direction: column !important; align-items: center !important; text-align: center !important;
     background: transparent !important; border: none !important; box-shadow: none !important;
     padding: 4px 4px !important; gap: 4px !important; min-width: 0 !important;
@@ -184,4 +186,156 @@
   .ads-row.ad-circle > .ad-card .ad-ic img { width: 30px !important; height: 30px !important; border-radius: 50% !important; }
   .ads-row.ad-circle > .ad-card .ad-tx { flex: none !important; width: 100% !important; }
   .ads-row.ad-circle > .ad-card .ad-tx > div:nth-child(2) { display: none !important; } /* 隐藏描述 */
+}
+/* Page2 mobile */
+@media (max-width: 768px) {
+  .p2-head-inner {
+    height: auto !important;
+    min-height: 54px !important;
+    padding: 8px 10px !important;
+    gap: 8px !important;
+  }
+
+  .p2-brand {
+    gap: 0 !important;
+    min-width: 30px !important;
+  }
+
+  .p2-brand-logo {
+    font-size: 24px !important;
+    line-height: 1 !important;
+  }
+
+  .p2-brand-text {
+    display: none !important;
+  }
+
+  .p2-search {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+  }
+
+  .p2-back-btn {
+    padding: 6px 9px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+
+  .p2-body {
+    width: 100% !important;
+    padding: 12px 10px 36px !important;
+  }
+
+  .p2-banners {
+    gap: 6px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .p2-banner-img {
+    border-radius: 8px !important;
+  }
+
+  .p2-marquee {
+    width: 100% !important;
+    min-height: 34px !important;
+    padding: 6px 10px !important;
+    margin-bottom: 10px !important;
+    border-width: 1px !important;
+    border-radius: 14px !important;
+  }
+
+  .p2-marquee-viewport {
+    min-width: 0 !important;
+  }
+
+  .p2-marquee-track {
+    gap: 24px !important;
+  }
+
+  .p2-marquee-item {
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+  }
+
+  .p2-ads-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .p2-ad-card {
+    min-width: 0 !important;
+    padding: 9px 10px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .p2-ad-ico {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 9px !important;
+  }
+
+  .p2-ad-title {
+    font-size: 13px !important;
+  }
+
+  .p2-ad-desc {
+    display: none !important;
+  }
+
+  .p2-cat-nav {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    margin-bottom: 16px !important;
+    padding: 8px !important;
+    gap: 6px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .p2-cat-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .p2-cat-chip {
+    flex: 0 0 auto !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    white-space: nowrap !important;
+  }
+
+  .p2-section {
+    margin-bottom: 20px !important;
+  }
+
+  .p2-section-title {
+    font-size: 16px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .p2-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .p2-card {
+    min-width: 0 !important;
+    padding: 10px 10px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .p2-ico {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 9px !important;
+  }
+
+  .p2-ico img {
+    width: 34px !important;
+    height: 34px !important;
+  }
 }

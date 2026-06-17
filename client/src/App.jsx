@@ -6,6 +6,8 @@ import SiteDetail from './pages/SiteDetail';
 import NavPage from './pages/NavPage';
 import PageView from './pages/PageView';
 import Page2 from './pages/Page2';
+import Page2Settings from './pages/admin/Page2Settings';
+import P2Colors from './pages/admin/P2Colors';
 import Pages from './pages/admin/Pages';
 import Login from './pages/Login';
 import AdminLayout from './pages/admin/Layout';
@@ -46,6 +48,8 @@ export default function App() {
           <Route path="pages" element={<Pages />} />
           <Route path="colors" element={<Colors />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="p2/settings" element={<Page2Settings />} />
+          <Route path="p2/colors" element={<P2Colors />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
