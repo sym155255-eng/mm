@@ -66,8 +66,8 @@ export default function SiteDetail() {
         {/* 卡片 */}
         <div style={s.card}>
           <div className="detail-title-row" style={{ ...s.titleRow, flexWrap: 'wrap' }}>
-            <img src={icon} alt="" style={s.icon} onError={e => e.target.style.visibility = 'hidden'} />
-            <h1 style={s.title}>{link.title}</h1>
+            <img className="detail-icon" src={icon} alt="" style={s.icon} onError={e => e.target.style.visibility = 'hidden'} />
+            <h1 className="detail-h1" style={s.title}>{link.title}</h1>
             {link.category_name && (
               <span className="detail-tag" style={s.tag}>📁 {link.sub_category_name || link.category_name}</span>
             )}

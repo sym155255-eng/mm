@@ -188,8 +188,10 @@
   .ads-row.ad-circle > .ad-card .ad-tx > div { justify-content: center !important; text-align: center !important; } /* 标题居中对齐图标 */
   .ads-row.ad-circle > .ad-card .ad-tx > div:nth-child(2) { display: none !important; } /* 隐藏描述 */
 
-  /* 详情页：移动端标题行收紧，让标题/按钮/分类一行放下 */
-  .detail-title-row { gap: 8px !important; }
+  /* 详情页：移动端标题行收紧，让标题/分类/按钮一行放下 */
+  .detail-title-row { gap: 7px !important; }
+  .detail-icon { width: 38px !important; height: 38px !important; }
+  .detail-h1 { font-size: 18px !important; }
   /* 详情页：移动端「打开网站」按钮调小 */
   .detail-open-btn {
     padding: 5px 10px !important;
