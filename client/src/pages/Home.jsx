@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { fetchPublicData, updateLink, getSubLinks, createSubLink, updateSubLink, deleteSubLink } from '../api';
 
 function applyTheme(settings) {
@@ -31,6 +31,7 @@ function applyTheme(settings) {
 }
 
 export default function Home() {
+  const navigate = useNavigate();
   const [data, setData] = useState({ categories: [], links: [], settings: {}, ads: [] });
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
@@ -366,7 +367,10 @@ export default function Home() {
                   {popup.description && <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{popup.description}</div>}
                 </div>
               </div>
-              <button onClick={() => setPopup(null)} style={styles.popupClose}>✕</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
+                {popup.id && popup.position === undefined && <button onClick={() => { setPopup(null); navigate('/sites/' + popup.id); }} style={styles.popupDetailBtn}>详情</button>}
+                <button onClick={() => setPopup(null)} style={styles.popupClose}>✕</button>
+              </div>
             </div>
             <div style={styles.popupLinks}>
               {popup.url && (
@@ -491,12 +495,8 @@ function LinkCard({ link, onOpen, editMode, onEdit }) {
   if (editMode) {
     return <div style={{ ...styles.card, position: 'relative' }}>{inner}</div>;
   }
-  if (hasSubs) {
-    return <div onClick={() => onOpen(link)} style={{ ...styles.card, position: 'relative', cursor: 'pointer' }}>{inner}</div>;
-  }
-  return (
-    <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ ...styles.card, position: 'relative' }}>{inner}</a>
-  );
+  // 所有卡片点击都弹窗（显示主链接 + 详情；有子链接也一并列出）
+  return <div onClick={() => onOpen(link)} style={{ ...styles.card, position: 'relative', cursor: 'pointer' }}>{inner}</div>;
 }
 
 function EditField({ label, value, onChange }) {
@@ -828,6 +828,16 @@ const styles = {
     padding: '2px 6px',
     borderRadius: 6,
     flexShrink: 0,
+  },
+  popupDetailBtn: {
+    border: 'none',
+    background: 'var(--primary)',
+    color: '#fff',
+    borderRadius: 16,
+    fontSize: 12,
+    fontWeight: 600,
+    padding: '5px 14px',
+    cursor: 'pointer',
   },
   cardEditBtn: {
     position: 'absolute',
