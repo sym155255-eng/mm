@@ -141,20 +141,20 @@
     z-index: 200;
   }
   /* 内容下移，避免被固定头遮住 */
-  .home-body { padding-top: 70px !important; }
+  .home-body { padding-top: 56px !important; }
 
   /* header 内层：允许换行，搜索框占满第二行 */
   .header-inner {
     flex-wrap: wrap !important;
     height: auto !important;
-    padding: 6px 12px !important;
+    padding: 4px 12px !important;
     gap: 8px !important;
   }
   /* 搜索框调矮 */
-  .header-inner > div[style*="border-radius: 40"] { padding: 5px 14px !important; }
-  .header-inner > div[style*="border-radius: 40"] input { font-size: 14px !important; }
+  .header-inner > div[style*="border-radius: 40"] { padding: 3px 14px !important; }
+  .header-inner > div[style*="border-radius: 40"] input { font-size: 13px !important; }
   /* 三条杠按钮调矮 */
-  .hamburger-btn { width: 38px !important; height: 38px !important; }
+  .hamburger-btn { width: 32px !important; height: 32px !important; }
   .header-inner > div:first-child { flex-shrink: 0; }
   /* 手机端隐藏 logo+标题，搜索框占满 */
   .header-logo { display: none !important; }
