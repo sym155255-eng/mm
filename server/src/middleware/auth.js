@@ -30,4 +30,9 @@ function authMiddleware(req, res, next) {
   }
 }
 
-module.exports = { authMiddleware, JWT_SECRET };
+function requireAdmin(req, res, next) {
+  if (req.user && req.user.role === 'admin') return next();
+  return res.status(403).json({ error: '需要管理员权限' });
+}
+
+module.exports = { authMiddleware, requireAdmin, JWT_SECRET };

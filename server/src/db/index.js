@@ -225,6 +225,24 @@ async function initDB() {
   try { db._db.run(`ALTER TABLE ads ADD COLUMN badge TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE ads ADD COLUMN badge_color TEXT DEFAULT ''`); db._save(); } catch {}
 
+  // 评论
+  db._db.run(`
+    CREATE TABLE IF NOT EXISTS comments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      link_id INTEGER NOT NULL,
+      content TEXT NOT NULL,
+      nickname TEXT DEFAULT '匿名',
+      email TEXT DEFAULT '',
+      visible INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  db._save();
+  // 用户昵称 + 评论关联用户
+  try { db._db.run(`ALTER TABLE users ADD COLUMN nickname TEXT DEFAULT ''`); db._save(); } catch {}
+  try { db._db.run(`ALTER TABLE comments ADD COLUMN user_id INTEGER`); db._save(); } catch {}
+  try { db._db.run(`ALTER TABLE comments ADD COLUMN image_url TEXT DEFAULT ''`); db._save(); } catch {}
+
   // Seed default data
   const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
   if (!adminExists) {

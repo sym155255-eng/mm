@@ -17,10 +17,13 @@ import SubCategories from './pages/admin/SubCategories';
 import Notices from './pages/admin/Notices';
 import Banners from './pages/admin/Banners';
 import Navs from './pages/admin/Navs';
+import Users from './pages/admin/Users';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
-  return user ? children : <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'admin') return <Navigate to="/" replace />;
+  return children;
 }
 
 export default function App() {
@@ -44,6 +47,7 @@ export default function App() {
           <Route path="pages" element={<Pages />} />
           <Route path="colors" element={<Colors />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="users" element={<Users />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

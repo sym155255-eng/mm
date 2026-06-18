@@ -1,5 +1,66 @@
 const router = require('express').Router();
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const { getDB } = require('../db');
+const { authMiddleware } = require('../middleware/auth');
+const captcha = require('../captcha');
+
+// 获取验证码
+router.get('/captcha', (req, res) => {
+  res.json(captcha.issue());
+});
+
+// 用户上传目录（评论图片）
+const UPLOADS_DIR = path.join(__dirname, '../../../data/uploads');
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+    filename: (req, file, cb) => {
+      const ext = (path.extname(file.originalname) || '.png').toLowerCase();
+      cb(null, `c_${Date.now()}_${Math.round(Math.random() * 1e6)}${ext}`);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 最大 5MB
+  fileFilter: (req, file, cb) => cb(null, file.mimetype.startsWith('image/')),
+});
+
+// 评论图片上传（需登录）
+router.post('/comment-image', authMiddleware, upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: '请上传图片文件' });
+  res.json({ ok: true, path: `/uploads/${req.file.filename}` });
+});
+
+// 获取某链接的评论
+router.get('/comments/:linkId', (req, res) => {
+  const db = getDB();
+  const rows = db.prepare('SELECT id, link_id, content, nickname, image_url, created_at FROM comments WHERE link_id=? AND visible=1 ORDER BY id DESC').all(req.params.linkId);
+  res.json(rows);
+});
+
+// 发表评论（需登录 + 图形验证码，可带图片）
+router.post('/comment', authMiddleware, (req, res) => {
+  const { link_id, content, image_url, captcha_token, captcha_text } = req.body || {};
+  // 校验验证码
+  if (!captcha.verify(captcha_token, captcha_text)) {
+    return res.status(400).json({ error: '验证码错误或已过期' });
+  }
+  const text = String(content || '').trim();
+  const img = String(image_url || '').trim();
+  if (!text && !img) return res.status(400).json({ error: '评论内容不能为空' });
+  if (text.length > 1000) return res.status(400).json({ error: '评论内容过长' });
+  // 图片只接受本站 /uploads 路径，防止 XSS / 盗链
+  if (img && !/^\/uploads\/[\w.\-]+$/.test(img)) return res.status(400).json({ error: '图片地址无效' });
+  const db = getDB();
+  const link = db.prepare('SELECT id FROM links WHERE id=?').get(link_id);
+  if (!link) return res.status(404).json({ error: '链接不存在' });
+  const u = db.prepare('SELECT id, username, nickname FROM users WHERE id=?').get(req.user.id);
+  const name = (u && (u.nickname || u.username)) || '匿名';
+  const info = db.prepare('INSERT INTO comments (link_id, content, nickname, user_id, image_url) VALUES (?, ?, ?, ?, ?)').run(link_id, text, name, req.user.id, img);
+  const row = db.prepare('SELECT id, link_id, content, nickname, image_url, created_at FROM comments WHERE id=?').get(info.lastInsertRowid);
+  res.json(row);
+});
 
 // 单个链接详情（浏览量 +1）
 router.get('/link/:id', (req, res) => {

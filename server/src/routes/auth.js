@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { getDB } = require('../db');
 const { JWT_SECRET } = require('../middleware/auth');
+const captcha = require('../captcha');
 
 // ── 防暴力破解：按 IP 记录失败次数 ──
 const attempts = new Map(); // ip -> { count, lockUntil }
@@ -24,8 +25,9 @@ router.post('/login', (req, res) => {
     return res.status(429).json({ error: `失败次数过多，请 ${mins} 分钟后再试` });
   }
 
-  const { username, password } = req.body;
+  const { username, password, captcha_token, captcha_text } = req.body;
   if (!username || !password) return res.status(400).json({ error: '请填写用户名和密码' });
+  if (!captcha.verify(captcha_token, captcha_text)) return res.status(400).json({ error: '验证码错误或已过期' });
   const db = getDB();
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
 
@@ -42,7 +44,25 @@ router.post('/login', (req, res) => {
   // 成功 → 清除失败记录
   attempts.delete(ip);
   const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
+  res.json({ token, user: { id: user.id, username: user.username, role: user.role, nickname: user.nickname || '' } });
+});
+
+// 注册（普通用户，role=user）
+router.post('/register', (req, res) => {
+  let { username, password, nickname, captcha_token, captcha_text } = req.body || {};
+  username = String(username || '').trim();
+  nickname = String(nickname || '').trim().slice(0, 30);
+  if (!username || !password) return res.status(400).json({ error: '请填写用户名和密码' });
+  if (!captcha.verify(captcha_token, captcha_text)) return res.status(400).json({ error: '验证码错误或已过期' });
+  if (username.length < 2 || username.length > 20) return res.status(400).json({ error: '用户名长度需为 2-20 位' });
+  if (String(password).length < 6) return res.status(400).json({ error: '密码至少 6 位' });
+  const db = getDB();
+  const exists = db.prepare('SELECT id FROM users WHERE username = ?').get(username);
+  if (exists) return res.status(400).json({ error: '用户名已被占用' });
+  const hash = bcrypt.hashSync(password, 10);
+  const info = db.prepare('INSERT INTO users (username, password, role, nickname) VALUES (?, ?, ?, ?)').run(username, hash, 'user', nickname);
+  const token = jwt.sign({ id: info.lastInsertRowid, username, role: 'user' }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, user: { id: info.lastInsertRowid, username, role: 'user', nickname } });
 });
 
 router.post('/change-password', require('../middleware/auth').authMiddleware, (req, res) => {

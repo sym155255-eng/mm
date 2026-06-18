@@ -24,11 +24,68 @@ export async function fetchNavDetail(id) {
   return r.json();
 }
 
-export async function login(username, password) {
+// 评论
+export async function fetchCaptcha() {
+  const r = await fetch(`${BASE}/public/captcha`);
+  return r.json();
+}
+export async function fetchComments(linkId) {
+  const r = await fetch(`${BASE}/public/comments/${linkId}`);
+  return r.json();
+}
+export async function postComment(data) {
+  const r = await fetch(`${BASE}/public/comment`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+  return r.json();
+}
+export async function uploadCommentImage(file) {
+  const fd = new FormData();
+  fd.append('image', file);
+  const r = await fetch(`${BASE}/public/comment-image`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${getToken()}` },
+    body: fd,
+  });
+  return r.json();
+}
+
+// 注册
+export async function register(username, password, nickname, captchaToken, captchaText) {
+  const r = await fetch(`${BASE}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password, nickname, captcha_token: captchaToken, captcha_text: captchaText }),
+  });
+  return r.json();
+}
+
+// 用户管理（后台）
+export async function getUsers() {
+  const r = await fetch(`${BASE}/admin/users`, { headers: authHeaders() });
+  return r.json();
+}
+export async function deleteUser(id) {
+  const r = await fetch(`${BASE}/admin/users/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}
+// 评论管理（后台）
+export async function getAdminComments() {
+  const r = await fetch(`${BASE}/admin/comments`, { headers: authHeaders() });
+  return r.json();
+}
+export async function deleteComment(id) {
+  const r = await fetch(`${BASE}/admin/comments/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}
+
+export async function login(username, password, captchaToken, captchaText) {
   const r = await fetch(`${BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, password, captcha_token: captchaToken, captcha_text: captchaText }),
   });
   return r.json();
 }

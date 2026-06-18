@@ -3,13 +3,44 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { getDB } = require('../db');
-const { authMiddleware } = require('../middleware/auth');
+const { authMiddleware, requireAdmin } = require('../middleware/auth');
 const { broadcast } = require('../sse');
 const { fetchFavicon, ICONS_DIR } = require('../favicon');
 
 router.use(authMiddleware);
+router.use(requireAdmin);
 
 function db() { return getDB(); }
+
+// ── 用户管理 ──────────────────────────────────────────────
+// 注册用户列表（含管理员，标注角色）
+router.get('/users', (req, res) => {
+  const rows = db().prepare("SELECT id, username, nickname, role, created_at FROM users ORDER BY id DESC").all();
+  res.json(rows);
+});
+// 删除用户（不能删管理员、不能删自己）
+router.delete('/users/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const u = db().prepare('SELECT id, role FROM users WHERE id=?').get(id);
+  if (!u) return res.status(404).json({ error: '用户不存在' });
+  if (u.role === 'admin') return res.status(400).json({ error: '不能删除管理员账号' });
+  if (id === req.user.id) return res.status(400).json({ error: '不能删除自己' });
+  db().prepare('DELETE FROM users WHERE id=?').run(id);
+  res.json({ ok: true });
+});
+// 评论管理：列出全部
+router.get('/comments', (req, res) => {
+  const rows = db().prepare(`
+    SELECT c.id, c.link_id, c.content, c.nickname, c.user_id, c.image_url, c.created_at, l.title AS link_title
+    FROM comments c LEFT JOIN links l ON l.id = c.link_id
+    ORDER BY c.id DESC
+  `).all();
+  res.json(rows);
+});
+router.delete('/comments/:id', (req, res) => {
+  db().prepare('DELETE FROM comments WHERE id=?').run(Number(req.params.id));
+  res.json({ ok: true });
+});
 
 // ── 图标上传 ──────────────────────────────────────────────
 const upload = multer({

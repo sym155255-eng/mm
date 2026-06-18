@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { fetchLinkDetail, fetchPublicData } from '../api';
+import { fetchLinkDetail, fetchPublicData, fetchComments, postComment, uploadCommentImage, fetchCaptcha } from '../api';
 
 function applyTheme(s) {
   const root = document.documentElement;
@@ -170,7 +170,133 @@ export default function SiteDetail() {
           {link.description && <p style={s.desc}>{link.description}</p>}
         </div>
 
+        {/* 评论区 */}
+        <CommentSection linkId={link.id} />
+
         <button onClick={() => nav(-1)} style={s.backBtn}>← 返回</button>
+      </div>
+    </div>
+  );
+}
+
+function CommentSection({ linkId }) {
+  const [comments, setComments] = useState([]);
+  const [content, setContent] = useState('');
+  const [image, setImage] = useState('');     // 已上传的图片路径
+  const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState('');
+  const [captchaText, setCaptchaText] = useState('');
+  const [captcha, setCaptcha] = useState({ token: '', svg: '' });
+  const fileRef = React.useRef(null);
+
+  const authUser = (() => { try { return JSON.parse(localStorage.getItem('nav_user')); } catch { return null; } })();
+  const isLoggedIn = !!localStorage.getItem('nav_token') && !!authUser;
+
+  function loadComments() {
+    fetchComments(linkId).then(d => setComments(Array.isArray(d) ? d : []));
+  }
+  function loadCaptcha() {
+    fetchCaptcha().then(d => { setCaptcha(d); setCaptchaText(''); });
+  }
+  useEffect(() => { loadComments(); }, [linkId]);
+  useEffect(() => { if (isLoggedIn) loadCaptcha(); }, [isLoggedIn]);
+
+  async function onPickImage(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setErr('请选择图片文件'); return; }
+    if (file.size > 5 * 1024 * 1024) { setErr('图片不能超过 5MB'); return; }
+    setErr(''); setUploading(true);
+    try {
+      const r = await uploadCommentImage(file);
+      if (r.error || !r.path) { setErr(r.error || '图片上传失败'); return; }
+      setImage(r.path);
+    } catch {
+      setErr('图片上传失败');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  }
+
+  async function submit() {
+    setErr('');
+    if (!content.trim() && !image) { setErr('请输入评论内容或添加图片'); return; }
+    if (!captchaText.trim()) { setErr('请输入图形验证码'); return; }
+    setSubmitting(true);
+    try {
+      const r = await postComment({ link_id: linkId, content, image_url: image, captcha_token: captcha.token, captcha_text: captchaText });
+      if (r.error) { setErr(r.error); loadCaptcha(); return; }
+      setContent(''); setImage('');
+      setComments(prev => [r, ...prev]);
+      loadCaptcha();
+    } catch {
+      setErr('提交失败，请稍后重试'); loadCaptcha();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div style={s.cmtCard}>
+      <div style={s.cmtTitle}>评论 <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 13 }}>({comments.length})</span></div>
+
+      {/* 评论列表 */}
+      <div style={{ marginBottom: 8 }}>
+        {comments.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14, padding: '12px 0' }}>暂无评论，快来抢沙发吧～</div>}
+        {comments.map(c => (
+          <div key={c.id} style={s.cmtItem}>
+            <div style={s.cmtItemHead}>
+              <span style={s.cmtAvatar}>{(c.nickname || '匿')[0]}</span>
+              <span style={s.cmtName}>{c.nickname || '匿名'}</span>
+              <span style={s.cmtTime}>{String(c.created_at || '').slice(0, 16)}</span>
+            </div>
+            {c.content && <div style={s.cmtContent}>{c.content}</div>}
+            {c.image_url && (
+              <div style={{ paddingLeft: 36, marginTop: c.content ? 8 : 4 }}>
+                <a href={c.image_url} target="_blank" rel="noopener noreferrer">
+                  <img src={c.image_url} alt="评论图片" style={s.cmtImg} />
+                </a>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* 发表表单（需登录） */}
+      <div style={s.cmtFormWrap}>
+        {isLoggedIn ? (
+          <>
+            <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 8 }}>以 <b style={{ color: '#374151' }}>{authUser.nickname || authUser.username}</b> 身份发表</div>
+            <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="输入评论内容…" style={s.cmtTextarea} />
+            {image && (
+              <div style={s.cmtPreviewWrap}>
+                <img src={image} alt="预览" style={s.cmtPreviewImg} />
+                <button type="button" onClick={() => setImage('')} style={s.cmtPreviewDel} title="移除图片">✕</button>
+              </div>
+            )}
+            <input ref={fileRef} type="file" accept="image/*" onChange={onPickImage} style={{ display: 'none' }} />
+            <div style={s.cmtSubmitRow}>
+              <button type="button" onClick={() => fileRef.current && fileRef.current.click()} disabled={uploading} style={s.cmtImgBtn}>
+                {uploading ? '上传中…' : '🖼️ 图片'}
+              </button>
+              <div style={s.cmtCaptchaBox}>
+                <input value={captchaText} onChange={e => setCaptchaText(e.target.value)} placeholder="验证码" style={s.cmtCaptchaInput} />
+                {captcha.svg && <img src={captcha.svg} alt="验证码" title="点击刷新" onClick={loadCaptcha} style={s.cmtCaptchaImg} />}
+              </div>
+              <button onClick={submit} disabled={submitting || uploading} style={{ ...s.cmtSubmitBtn, marginLeft: 'auto', ...((submitting || uploading) ? { opacity: 0.6, cursor: 'default' } : {}) }}>
+                {submitting ? '提交中…' : '发表评论'}
+              </button>
+            </div>
+            {err && <div style={s.cmtErr}>{err}</div>}
+          </>
+        ) : (
+          <div style={s.cmtLoginTip}>
+            <span>登录后即可发表评论</span>
+            <Link to="/login" style={s.cmtLoginBtn}>登录 / 注册</Link>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -217,4 +343,28 @@ const s = {
   adCardTitle: { fontSize: 13, fontWeight: 700, color: 'var(--ad-title, #1a1a2e)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   adCardDesc: { fontSize: 11, color: 'var(--ad-desc, #6b7280)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 },
   adBadge: { position: 'absolute', top: 6, right: 6, color: '#fff', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, lineHeight: 1.5, zIndex: 1 },
+  // 评论
+  cmtCard: { background: '#fff', borderRadius: 14, padding: '20px 22px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', marginTop: 14 },
+  cmtTitle: { fontSize: 16, fontWeight: 700, color: 'var(--text)', marginBottom: 14 },
+  cmtFormWrap: { marginTop: 14, paddingTop: 16, borderTop: '1px solid #f3f4f6' },
+  cmtTextarea: { width: '100%', boxSizing: 'border-box', minHeight: 90, resize: 'vertical', border: 'none', background: '#f3f4f6', borderRadius: 10, padding: '12px 14px', fontSize: 14, outline: 'none', fontFamily: 'inherit' },
+  cmtSubmitRow: { display: 'flex', gap: 10, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' },
+  cmtSubmitBtn: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 26px', fontSize: 15, fontWeight: 700, cursor: 'pointer', flexShrink: 0 },
+  cmtImgBtn: { background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 10, padding: '11px 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  cmtCaptchaBox: { display: 'flex', alignItems: 'center', gap: 8, background: '#f3f4f6', borderRadius: 10, padding: '4px 6px 4px 12px' },
+  cmtCaptchaInput: { width: 80, border: 'none', background: 'transparent', fontSize: 14, outline: 'none' },
+  cmtCaptchaImg: { height: 38, borderRadius: 6, cursor: 'pointer', flexShrink: 0 },
+  cmtPreviewWrap: { position: 'relative', display: 'inline-block', marginTop: 10 },
+  cmtPreviewImg: { maxWidth: 160, maxHeight: 160, borderRadius: 10, display: 'block', border: '1px solid #e5e7eb' },
+  cmtPreviewDel: { position: 'absolute', top: -8, right: -8, width: 24, height: 24, borderRadius: '50%', background: '#111827', color: '#fff', border: 'none', fontSize: 12, cursor: 'pointer', lineHeight: 1 },
+  cmtImg: { maxWidth: 240, maxHeight: 240, borderRadius: 10, border: '1px solid #e5e7eb', display: 'block', cursor: 'zoom-in' },
+  cmtLoginTip: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', background: '#f9fafb', border: '1px dashed #e5e7eb', borderRadius: 10, padding: '14px 18px', color: '#6b7280', fontSize: 14 },
+  cmtLoginBtn: { background: 'var(--primary)', color: '#fff', textDecoration: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 14, fontWeight: 600 },
+  cmtErr: { color: '#ef4444', fontSize: 13, marginTop: 8 },
+  cmtItem: { padding: '14px 0', borderTop: '1px solid #f3f4f6' },
+  cmtItemHead: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 },
+  cmtAvatar: { width: 28, height: 28, borderRadius: '50%', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0, textTransform: 'uppercase' },
+  cmtName: { fontSize: 14, fontWeight: 600, color: '#374151' },
+  cmtTime: { fontSize: 12, color: '#9ca3af', marginLeft: 'auto' },
+  cmtContent: { fontSize: 14, color: '#374151', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', paddingLeft: 36 },
 };

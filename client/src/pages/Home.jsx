@@ -38,7 +38,10 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [adsExpanded, setAdsExpanded] = useState(false); // 广告折叠
   const [popup, setPopup] = useState(null); // link object
-  const isAdmin = !!localStorage.getItem('nav_token'); // 是否已登录
+  const authUser = (() => { try { return JSON.parse(localStorage.getItem('nav_user')); } catch { return null; } })();
+  const isLoggedIn = !!localStorage.getItem('nav_token') && !!authUser;
+  const isAdmin = isLoggedIn && authUser.role === 'admin'; // 仅管理员可编辑/进后台
+  function doSignOut() { localStorage.removeItem('nav_token'); localStorage.removeItem('nav_user'); window.location.reload(); }
   const [editMode, setEditMode] = useState(false);     // 前端编辑模式
   const [editLink, setEditLink] = useState(null);      // 正在编辑的链接
   const [editSubs, setEditSubs] = useState([]);        // 该链接的子链接
@@ -127,9 +130,16 @@ export default function Home() {
             </div>
           )}
           <div style={styles.headerRight}>
-            <Link to={isAdmin ? '/admin' : '/login'} style={styles.adminBtn}>
-              {isAdmin ? '管理后台' : '登录'}
-            </Link>
+            {!isLoggedIn && (
+              <Link to="/login" style={styles.adminBtn}>登录/注册</Link>
+            )}
+            {isLoggedIn && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {isAdmin && <Link to="/admin" style={styles.adminBtn}>管理后台</Link>}
+                {!isAdmin && <span style={styles.userChip}>👤 {authUser.nickname || authUser.username}</span>}
+                <button onClick={doSignOut} style={styles.logoutBtn}>退出</button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -158,10 +168,16 @@ export default function Home() {
               </button>
             ))}
           </nav>
-          {/* 抽屉底部：管理后台（仅手机抽屉显示） */}
-          <Link to={isAdmin ? '/admin' : '/login'} className="drawer-admin-btn" style={styles.drawerAdminBtn} onClick={() => setMenuOpen(false)}>
-            {isAdmin ? '⚙️ 管理后台' : '🔑 登录'}
-          </Link>
+          {/* 抽屉底部：登录/后台（仅手机抽屉显示） */}
+          {isAdmin && (
+            <Link to="/admin" className="drawer-admin-btn" style={styles.drawerAdminBtn} onClick={() => setMenuOpen(false)}>⚙️ 管理后台</Link>
+          )}
+          {!isLoggedIn && (
+            <Link to="/login" className="drawer-admin-btn" style={styles.drawerAdminBtn} onClick={() => setMenuOpen(false)}>🔑 登录/注册</Link>
+          )}
+          {isLoggedIn && !isAdmin && (
+            <button className="drawer-admin-btn" style={{ ...styles.drawerAdminBtn, border: 'none', width: '100%', cursor: 'pointer' }} onClick={doSignOut}>🚪 退出登录（{authUser.nickname || authUser.username}）</button>
+          )}
         </aside>
 
 
@@ -630,6 +646,8 @@ const styles = {
     fontWeight: 600,
     transition: 'opacity 0.2s',
   },
+  userChip: { display: 'inline-flex', alignItems: 'center', background: '#eff2ff', color: 'var(--primary)', padding: '6px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' },
+  logoutBtn: { background: 'transparent', border: '1.5px solid #e5e7eb', color: '#6b7280', padding: '6px 12px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' },
   marquee: {
     display: 'flex',
     alignItems: 'center',

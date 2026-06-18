@@ -31,6 +31,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // 本地图标目录
 app.use('/icons', express.static(path.join(__dirname, '../../data/icons')));
+// 用户上传（评论图片等）
+app.use('/uploads', express.static(path.join(__dirname, '../../data/uploads')));
 app.use(express.static(path.join(__dirname, '../../client/dist')));
 
 app.use('/api/auth', require('./routes/auth'));
