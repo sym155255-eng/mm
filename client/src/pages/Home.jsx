@@ -1062,7 +1062,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   moreBtn: {
     background: 'transparent',
@@ -1087,7 +1087,7 @@ const styles = {
     display: 'flex',
     flexWrap: 'wrap',
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   tab: {
     padding: '7px 18px',
