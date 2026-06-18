@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchLinkDetail, fetchPublicData, fetchComments, postComment, uploadCommentImage, fetchCaptcha } from '../api';
+import Avatar from '../components/Avatar';
 
 function applyTheme(s) {
   const root = document.documentElement;
@@ -248,7 +249,7 @@ function CommentSection({ linkId }) {
           return (
           <div key={c.id} style={s.cmtItem}>
             <div style={s.cmtItemHead}>
-              <span style={{ ...s.cmtAvatar, ...(c.nickname_color ? { background: c.nickname_color } : {}) }}>{name[0]}</span>
+              <Avatar seed={'c' + c.id} size={28} />
               <span style={{ ...s.cmtName, ...(c.nickname_color ? { color: c.nickname_color } : {}) }}>{name}</span>
               <span style={s.cmtTime}>{String(c.created_at || '').slice(0, 16)}</span>
             </div>
