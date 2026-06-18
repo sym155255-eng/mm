@@ -1,3 +1,41 @@
+/* ===== 移动端底部导航栏 ===== */
+.bottom-nav { display: none; }
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 1100;
+    background: #fff;
+    border-top: 1px solid #eef0f3;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+    padding: 4px 0 calc(4px + env(safe-area-inset-bottom));
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+  .bottom-nav.hidden {
+    transform: translateY(120%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .bn-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 0;
+    font-size: 11px;
+    color: #6b7280;
+  }
+  .bn-item.active { color: var(--primary); }
+  .bn-ico { font-size: 20px; line-height: 1; }
+  /* 给页面底部留出导航栏高度，避免遮挡内容 */
+  body { padding-bottom: 60px; }
+}
+
 /* 卡片网格列数：电脑5 / 平板3 / 手机2 */
 .link-grid, .ads-row { grid-template-columns: repeat(5, 1fr); }
 @media (min-width: 769px) and (max-width: 1024px) {

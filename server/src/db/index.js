@@ -240,6 +240,8 @@ async function initDB() {
   db._save();
   // 用户昵称 + 评论关联用户
   try { db._db.run(`ALTER TABLE users ADD COLUMN nickname TEXT DEFAULT ''`); db._save(); } catch {}
+  try { db._db.run(`ALTER TABLE users ADD COLUMN nickname_color TEXT DEFAULT ''`); db._save(); } catch {}
+  try { db._db.run(`ALTER TABLE users ADD COLUMN role_color TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE comments ADD COLUMN user_id INTEGER`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE comments ADD COLUMN image_url TEXT DEFAULT ''`); db._save(); } catch {}
 

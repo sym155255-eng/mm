@@ -15,8 +15,18 @@ function db() { return getDB(); }
 // ── 用户管理 ──────────────────────────────────────────────
 // 注册用户列表（含管理员，标注角色）
 router.get('/users', (req, res) => {
-  const rows = db().prepare("SELECT id, username, nickname, role, created_at FROM users ORDER BY id DESC").all();
+  const rows = db().prepare("SELECT id, username, nickname, nickname_color, role_color, role, created_at FROM users ORDER BY id DESC").all();
   res.json(rows);
+});
+// 更新用户自定义颜色（昵称色 / 角色文字色）
+router.put('/users/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const u = db().prepare('SELECT id FROM users WHERE id=?').get(id);
+  if (!u) return res.status(404).json({ error: '用户不存在' });
+  const nc = String(req.body.nickname_color || '').trim().slice(0, 20);
+  const rc = String(req.body.role_color || '').trim().slice(0, 20);
+  db().prepare('UPDATE users SET nickname_color=?, role_color=? WHERE id=?').run(nc, rc, id);
+  res.json({ ok: true });
 });
 // 删除用户（不能删管理员、不能删自己）
 router.delete('/users/:id', (req, res) => {
@@ -38,6 +48,10 @@ router.get('/comments', (req, res) => {
   res.json(rows);
 });
 router.delete('/comments/:id', (req, res) => {
+  const c = db().prepare('SELECT image_url FROM comments WHERE id=?').get(Number(req.params.id));
+  if (c && c.image_url && /^\/uploads\/[\w.\-]+$/.test(c.image_url)) {
+    try { fs.unlinkSync(path.join(UPLOADS_DIR, path.basename(c.image_url))); } catch {}
+  }
   db().prepare('DELETE FROM comments WHERE id=?').run(Number(req.params.id));
   res.json({ ok: true });
 });
@@ -154,7 +168,20 @@ router.put('/links/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+// 删除链接：连同它的评论 + 评论图片文件一起删除
+const UPLOADS_DIR = path.join(__dirname, '../../../data/uploads');
+function deleteCommentsOfLink(linkId) {
+  const rows = db().prepare('SELECT image_url FROM comments WHERE link_id=?').all(linkId);
+  rows.forEach(r => {
+    if (r.image_url && /^\/uploads\/[\w.\-]+$/.test(r.image_url)) {
+      try { fs.unlinkSync(path.join(UPLOADS_DIR, path.basename(r.image_url))); } catch {}
+    }
+  });
+  db().prepare('DELETE FROM comments WHERE link_id=?').run(linkId);
+}
+
 router.delete('/links/:id', (req, res) => {
+  deleteCommentsOfLink(req.params.id);
   db().prepare('DELETE FROM links WHERE id=?').run(req.params.id);
   broadcast('update');
   res.json({ ok: true });

@@ -71,6 +71,10 @@ export async function deleteUser(id) {
   const r = await fetch(`${BASE}/admin/users/${id}`, { method: 'DELETE', headers: authHeaders() });
   return r.json();
 }
+export async function updateUserColors(id, data) {
+  const r = await fetch(`${BASE}/admin/users/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
 // 评论管理（后台）
 export async function getAdminComments() {
   const r = await fetch(`${BASE}/admin/comments`, { headers: authHeaders() });

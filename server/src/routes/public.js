@@ -35,7 +35,11 @@ router.post('/comment-image', authMiddleware, upload.single('image'), (req, res)
 // 获取某链接的评论
 router.get('/comments/:linkId', (req, res) => {
   const db = getDB();
-  const rows = db.prepare('SELECT id, link_id, content, nickname, image_url, created_at FROM comments WHERE link_id=? AND visible=1 ORDER BY id DESC').all(req.params.linkId);
+  const rows = db.prepare(`
+    SELECT c.id, c.link_id, c.content, c.nickname, c.image_url, c.created_at, u.nickname_color, u.role
+    FROM comments c LEFT JOIN users u ON u.id = c.user_id
+    WHERE c.link_id=? AND c.visible=1 ORDER BY c.id DESC
+  `).all(req.params.linkId);
   res.json(rows);
 });
 

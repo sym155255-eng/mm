@@ -5,6 +5,8 @@ import Home from './pages/Home';
 import SiteDetail from './pages/SiteDetail';
 import NavPage from './pages/NavPage';
 import PageView from './pages/PageView';
+import Me from './pages/Me';
+import BottomNav from './components/BottomNav';
 import Pages from './pages/admin/Pages';
 import Login from './pages/Login';
 import AdminLayout from './pages/admin/Layout';
@@ -31,6 +33,7 @@ export default function App() {
     <AuthProvider>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/me" element={<Me />} />
         <Route path="/sites/:id" element={<SiteDetail />} />
         <Route path="/page/:id" element={<NavPage />} />
         <Route path="/p/:id" element={<PageView />} />
@@ -51,6 +54,7 @@ export default function App() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <BottomNav />
     </AuthProvider>
   );
 }

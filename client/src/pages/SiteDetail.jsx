@@ -172,8 +172,6 @@ export default function SiteDetail() {
 
         {/* 评论区 */}
         <CommentSection linkId={link.id} />
-
-        <button onClick={() => nav(-1)} style={s.backBtn}>← 返回</button>
       </div>
     </div>
   );
@@ -239,17 +237,19 @@ function CommentSection({ linkId }) {
   }
 
   return (
-    <div style={s.cmtCard}>
+    <div id="comment-box" style={s.cmtCard}>
       <div style={s.cmtTitle}>评论 <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 13 }}>({comments.length})</span></div>
 
       {/* 评论列表 */}
       <div style={{ marginBottom: 8 }}>
         {comments.length === 0 && <div style={{ color: '#9ca3af', fontSize: 14, padding: '12px 0' }}>暂无评论，快来抢沙发吧～</div>}
-        {comments.map(c => (
+        {comments.map(c => {
+          const name = c.role === 'admin' ? '管理员' : (c.nickname || '匿名');
+          return (
           <div key={c.id} style={s.cmtItem}>
             <div style={s.cmtItemHead}>
-              <span style={s.cmtAvatar}>{(c.nickname || '匿')[0]}</span>
-              <span style={s.cmtName}>{c.nickname || '匿名'}</span>
+              <span style={{ ...s.cmtAvatar, ...(c.nickname_color ? { background: c.nickname_color } : {}) }}>{name[0]}</span>
+              <span style={{ ...s.cmtName, ...(c.nickname_color ? { color: c.nickname_color } : {}) }}>{name}</span>
               <span style={s.cmtTime}>{String(c.created_at || '').slice(0, 16)}</span>
             </div>
             {c.content && <div style={s.cmtContent}>{c.content}</div>}
@@ -261,14 +261,15 @@ function CommentSection({ linkId }) {
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* 发表表单（需登录） */}
       <div style={s.cmtFormWrap}>
         {isLoggedIn ? (
           <>
-            <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 8 }}>以 <b style={{ color: '#374151' }}>{authUser.nickname || authUser.username}</b> 身份发表</div>
+            <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 8 }}>以 <b style={{ color: '#374151' }}>{authUser.role === 'admin' ? '管理员' : (authUser.nickname || authUser.username)}</b> 身份发表</div>
             <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="输入评论内容…" style={s.cmtTextarea} />
             {image && (
               <div style={s.cmtPreviewWrap}>
@@ -344,8 +345,8 @@ const s = {
   adCardDesc: { fontSize: 11, color: 'var(--ad-desc, #6b7280)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: 2 },
   adBadge: { position: 'absolute', top: 6, right: 6, color: '#fff', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, lineHeight: 1.5, zIndex: 1 },
   // 评论
-  cmtCard: { background: '#fff', borderRadius: 14, padding: '20px 22px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', marginTop: 14 },
-  cmtTitle: { fontSize: 16, fontWeight: 700, color: 'var(--text)', marginBottom: 14 },
+  cmtCard: { background: '#fff', borderRadius: 14, padding: '14px 22px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', marginTop: 8 },
+  cmtTitle: { fontSize: 16, fontWeight: 700, color: 'var(--text)', marginBottom: 8 },
   cmtFormWrap: { marginTop: 14, paddingTop: 16, borderTop: '1px solid #f3f4f6' },
   cmtTextarea: { width: '100%', boxSizing: 'border-box', minHeight: 90, resize: 'vertical', border: 'none', background: '#f3f4f6', borderRadius: 10, padding: '12px 14px', fontSize: 14, outline: 'none', fontFamily: 'inherit' },
   cmtSubmitRow: { display: 'flex', gap: 10, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' },
@@ -361,8 +362,8 @@ const s = {
   cmtLoginTip: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', background: '#f9fafb', border: '1px dashed #e5e7eb', borderRadius: 10, padding: '14px 18px', color: '#6b7280', fontSize: 14 },
   cmtLoginBtn: { background: 'var(--primary)', color: '#fff', textDecoration: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 14, fontWeight: 600 },
   cmtErr: { color: '#ef4444', fontSize: 13, marginTop: 8 },
-  cmtItem: { padding: '14px 0', borderTop: '1px solid #f3f4f6' },
-  cmtItemHead: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 },
+  cmtItem: { padding: '8px 0', borderTop: '1px solid #f3f4f6' },
+  cmtItemHead: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 },
   cmtAvatar: { width: 28, height: 28, borderRadius: '50%', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, flexShrink: 0, textTransform: 'uppercase' },
   cmtName: { fontSize: 14, fontWeight: 600, color: '#374151' },
   cmtTime: { fontSize: 12, color: '#9ca3af', marginLeft: 'auto' },

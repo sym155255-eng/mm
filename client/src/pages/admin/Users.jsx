@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getUsers, deleteUser, getAdminComments, deleteComment } from '../../api';
+import { getUsers, deleteUser, getAdminComments, deleteComment, updateUserColors } from '../../api';
 
 export default function Users() {
   const [tab, setTab] = useState('users');
@@ -10,6 +10,8 @@ export default function Users() {
   function loadUsers() { getUsers().then(d => setUsers(Array.isArray(d) ? d : [])); }
   function loadComments() { getAdminComments().then(d => setComments(Array.isArray(d) ? d : [])); }
   useEffect(() => { loadUsers(); loadComments(); }, []);
+
+  function patchUser(id, patch) { setUsers(us => us.map(u => u.id === id ? { ...u, ...patch } : u)); }
 
   async function removeUser(u) {
     if (!window.confirm(`确定删除用户「${u.nickname || u.username}」?`)) return;
@@ -35,29 +37,15 @@ export default function Users() {
       {tab === 'users' && (
         <div style={s.card}>
           <div style={{ ...s.row, ...s.head }}>
-            <span style={{ width: 50 }}>ID</span>
+            <span style={{ width: 40 }}>ID</span>
             <span style={{ flex: 1 }}>用户名</span>
             <span style={{ flex: 1 }}>昵称</span>
-            <span style={{ width: 70 }}>角色</span>
-            <span style={{ width: 150 }}>注册时间</span>
-            <span style={{ width: 70 }}>操作</span>
+            <span style={{ width: 64 }}>角色</span>
+            <span style={{ width: 130 }}>昵称色 / 角色色</span>
+            <span style={{ width: 120 }}>注册时间</span>
+            <span style={{ width: 110, textAlign: 'right' }}>操作</span>
           </div>
-          {users.map(u => (
-            <div key={u.id} style={s.row}>
-              <span style={{ width: 50, color: '#9ca3af' }}>{u.id}</span>
-              <span style={{ flex: 1, fontWeight: 600 }}>{u.username}</span>
-              <span style={{ flex: 1, color: '#6b7280' }}>{u.nickname || '—'}</span>
-              <span style={{ width: 70 }}>
-                <span style={{ ...s.badge, background: u.role === 'admin' ? '#fef3c7' : '#e0e7ff', color: u.role === 'admin' ? '#b45309' : '#4338ca' }}>
-                  {u.role === 'admin' ? '管理员' : '用户'}
-                </span>
-              </span>
-              <span style={{ width: 150, color: '#9ca3af', fontSize: 13 }}>{String(u.created_at || '').slice(0, 16)}</span>
-              <span style={{ width: 70 }}>
-                {u.role !== 'admin' && <button style={s.delBtn} onClick={() => removeUser(u)}>删除</button>}
-              </span>
-            </div>
-          ))}
+          {users.map(u => <UserRow key={u.id} u={u} patchUser={patchUser} removeUser={removeUser} />)}
           {users.length === 0 && <div style={s.empty}>暂无用户</div>}
         </div>
       )}
@@ -88,6 +76,60 @@ export default function Users() {
   );
 }
 
+function UserRow({ u, patchUser, removeUser }) {
+  const [status, setStatus] = useState('');
+  const nick = u.nickname_color || '';
+  const role = u.role_color || '';
+  const dirtyRef = u._dirty;
+
+  async function save() {
+    setStatus('saving');
+    try {
+      const r = await updateUserColors(u.id, { nickname_color: nick, role_color: role });
+      if (r && r.ok) { setStatus('ok'); patchUser(u.id, { _dirty: false }); setTimeout(() => setStatus(''), 1500); }
+      else { setStatus('err'); setTimeout(() => setStatus(''), 2000); }
+    } catch { setStatus('err'); setTimeout(() => setStatus(''), 2000); }
+  }
+
+  const roleIsAdmin = u.role === 'admin';
+  return (
+    <div style={s.row}>
+      <span style={{ width: 40, color: '#9ca3af' }}>{u.id}</span>
+      <span style={{ flex: 1, fontWeight: 600 }}>{u.username}</span>
+      <span style={{ flex: 1, color: nick || '#374151', fontWeight: nick ? 600 : 400 }}>{u.nickname || (roleIsAdmin ? '管理员' : '—')}</span>
+      <span style={{ width: 64 }}>
+        <span style={{ ...s.badge,
+          background: roleIsAdmin ? '#fef3c7' : '#e0e7ff',
+          color: roleIsAdmin ? '#b45309' : (role || '#4338ca') }}>
+          {roleIsAdmin ? '管理员' : '用户'}
+        </span>
+      </span>
+      <span style={{ width: 130, display: 'flex', gap: 6 }}>
+        <MiniColor value={nick} title="昵称色" onChange={v => patchUser(u.id, { nickname_color: v, _dirty: true })} />
+        <MiniColor value={role} title="角色文字色" onChange={v => patchUser(u.id, { role_color: v, _dirty: true })} />
+      </span>
+      <span style={{ width: 120, color: '#9ca3af', fontSize: 13 }}>{String(u.created_at || '').slice(0, 16)}</span>
+      <span style={{ width: 110, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6 }}>
+        {status === 'ok' && <span style={{ fontSize: 13 }}>✅</span>}
+        {status === 'err' && <span style={{ fontSize: 11, color: '#dc2626' }}>失败</span>}
+        {dirtyRef && <button onClick={save} disabled={status === 'saving'} style={s.saveBtn}>{status === 'saving' ? '…' : '保存'}</button>}
+        {!roleIsAdmin && <button style={s.delBtn} onClick={() => removeUser(u)}>删除</button>}
+      </span>
+    </div>
+  );
+}
+
+function MiniColor({ value, title, onChange }) {
+  const has = value && value.trim();
+  return (
+    <span title={title} style={{ position: 'relative', display: 'inline-flex' }}>
+      <input type="color" value={has ? value : '#888888'} onChange={e => onChange(e.target.value)}
+        style={{ width: 26, height: 24, border: '1px solid #e5e7eb', borderRadius: 5, cursor: 'pointer', padding: 1 }} />
+      {has && <button onClick={() => onChange('')} title="清除" style={s.miniClear}>✕</button>}
+    </span>
+  );
+}
+
 const s = {
   tabs: { display: 'flex', gap: 6, marginBottom: 16 },
   tab: { padding: '8px 18px', border: '1.5px solid #e5e7eb', background: '#fff', borderRadius: 8, fontSize: 14, fontWeight: 600, color: '#6b7280', cursor: 'pointer' },
@@ -97,6 +139,8 @@ const s = {
   head: { background: '#f9fafb', fontWeight: 600, color: '#6b7280', fontSize: 13 },
   badge: { display: 'inline-block', padding: '2px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600 },
   delBtn: { background: '#fef2f2', color: '#dc2626', border: 'none', borderRadius: 6, padding: '5px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  saveBtn: { background: '#eff2ff', color: 'var(--primary)', border: 'none', borderRadius: 6, padding: '5px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  miniClear: { position: 'absolute', top: -6, right: -6, width: 14, height: 14, lineHeight: '12px', textAlign: 'center', borderRadius: '50%', background: '#111827', color: '#fff', border: 'none', fontSize: 9, cursor: 'pointer', padding: 0 },
   cmtRow: { display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 18px', borderBottom: '1px solid #f3f4f6' },
   linkTag: { marginLeft: 6, color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 },
   empty: { padding: '28px', textAlign: 'center', color: '#9ca3af', fontSize: 14 },
