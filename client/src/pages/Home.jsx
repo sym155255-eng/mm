@@ -38,6 +38,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [adsExpanded, setAdsExpanded] = useState(false); // 广告折叠
   const [popup, setPopup] = useState(null); // link object
+  const [showNotice, setShowNotice] = useState(false); // 弹窗公告
   const authUser = (() => { try { return JSON.parse(localStorage.getItem('nav_user')); } catch { return null; } })();
   const isLoggedIn = !!localStorage.getItem('nav_token') && !!authUser;
   const isAdmin = isLoggedIn && authUser.role === 'admin'; // 仅管理员可编辑/进后台
@@ -86,6 +87,20 @@ export default function Home() {
 
   const { categories, links, settings, ads, subCategories = [], notices = [], banners = [], navs = [] } = data;
   const topAds = ads.filter(a => a.position === 'top');
+
+  // 弹窗公告：启用且今日未关闭则显示
+  useEffect(() => {
+    const enabled = settings.popup_enabled === '1';
+    const hasContent = settings.popup_title || settings.popup_content || settings.popup_image;
+    if (!enabled || !hasContent) { setShowNotice(false); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    if (localStorage.getItem('popup_dismiss') !== today) setShowNotice(true);
+  }, [settings.popup_enabled, settings.popup_title, settings.popup_content, settings.popup_image]);
+
+  function dismissNoticeToday() {
+    localStorage.setItem('popup_dismiss', new Date().toISOString().slice(0, 10));
+    setShowNotice(false);
+  }
 
   const filteredLinks = links.filter(l => {
     const matchCat = activeCategory === 'all' || l.category_id === activeCategory;
@@ -364,6 +379,22 @@ export default function Home() {
                 <button onClick={() => { setEditLink(null); setEditSubs([]); }} style={styles.editCancelBtn}>取消</button>
                 <button onClick={saveEditLink} style={styles.editSaveBtn}>保存</button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 弹窗公告 */}
+      {showNotice && (
+        <div style={styles.noticeBg} onClick={() => setShowNotice(false)}>
+          <div style={styles.noticeCard} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowNotice(false)} style={styles.noticeClose}>✕</button>
+            {settings.popup_title && <div style={styles.noticeTitle}>{settings.popup_title}</div>}
+            {settings.popup_image && <img src={settings.popup_image} alt="" style={styles.noticeImg} />}
+            {settings.popup_content && <div style={styles.noticeText}>{settings.popup_content}</div>}
+            <div style={styles.noticeFoot}>
+              <button onClick={dismissNoticeToday} style={styles.noticeDismiss}>今日不再提示</button>
+              <button onClick={() => setShowNotice(false)} style={styles.noticeOk}>我知道了</button>
             </div>
           </div>
         </div>
@@ -797,6 +828,24 @@ const styles = {
     zIndex: 500,
     padding: 20,
   },
+  noticeBg: {
+    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: 20,
+  },
+  noticeCard: {
+    position: 'relative', background: '#fff', borderRadius: 16, padding: '26px 24px 20px',
+    width: '100%', maxWidth: 380, boxShadow: '0 10px 40px rgba(0,0,0,0.2)', maxHeight: '80vh', overflowY: 'auto',
+  },
+  noticeClose: {
+    position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%',
+    background: '#f3f4f6', border: 'none', color: '#6b7280', fontSize: 14, cursor: 'pointer',
+  },
+  noticeTitle: { fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 12, paddingRight: 24 },
+  noticeImg: { width: '100%', borderRadius: 10, marginBottom: 12, display: 'block' },
+  noticeText: { fontSize: 14, color: '#374151', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word' },
+  noticeFoot: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 20 },
+  noticeDismiss: { background: 'none', border: 'none', color: '#9ca3af', fontSize: 13, cursor: 'pointer' },
+  noticeOk: { background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 22px', fontSize: 14, fontWeight: 700, cursor: 'pointer' },
   popup: {
     background: '#fff',
     borderRadius: 16,
