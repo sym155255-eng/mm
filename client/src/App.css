@@ -36,6 +36,8 @@
   .bn-ico svg { width: 22px; height: 22px; }
   /* 给页面底部留出导航栏高度，避免遮挡内容 */
   body { padding-bottom: 60px; }
+  /* 详情页顶栏：移动端整条隐藏（底部已有首页导航） */
+  .detail-header { display: none !important; }
 }
 
 /* 卡片网格列数：电脑5 / 平板3 / 手机2 */

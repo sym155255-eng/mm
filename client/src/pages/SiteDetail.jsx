@@ -52,13 +52,13 @@ export default function SiteDetail() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {/* 顶栏 */}
-      <header style={s.header}>
+      <header className="detail-header" style={s.header}>
         <div style={{ ...s.headerInner, justifyContent: 'space-between' }}>
           <Link to="/" style={s.logo}>
             <span style={{ fontSize: 24 }}>{settings.site_logo || '🧭'}</span>
             <span style={{ fontWeight: 700 }}>{settings.site_title || '我的导航'}</span>
           </Link>
-          <button onClick={() => nav(-1)} style={s.headerBack}>← 返回</button>
+          <button className="detail-header-back" onClick={() => nav(-1)} style={s.headerBack}>← 返回</button>
         </div>
       </header>
 
