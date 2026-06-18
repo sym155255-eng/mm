@@ -39,6 +39,40 @@ router.delete('/users/:id', (req, res) => {
   res.json({ ok: true });
 });
 // 评论管理：列出全部
+// ── 投稿审核 ──────────────────────────────────────────────
+router.get('/submissions', (req, res) => {
+  const rows = db().prepare(`
+    SELECT s.*, c.name AS category_name FROM submissions s
+    LEFT JOIN categories c ON c.id = s.category_id
+    ORDER BY (s.status='pending') DESC, s.id DESC
+  `).all();
+  res.json(rows);
+});
+// 通过：写入 links 正式发布
+router.post('/submissions/:id/approve', (req, res) => {
+  const d = db();
+  const sub = d.prepare('SELECT * FROM submissions WHERE id=?').get(Number(req.params.id));
+  if (!sub) return res.status(404).json({ error: '投稿不存在' });
+  // 分类：用投稿所选，没有则取第一个分类
+  let catId = sub.category_id;
+  if (!catId) { const c = d.prepare('SELECT id FROM categories ORDER BY sort_order,id LIMIT 1').get(); catId = c ? c.id : null; }
+  d.prepare('INSERT INTO links (category_id, title, url, description, sort_order) VALUES (?, ?, ?, ?, 0)')
+    .run(catId, sub.title, sub.url, sub.description || '');
+  d.prepare("UPDATE submissions SET status='approved' WHERE id=?").run(sub.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+// 拒绝
+router.post('/submissions/:id/reject', (req, res) => {
+  db().prepare("UPDATE submissions SET status='rejected' WHERE id=?").run(Number(req.params.id));
+  res.json({ ok: true });
+});
+// 删除投稿记录
+router.delete('/submissions/:id', (req, res) => {
+  db().prepare('DELETE FROM submissions WHERE id=?').run(Number(req.params.id));
+  res.json({ ok: true });
+});
+
 router.get('/comments', (req, res) => {
   const rows = db().prepare(`
     SELECT c.id, c.link_id, c.content, c.nickname, c.user_id, c.image_url, c.created_at, l.title AS link_title

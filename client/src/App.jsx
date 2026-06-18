@@ -6,6 +6,7 @@ import SiteDetail from './pages/SiteDetail';
 import NavPage from './pages/NavPage';
 import PageView from './pages/PageView';
 import Me from './pages/Me';
+import Submit from './pages/Submit';
 import BottomNav from './components/BottomNav';
 import Pages from './pages/admin/Pages';
 import Login from './pages/Login';
@@ -34,6 +35,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/me" element={<Me />} />
+        <Route path="/submit" element={<Submit />} />
         <Route path="/sites/:id" element={<SiteDetail />} />
         <Route path="/page/:id" element={<NavPage />} />
         <Route path="/p/:id" element={<PageView />} />

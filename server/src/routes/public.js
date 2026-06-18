@@ -32,6 +32,32 @@ router.post('/comment-image', authMiddleware, upload.single('image'), (req, res)
   res.json({ ok: true, path: `/uploads/${req.file.filename}` });
 });
 
+// 用户投稿：提交一个新卡片链接（需登录，待审核）
+router.post('/submission', authMiddleware, (req, res) => {
+  const db = getDB();
+  const title = String(req.body.title || '').trim().slice(0, 100);
+  let url = String(req.body.url || '').trim().slice(0, 500);
+  const description = String(req.body.description || '').trim().slice(0, 300);
+  const category_id = req.body.category_id ? Number(req.body.category_id) : null;
+  if (!title) return res.status(400).json({ error: '请填写标题' });
+  if (!/^https?:\/\//i.test(url)) return res.status(400).json({ error: '请填写正确的网址（http/https）' });
+  if (category_id && !db.prepare('SELECT id FROM categories WHERE id=?').get(category_id)) {
+    return res.status(400).json({ error: '分类无效' });
+  }
+  const u = db.prepare('SELECT username, nickname, role FROM users WHERE id=?').get(req.user.id);
+  const nickname = u ? (u.role === 'admin' ? '管理员' : (u.nickname || u.username)) : '';
+  db.prepare('INSERT INTO submissions (user_id, nickname, category_id, title, url, description) VALUES (?, ?, ?, ?, ?, ?)')
+    .run(req.user.id, nickname, category_id, title, url, description);
+  res.json({ ok: true });
+});
+
+// 我的投稿记录（需登录）
+router.get('/my-submissions', authMiddleware, (req, res) => {
+  const db = getDB();
+  const rows = db.prepare('SELECT s.id, s.title, s.url, s.status, s.created_at, c.name AS category_name FROM submissions s LEFT JOIN categories c ON c.id=s.category_id WHERE s.user_id=? ORDER BY s.id DESC').all(req.user.id);
+  res.json(rows);
+});
+
 // 获取某链接的评论
 router.get('/comments/:linkId', (req, res) => {
   const db = getDB();

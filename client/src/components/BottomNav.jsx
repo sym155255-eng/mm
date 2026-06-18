@@ -23,32 +23,47 @@ export default function BottomNav() {
   // 后台、登录页不显示
   if (loc.pathname.startsWith('/admin') || loc.pathname === '/login') return null;
 
-  function goPost() {
-    const box = document.getElementById('comment-box');
-    if (box) {
-      box.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      const ta = box.querySelector('textarea');
-      if (ta) setTimeout(() => ta.focus(), 400);
-    } else {
-      nav('/'); // 当前页没有评论框，回首页
-    }
-  }
-  function goMe() {
-    nav(user ? '/me' : '/login');
-  }
+  const tabs = [
+    { key: '/', label: '首页', icon: IconHome, onClick: () => nav('/') },
+    { key: '/submit', label: '投稿', icon: IconPlus, onClick: () => nav(user ? '/submit' : '/login') },
+    { key: '/me', label: '我的', icon: IconUser, onClick: () => nav(user ? '/me' : '/login') },
+  ];
 
-  const isHome = loc.pathname === '/';
   return (
     <nav className={`bottom-nav${hidden ? ' hidden' : ''}`}>
-      <button className={`bn-item${isHome ? ' active' : ''}`} onClick={() => nav('/')}>
-        <span className="bn-ico">🏠</span><span>首页</span>
-      </button>
-      <button className="bn-item" onClick={goPost}>
-        <span className="bn-ico">✍️</span><span>投稿</span>
-      </button>
-      <button className={`bn-item${loc.pathname === '/me' ? ' active' : ''}`} onClick={goMe}>
-        <span className="bn-ico">👤</span><span>我的</span>
-      </button>
+      {tabs.map(t => {
+        const active = loc.pathname === t.key;
+        const Icon = t.icon;
+        return (
+          <button key={t.key} className={`bn-item${active ? ' active' : ''}`} onClick={t.onClick}>
+            <span className="bn-ico"><Icon active={active} /></span>
+            <span>{t.label}</span>
+          </button>
+        );
+      })}
     </nav>
+  );
+}
+
+const SZ = 24;
+function IconHome() {
+  return (
+    <svg width={SZ} height={SZ} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5" /><path d="M9.5 21v-6h5v6" />
+    </svg>
+  );
+}
+function IconPlus() {
+  return (
+    <svg width={SZ} height={SZ} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="5" /><path d="M12 8.5v7M8.5 12h7" />
+    </svg>
+  );
+}
+function IconUser() {
+  return (
+    <svg width={SZ} height={SZ} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" /><path d="M4 20c0-3.5 3.6-6 8-6s8 2.5 8 6" />
+    </svg>
   );
 }

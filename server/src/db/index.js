@@ -225,6 +225,22 @@ async function initDB() {
   try { db._db.run(`ALTER TABLE ads ADD COLUMN badge TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE ads ADD COLUMN badge_color TEXT DEFAULT ''`); db._save(); } catch {}
 
+  // 用户投稿（待审核的卡片链接）
+  db._db.run(`
+    CREATE TABLE IF NOT EXISTS submissions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      nickname TEXT DEFAULT '',
+      category_id INTEGER,
+      title TEXT NOT NULL,
+      url TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  db._save();
+
   // 评论
   db._db.run(`
     CREATE TABLE IF NOT EXISTS comments (

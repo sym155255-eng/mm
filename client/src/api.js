@@ -24,6 +24,32 @@ export async function fetchNavDetail(id) {
   return r.json();
 }
 
+// 投稿
+export async function submitContribution(data) {
+  const r = await fetch(`${BASE}/public/submission`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });
+  return r.json();
+}
+export async function getMySubmissions() {
+  const r = await fetch(`${BASE}/public/my-submissions`, { headers: authHeaders() });
+  return r.json();
+}
+export async function getSubmissions() {
+  const r = await fetch(`${BASE}/admin/submissions`, { headers: authHeaders() });
+  return r.json();
+}
+export async function approveSubmission(id) {
+  const r = await fetch(`${BASE}/admin/submissions/${id}/approve`, { method: 'POST', headers: authHeaders() });
+  return r.json();
+}
+export async function rejectSubmission(id) {
+  const r = await fetch(`${BASE}/admin/submissions/${id}/reject`, { method: 'POST', headers: authHeaders() });
+  return r.json();
+}
+export async function deleteSubmission(id) {
+  const r = await fetch(`${BASE}/admin/submissions/${id}`, { method: 'DELETE', headers: authHeaders() });
+  return r.json();
+}
+
 // 评论
 export async function fetchCaptcha() {
   const r = await fetch(`${BASE}/public/captcha`);

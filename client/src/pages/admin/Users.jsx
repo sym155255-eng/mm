@@ -1,17 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getUsers, deleteUser, getAdminComments, deleteComment, updateUserColors } from '../../api';
+import { getUsers, deleteUser, getAdminComments, deleteComment, updateUserColors,
+  getSubmissions, approveSubmission, rejectSubmission, deleteSubmission } from '../../api';
 
 export default function Users() {
   const [tab, setTab] = useState('users');
   const [users, setUsers] = useState([]);
   const [comments, setComments] = useState([]);
+  const [subs, setSubs] = useState([]);
 
   function loadUsers() { getUsers().then(d => setUsers(Array.isArray(d) ? d : [])); }
   function loadComments() { getAdminComments().then(d => setComments(Array.isArray(d) ? d : [])); }
-  useEffect(() => { loadUsers(); loadComments(); }, []);
+  function loadSubs() { getSubmissions().then(d => setSubs(Array.isArray(d) ? d : [])); }
+  useEffect(() => { loadUsers(); loadComments(); loadSubs(); }, []);
 
   function patchUser(id, patch) { setUsers(us => us.map(u => u.id === id ? { ...u, ...patch } : u)); }
+
+  const pendingCount = subs.filter(x => x.status === 'pending').length;
+  async function approve(sub) { const r = await approveSubmission(sub.id); if (r.error) return alert(r.error); loadSubs(); }
+  async function reject(sub) { const r = await rejectSubmission(sub.id); if (r.error) return alert(r.error); loadSubs(); }
+  async function removeSub(sub) { if (!window.confirm('删除这条投稿记录?')) return; const r = await deleteSubmission(sub.id); if (r.error) return alert(r.error); loadSubs(); }
 
   async function removeUser(u) {
     if (!window.confirm(`确定删除用户「${u.nickname || u.username}」?`)) return;
@@ -32,7 +40,43 @@ export default function Users() {
       <div style={s.tabs}>
         <button style={{ ...s.tab, ...(tab === 'users' ? s.tabActive : {}) }} onClick={() => setTab('users')}>注册用户 ({users.length})</button>
         <button style={{ ...s.tab, ...(tab === 'comments' ? s.tabActive : {}) }} onClick={() => setTab('comments')}>评论 ({comments.length})</button>
+        <button style={{ ...s.tab, ...(tab === 'subs' ? s.tabActive : {}) }} onClick={() => setTab('subs')}>
+          投稿审核{pendingCount > 0 && <span style={s.dot}>{pendingCount}</span>}
+        </button>
       </div>
+
+      {tab === 'subs' && (
+        <div style={s.card}>
+          {subs.length === 0 && <div style={s.empty}>暂无投稿</div>}
+          {subs.map(sub => {
+            const st = sub.status === 'approved' ? { t: '已通过', c: '#16a34a', b: '#dcfce7' }
+              : sub.status === 'rejected' ? { t: '已拒绝', c: '#dc2626', b: '#fee2e2' }
+              : { t: '待审核', c: '#b45309', b: '#fef3c7' };
+            return (
+              <div key={sub.id} style={s.cmtRow}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>
+                    <b style={{ color: '#374151' }}>{sub.nickname || '匿名'}</b>
+                    <span style={{ marginLeft: 8 }}>{sub.category_name || '未指定分类'}</span>
+                    <span style={{ marginLeft: 8 }}>{String(sub.created_at || '').slice(0, 16)}</span>
+                    <span style={{ ...s.badge, marginLeft: 8, background: st.b, color: st.c }}>{st.t}</span>
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>{sub.title}</div>
+                  <a href={sub.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: 'var(--primary)', wordBreak: 'break-all' }}>{sub.url}</a>
+                  {sub.description && <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>{sub.description}</div>}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                  {sub.status === 'pending' && <>
+                    <button style={s.approveBtn} onClick={() => approve(sub)}>通过</button>
+                    <button style={s.rejectBtn} onClick={() => reject(sub)}>拒绝</button>
+                  </>}
+                  <button style={s.delBtn} onClick={() => removeSub(sub)}>删除</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {tab === 'users' && (
         <div style={s.card}>
@@ -140,6 +184,9 @@ const s = {
   badge: { display: 'inline-block', padding: '2px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600 },
   delBtn: { background: '#fef2f2', color: '#dc2626', border: 'none', borderRadius: 6, padding: '5px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
   saveBtn: { background: '#eff2ff', color: 'var(--primary)', border: 'none', borderRadius: 6, padding: '5px 12px', fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  approveBtn: { background: '#dcfce7', color: '#16a34a', border: 'none', borderRadius: 6, padding: '5px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  rejectBtn: { background: '#fff7ed', color: '#d97706', border: 'none', borderRadius: 6, padding: '5px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
+  dot: { display: 'inline-block', marginLeft: 6, minWidth: 16, height: 16, lineHeight: '16px', textAlign: 'center', background: '#ef4444', color: '#fff', borderRadius: 8, fontSize: 11, padding: '0 4px' },
   miniClear: { position: 'absolute', top: -6, right: -6, width: 14, height: 14, lineHeight: '12px', textAlign: 'center', borderRadius: '50%', background: '#111827', color: '#fff', border: 'none', fontSize: 9, cursor: 'pointer', padding: 0 },
   cmtRow: { display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 18px', borderBottom: '1px solid #f3f4f6' },
   linkTag: { marginLeft: 6, color: 'var(--primary)', textDecoration: 'none', fontWeight: 600 },
