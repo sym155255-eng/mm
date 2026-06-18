@@ -834,7 +834,9 @@ const styles = {
   },
   noticeCard: {
     position: 'relative', background: '#fff', borderRadius: 16, padding: '26px 24px 20px',
-    width: '100%', maxWidth: 380, boxShadow: '0 10px 40px rgba(0,0,0,0.2)', maxHeight: '80vh', overflowY: 'auto',
+    width: '100%', maxWidth: 380, boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+    minHeight: 260, maxHeight: '80vh', overflowY: 'auto',
+    display: 'flex', flexDirection: 'column',
   },
   noticeClose: {
     position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%',
@@ -843,7 +845,7 @@ const styles = {
   noticeTitle: { fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 12, paddingRight: 24 },
   noticeImg: { width: '100%', borderRadius: 10, marginBottom: 12, display: 'block' },
   noticeText: { fontSize: 14, color: '#374151', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word' },
-  noticeFoot: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 20 },
+  noticeFoot: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 'auto', paddingTop: 20 },
   noticeDismiss: { background: 'none', border: 'none', color: '#9ca3af', fontSize: 13, cursor: 'pointer' },
   noticeOk: { background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 22px', fontSize: 14, fontWeight: 700, cursor: 'pointer' },
   popup: {
