@@ -1086,11 +1086,11 @@ const styles = {
   tabBar: {
     display: 'flex',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 6,
     marginBottom: 10,
   },
   tab: {
-    padding: '7px 18px',
+    padding: '7px 12px',
     borderRadius: 8,
     fontSize: 14,
     fontWeight: 500,
