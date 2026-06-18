@@ -58,15 +58,19 @@ router.get('/my-submissions', authMiddleware, (req, res) => {
   res.json(rows);
 });
 
-// 获取某链接的评论
+// 获取某链接的评论（分页）
 router.get('/comments/:linkId', (req, res) => {
   const db = getDB();
-  const rows = db.prepare(`
+  const linkId = req.params.linkId;
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 50);
+  const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+  const total = db.prepare('SELECT COUNT(*) AS c FROM comments WHERE link_id=? AND visible=1').get(linkId).c;
+  const items = db.prepare(`
     SELECT c.id, c.link_id, c.content, c.nickname, c.image_url, c.created_at, u.nickname_color, u.role
     FROM comments c LEFT JOIN users u ON u.id = c.user_id
-    WHERE c.link_id=? AND c.visible=1 ORDER BY c.id DESC
-  `).all(req.params.linkId);
-  res.json(rows);
+    WHERE c.link_id=? AND c.visible=1 ORDER BY c.id DESC LIMIT ? OFFSET ?
+  `).all(linkId, limit, offset);
+  res.json({ items, total });
 });
 
 // 发表评论（需登录 + 图形验证码，可带图片）

@@ -180,6 +180,9 @@ export default function SiteDetail() {
 
 function CommentSection({ linkId }) {
   const [comments, setComments] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const PAGE = 20;
   const [content, setContent] = useState('');
   const [image, setImage] = useState('');     // 已上传的图片路径
   const [uploading, setUploading] = useState(false);
@@ -193,7 +196,18 @@ function CommentSection({ linkId }) {
   const isLoggedIn = !!localStorage.getItem('nav_token') && !!authUser;
 
   function loadComments() {
-    fetchComments(linkId).then(d => setComments(Array.isArray(d) ? d : []));
+    fetchComments(linkId, 0, PAGE).then(d => {
+      setComments(Array.isArray(d.items) ? d.items : []);
+      setTotal(d.total || 0);
+    });
+  }
+  async function loadMore() {
+    setLoadingMore(true);
+    try {
+      const d = await fetchComments(linkId, comments.length, PAGE);
+      setComments(prev => [...prev, ...(d.items || [])]);
+      setTotal(d.total || 0);
+    } finally { setLoadingMore(false); }
   }
   function loadCaptcha() {
     fetchCaptcha().then(d => { setCaptcha(d); setCaptchaText(''); });
@@ -229,6 +243,7 @@ function CommentSection({ linkId }) {
       if (r.error) { setErr(r.error); loadCaptcha(); return; }
       setContent(''); setImage('');
       setComments(prev => [r, ...prev]);
+      setTotal(t => t + 1);
       loadCaptcha();
     } catch {
       setErr('提交失败，请稍后重试'); loadCaptcha();
@@ -239,7 +254,7 @@ function CommentSection({ linkId }) {
 
   return (
     <div id="comment-box" style={s.cmtCard}>
-      <div style={s.cmtTitle}>评论 <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 13 }}>({comments.length})</span></div>
+      <div style={s.cmtTitle}>评论 <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: 13 }}>({total})</span></div>
 
       {/* 评论列表 */}
       <div style={{ marginBottom: 8 }}>
@@ -264,6 +279,11 @@ function CommentSection({ linkId }) {
           </div>
           );
         })}
+        {comments.length < total && (
+          <button onClick={loadMore} disabled={loadingMore} style={s.cmtMoreBtn}>
+            {loadingMore ? '加载中…' : `加载更多评论（剩 ${total - comments.length}）`}
+          </button>
+        )}
       </div>
 
       {/* 发表表单（需登录） */}
@@ -360,6 +380,7 @@ const s = {
   cmtPreviewImg: { maxWidth: 160, maxHeight: 160, borderRadius: 10, display: 'block', border: '1px solid #e5e7eb' },
   cmtPreviewDel: { position: 'absolute', top: -8, right: -8, width: 24, height: 24, borderRadius: '50%', background: '#111827', color: '#fff', border: 'none', fontSize: 12, cursor: 'pointer', lineHeight: 1 },
   cmtImg: { maxWidth: 240, maxHeight: 240, borderRadius: 10, border: '1px solid #e5e7eb', display: 'block', cursor: 'zoom-in' },
+  cmtMoreBtn: { width: '100%', marginTop: 6, padding: '10px', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer' },
   cmtLoginTip: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', background: '#f9fafb', border: '1px dashed #e5e7eb', borderRadius: 10, padding: '14px 18px', color: '#6b7280', fontSize: 14 },
   cmtLoginBtn: { background: 'var(--primary)', color: '#fff', textDecoration: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 14, fontWeight: 600 },
   cmtErr: { color: '#ef4444', fontSize: 13, marginTop: 8 },

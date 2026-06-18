@@ -6,6 +6,8 @@ const bcrypt = require('bcryptjs');
 const DB_PATH = path.join(__dirname, '../../../data/nav.db');
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 
+const SAVE_DEBOUNCE_MS = 800; // 写盘防抖间隔
+
 let db;
 
 // Wrapper that mimics better-sqlite3 sync API on top of sql.js (which is sync too)
@@ -19,9 +21,23 @@ class DB {
     }
   }
 
-  _save() {
+  // 立即全量落盘
+  _saveNow() {
+    if (this._saveTimer) { clearTimeout(this._saveTimer); this._saveTimer = null; }
+    this._dirty = false;
     const data = this._db.export();
     fs.writeFileSync(DB_PATH, Buffer.from(data));
+  }
+
+  // 防抖落盘：内存里数据已即时更新（读立即可见），磁盘最多每 SAVE_DEBOUNCE_MS 写一次。
+  // 采用「首次脏写后固定延时刷一次」而非每次重置，避免持续写入时被无限推迟（不会饿死）。
+  _save() {
+    this._dirty = true;
+    if (this._saveTimer) return;
+    this._saveTimer = setTimeout(() => {
+      this._saveTimer = null;
+      if (this._dirty) this._saveNow();
+    }, SAVE_DEBOUNCE_MS);
   }
 
   exec(sql) {
@@ -310,6 +326,15 @@ async function initDB() {
     ];
     linkData.forEach((l, i) => db.prepare('INSERT INTO links (category_id, title, url, icon, description, sort_order) VALUES (?, ?, ?, ?, ?, ?)').run(...l, i));
   }
+
+  db._saveNow(); // 启动期的迁移/初始化数据立即落盘
+
+  // 进程退出前刷盘，避免防抖窗口内的写丢失
+  let flushed = false;
+  const flush = () => { if (flushed) return; flushed = true; try { if (db._dirty) db._saveNow(); } catch {} };
+  process.on('SIGINT',  () => { flush(); process.exit(0); });
+  process.on('SIGTERM', () => { flush(); process.exit(0); });
+  process.on('beforeExit', flush);
 
   console.log('✅ 数据库初始化完成');
   return db;

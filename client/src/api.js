@@ -55,8 +55,8 @@ export async function fetchCaptcha() {
   const r = await fetch(`${BASE}/public/captcha`);
   return r.json();
 }
-export async function fetchComments(linkId) {
-  const r = await fetch(`${BASE}/public/comments/${linkId}`);
+export async function fetchComments(linkId, offset = 0, limit = 20) {
+  const r = await fetch(`${BASE}/public/comments/${linkId}?offset=${offset}&limit=${limit}`);
   return r.json();
 }
 export async function postComment(data) {
