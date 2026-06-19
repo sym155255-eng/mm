@@ -240,6 +240,9 @@ async function initDB() {
   try { db._db.run(`ALTER TABLE links ADD COLUMN badge_color TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE ads ADD COLUMN badge TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE ads ADD COLUMN badge_color TEXT DEFAULT ''`); db._save(); } catch {}
+  // 描述渐变色（CSS linear-gradient 字符串），用于卡片描述/广告描述
+  try { db._db.run(`ALTER TABLE links ADD COLUMN desc_gradient TEXT DEFAULT ''`); db._save(); } catch {}
+  try { db._db.run(`ALTER TABLE ads ADD COLUMN desc_gradient TEXT DEFAULT ''`); db._save(); } catch {}
 
   // 用户投稿（待审核的卡片链接）
   db._db.run(`

@@ -10,6 +10,7 @@ import Submit from './pages/Submit';
 import BottomNav from './components/BottomNav';
 import Pages from './pages/admin/Pages';
 import PopupNotice from './pages/admin/PopupNotice';
+import Gradients from './pages/admin/Gradients';
 import Login from './pages/Login';
 import AdminLayout from './pages/admin/Layout';
 import Categories from './pages/admin/Categories';
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="navs" element={<Navs />} />
           <Route path="pages" element={<Pages />} />
           <Route path="colors" element={<Colors />} />
+          <Route path="gradients" element={<Gradients />} />
           <Route path="settings" element={<Settings />} />
           <Route path="users" element={<Users />} />
           <Route path="popup" element={<PopupNotice />} />

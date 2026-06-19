@@ -168,7 +168,7 @@ export default function SiteDetail() {
             {link.created_at && <span>🕒 收录于 {String(link.created_at).slice(0, 10)}</span>}
           </div>
 
-          {link.description && <p style={s.desc}>{link.description}</p>}
+          {link.description && <p style={{ ...s.desc, ...(link.desc_gradient ? { backgroundImage: link.desc_gradient, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent', fontWeight: 700 } : {}) }}>{link.description}</p>}
         </div>
 
         {/* 评论区 */}

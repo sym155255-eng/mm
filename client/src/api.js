@@ -177,6 +177,16 @@ export async function deleteLink(id) {
   return r.json();
 }
 
+// 描述渐变色
+export async function setLinkDescGradient(id, desc_gradient) {
+  const r = await fetch(`${BASE}/admin/links/${id}/desc-gradient`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ desc_gradient }) });
+  return r.json();
+}
+export async function setAdDescGradient(id, desc_gradient) {
+  const r = await fetch(`${BASE}/admin/ads/${id}/desc-gradient`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify({ desc_gradient }) });
+  return r.json();
+}
+
 // Sub Categories
 export async function getSubCategories() {
   const r = await fetch(`${BASE}/admin/sub-categories`, { headers: authHeaders() });

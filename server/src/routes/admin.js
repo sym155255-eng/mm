@@ -189,6 +189,20 @@ router.post('/links', (req, res) => {
   res.json({ id: newId });
 });
 
+// 仅更新描述渐变色（独立接口，避免误改其它字段）
+router.put('/links/:id/desc-gradient', (req, res) => {
+  const g = String(req.body.desc_gradient || '').slice(0, 300);
+  db().prepare('UPDATE links SET desc_gradient=? WHERE id=?').run(g, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+router.put('/ads/:id/desc-gradient', (req, res) => {
+  const g = String(req.body.desc_gradient || '').slice(0, 300);
+  db().prepare('UPDATE ads SET desc_gradient=? WHERE id=?').run(g, req.params.id);
+  broadcast('update');
+  res.json({ ok: true });
+});
+
 router.put('/links/:id', (req, res) => {
   const { category_id, sub_category_id = null, title, url, icon, description, title_color = '', desc_color = '', badge = '', badge_color = '', sort_order, visible } = req.body;
   db().prepare('UPDATE links SET category_id=?,sub_category_id=?,title=?,url=?,icon=?,description=?,title_color=?,desc_color=?,badge=?,badge_color=?,sort_order=?,visible=? WHERE id=?').run(category_id || null, sub_category_id || null, title, url, icon, description, title_color, desc_color, badge, badge_color, sort_order, visible, req.params.id);

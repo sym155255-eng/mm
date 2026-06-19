@@ -2,6 +2,12 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchPublicData, updateLink, getSubLinks, createSubLink, updateSubLink, deleteSubLink } from '../api';
 
+// 渐变文字样式（用于卡片/广告描述）
+function gradText(gradient) {
+  if (!gradient || !gradient.trim()) return null;
+  return { backgroundImage: gradient, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent', fontWeight: 700 };
+}
+
 function applyTheme(settings) {
   const root = document.documentElement;
   if (settings.primary_color)      root.style.setProperty('--primary',      settings.primary_color);
@@ -280,7 +286,7 @@ export default function Home() {
                       <div className="ad-tx" style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ ...styles.adCardTitle, ...(ad.title_color ? { color: ad.title_color } : {}) }}>{ad.title}{hasSub && <span style={{ fontSize: 11, color: '#9ca3af', marginLeft: 4 }}>▾</span>}</div>
                         {ad.description && (
-                          <div style={{ ...styles.adCardDesc, ...(ad.desc_color ? { color: ad.desc_color } : {}) }}>{ad.description}</div>
+                          <div style={{ ...styles.adCardDesc, ...(gradText(ad.desc_gradient) || (ad.desc_color ? { color: ad.desc_color } : {})) }}>{ad.description}</div>
                         )}
                       </div>
                     </>
@@ -411,7 +417,7 @@ export default function Home() {
                 </div>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 15 }}>{popup.title}</div>
-                  {popup.description && <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{popup.description}</div>}
+                  {popup.description && <div style={{ fontSize: 12, marginTop: 2, ...(gradText(popup.desc_gradient) || { color: '#6b7280' }) }}>{popup.description}</div>}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
@@ -511,7 +517,7 @@ function CategorySection({ cat, items, subCategories, onOpen, editMode, onEdit }
 
 function LinkCard({ link, onOpen, editMode, onEdit }) {
   const titleStyle = { ...styles.cardTitle, ...(link.title_color ? { color: link.title_color } : {}) };
-  const descStyle  = { ...styles.cardDesc,  ...(link.desc_color  ? { color: link.desc_color  } : {}) };
+  const descStyle  = { ...styles.cardDesc,  ...(gradText(link.desc_gradient) || (link.desc_color ? { color: link.desc_color } : {})) };
   const hasSubs = link.sub_links && link.sub_links.length > 0;
 
   const editBtn = editMode && (
