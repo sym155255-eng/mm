@@ -1,22 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { getLinks, getCategories, getAds, setLinkDescGradient, setAdDescGradient } from '../../api';
 
-const PRESETS = [
-  'linear-gradient(90deg, #f97316, #ef4444)',
-  'linear-gradient(90deg, #6366f1, #ec4899)',
-  'linear-gradient(90deg, #06b6d4, #3b82f6)',
-  'linear-gradient(90deg, #22c55e, #16a34a)',
-  'linear-gradient(90deg, #a855f7, #6366f1)',
-  'linear-gradient(90deg, #f59e0b, #f43f5e)',
-];
-
-// 解析 "linear-gradient(90deg, c1, c2)" → [c1, c2, angle]
+// 解析 "linear-gradient(90deg, c1, c2[, c3])" → { angle, colors[] }
 function parseGrad(g) {
-  const m = /linear-gradient\(\s*(\d+)deg\s*,\s*([^,]+),\s*([^)]+)\)/i.exec(g || '');
-  if (m) return { angle: parseInt(m[1]), c1: m[2].trim(), c2: m[3].trim() };
-  return { angle: 90, c1: '#f97316', c2: '#ef4444' };
+  const m = /linear-gradient\(\s*(\d+)deg\s*,\s*(.+)\)\s*$/i.exec(g || '');
+  if (m) {
+    const colors = m[2].split(',').map(s => s.trim()).filter(Boolean);
+    return { angle: parseInt(m[1]), colors };
+  }
+  return { angle: 90, colors: ['#f97316', '#ef4444', '#a855f7'] };
 }
-function buildGrad({ angle, c1, c2 }) { return `linear-gradient(${angle}deg, ${c1}, ${c2})`; }
+function buildGrad({ angle, colors }) { return `linear-gradient(${angle}deg, ${colors.filter(Boolean).join(', ')})`; }
 
 export default function Gradients() {
   const [tab, setTab] = useState('links');
@@ -72,10 +66,13 @@ function GradRow({ row, sub, onSave, onLocal }) {
   const g = parseGrad(row.desc_gradient);
   const [status, setStatus] = useState('');
 
-  function update(patch) {
-    const next = buildGrad({ ...g, ...patch });
-    onLocal(row.id, next);
+  // 固定 3 个色槽（不足则补默认）
+  const cols = [g.colors[0] || '#f97316', g.colors[1] || '#ef4444', g.colors[2] || '#a855f7'];
+  function setColor(i, val) {
+    const next = [...cols]; next[i] = val;
+    onLocal(row.id, buildGrad({ angle: g.angle, colors: next }));
   }
+  function setAngle(a) { onLocal(row.id, buildGrad({ angle: a, colors: cols })); }
   async function save() {
     setStatus('saving');
     try { const r = await onSave(row.id, row.desc_gradient || ''); setStatus(r && r.ok ? 'ok' : 'err'); }
@@ -86,7 +83,7 @@ function GradRow({ row, sub, onSave, onLocal }) {
 
   const previewText = row.description || row.title || '示例描述文字';
   const gradStyle = has
-    ? { backgroundImage: row.desc_gradient, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent', fontWeight: 700 }
+    ? { backgroundImage: row.desc_gradient, backgroundSize: '200% auto', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent', fontWeight: 700, animation: 'gradFlow 3s linear infinite' }
     : { color: '#9ca3af' };
 
   return (
@@ -97,14 +94,12 @@ function GradRow({ row, sub, onSave, onLocal }) {
         <div style={{ ...gradStyle, fontSize: 12, marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{previewText}</div>
       </div>
       <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
-        <input type="color" value={g.c1} onChange={e => update({ c1: e.target.value })} style={s.color} title="起始色" />
-        <input type="color" value={g.c2} onChange={e => update({ c2: e.target.value })} style={s.color} title="结束色" />
-        <select value={g.angle} onChange={e => update({ angle: parseInt(e.target.value) })} style={s.sel}>
+        <input type="color" value={cols[0]} onChange={e => setColor(0, e.target.value)} style={s.color} title="颜色1" />
+        <input type="color" value={cols[1]} onChange={e => setColor(1, e.target.value)} style={s.color} title="颜色2" />
+        <input type="color" value={cols[2]} onChange={e => setColor(2, e.target.value)} style={s.color} title="颜色3" />
+        <select value={g.angle} onChange={e => setAngle(parseInt(e.target.value))} style={s.sel}>
           <option value={90}>→</option><option value={0}>↑</option><option value={45}>↗</option><option value={135}>↘</option>
         </select>
-        {PRESETS.map(p => (
-          <button key={p} onClick={() => onLocal(row.id, p)} title="预设" style={{ ...s.preset, background: p }} />
-        ))}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
         {status === 'ok' && <span style={{ fontSize: 13 }}>✅</span>}
@@ -125,7 +120,6 @@ const s = {
   row: { display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid #f3f4f6' },
   color: { width: 30, height: 26, border: 'none', borderRadius: 5, cursor: 'pointer', padding: 1 },
   sel: { padding: '4px 6px', border: '1.5px solid #e5e7eb', borderRadius: 6, fontSize: 13, cursor: 'pointer' },
-  preset: { width: 26, height: 18, border: '1px solid rgba(0,0,0,0.1)', borderRadius: 4, cursor: 'pointer' },
   saveBtn: { background: '#eff2ff', color: 'var(--primary)', padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer' },
   clearBtn: { background: '#fef2f2', color: '#dc2626', padding: '5px 8px', borderRadius: 6, fontSize: 12, border: 'none', cursor: 'pointer' },
   empty: { padding: '28px', textAlign: 'center', color: '#9ca3af' },

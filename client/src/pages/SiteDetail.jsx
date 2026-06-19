@@ -168,7 +168,7 @@ export default function SiteDetail() {
             {link.created_at && <span>🕒 收录于 {String(link.created_at).slice(0, 10)}</span>}
           </div>
 
-          {link.description && <p style={{ ...s.desc, ...(link.desc_gradient ? { backgroundImage: link.desc_gradient, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent', fontWeight: 700 } : {}) }}>{link.description}</p>}
+          {link.description && <p style={{ ...s.desc, ...(link.desc_gradient ? { backgroundImage: link.desc_gradient, backgroundSize: '200% auto', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent', fontWeight: 700, animation: 'gradFlow 3s linear infinite' } : {}) }}>{link.description}</p>}
         </div>
 
         {/* 评论区 */}
@@ -345,7 +345,6 @@ const s = {
   openBtn: { background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'block' },
   tag: { display: 'inline-block', background: '#eff2ff', color: 'var(--primary)', padding: '5px 14px', borderRadius: 20, fontSize: 13, fontWeight: 500 },
   subLink: { padding: '10px 20px', background: '#f7f8fa', borderRadius: 20, textDecoration: 'none', color: 'var(--primary)', fontSize: 15, whiteSpace: 'nowrap' },
-  backBtn: { marginTop: 18, background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '10px 20px', fontSize: 14, cursor: 'pointer', color: '#374151' },
   headerBack: { background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '6px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#374151', flexShrink: 0 },
   // 横幅
   bannerWrap: { display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 10, borderRadius: 10, overflow: 'hidden' },

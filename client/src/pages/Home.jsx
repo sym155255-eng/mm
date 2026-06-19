@@ -5,7 +5,12 @@ import { fetchPublicData, updateLink, getSubLinks, createSubLink, updateSubLink,
 // 渐变文字样式（用于卡片/广告描述）
 function gradText(gradient) {
   if (!gradient || !gradient.trim()) return null;
-  return { backgroundImage: gradient, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent', fontWeight: 700 };
+  return {
+    backgroundImage: gradient, backgroundSize: '200% auto',
+    WebkitBackgroundClip: 'text', backgroundClip: 'text',
+    color: 'transparent', WebkitTextFillColor: 'transparent', fontWeight: 700,
+    animation: 'gradFlow 3s linear infinite',
+  };
 }
 
 function applyTheme(settings) {
@@ -696,7 +701,6 @@ const styles = {
     marginBottom: 6,
     overflow: 'hidden',
   },
-  marqueeIcon: { fontSize: 18, flexShrink: 0 },
   marqueeViewport: { flex: 1, overflow: 'hidden', position: 'relative' },
   marqueeTrack: { display: 'flex', width: 'max-content', gap: 48, whiteSpace: 'nowrap', willChange: 'transform' },
   marqueeItem: { fontSize: 14, fontWeight: 700, textDecoration: 'none' },
@@ -760,8 +764,6 @@ const styles = {
   },
   adsTitle: { fontSize: 13, fontWeight: 700, color: '#78350f' },
   adsMoreBtn: { background: 'transparent', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
-  adsHeaderRight: { display: 'flex', alignItems: 'center', gap: 10 },
-  adsLabel: { fontSize: 11, color: '#9ca3af', letterSpacing: 1 },
   adsRow: {
     display: 'grid',
     gap: 16,
@@ -813,16 +815,6 @@ const styles = {
     borderRadius: 4,
     lineHeight: 1.5,
     zIndex: 1,
-  },
-  subCount: {
-    flexShrink: 0,
-    background: '#eff2ff',
-    color: 'var(--primary)',
-    fontSize: 10,
-    fontWeight: 700,
-    padding: '2px 6px',
-    borderRadius: 10,
-    marginLeft: 'auto',
   },
   popupBg: {
     position: 'fixed',
@@ -1130,16 +1122,6 @@ const styles = {
     fontWeight: 600,
     cursor: 'pointer',
     flexShrink: 0,
-  },
-  moreBtnWide: {
-    background: '#f3f4f6',
-    border: 'none',
-    color: '#374151',
-    fontSize: 13,
-    fontWeight: 600,
-    cursor: 'pointer',
-    padding: '8px 24px',
-    borderRadius: 20,
   },
   tabBar: {
     display: 'flex',

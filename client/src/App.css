@@ -1,3 +1,10 @@
+/* 渐变文字流动动画（来回扫动，无跳变） */
+@keyframes gradFlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 /* ===== 移动端底部导航栏 ===== */
 .bottom-nav { display: none; }
 @media (max-width: 768px) {
