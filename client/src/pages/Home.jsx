@@ -987,10 +987,11 @@ const styles = {
   },
   body: {
     maxWidth: 1400,
-    margin: '0 auto',
+    margin: 0,
     padding: '16px 20px 40px',
+    paddingLeft: 0,
     display: 'flex',
-    gap: 24,
+    gap: 16,
     alignItems: 'flex-start',
   },
   sidebar: {
