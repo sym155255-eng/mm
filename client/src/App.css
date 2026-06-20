@@ -46,6 +46,14 @@
   /* 详情页顶栏：移动端整条隐藏（底部已有首页导航） */
   .detail-header { display: none !important; }
 
+  /* 评论表单：移动端 图片/验证码/发表评论 同一行 */
+  .cmt-tool-row { flex-wrap: nowrap !important; gap: 6px !important; }
+  .cmt-img-btn { padding: 8px 10px !important; font-size: 13px !important; flex-shrink: 0 !important; }
+  .cmt-captcha-box { flex: 1 1 auto !important; min-width: 0 !important; padding-left: 8px !important; }
+  .cmt-captcha-box input { width: 100% !important; min-width: 0 !important; }
+  .cmt-captcha-img { height: 32px !important; }
+  .cmt-submit-btn { padding: 8px 12px !important; font-size: 13px !important; flex-shrink: 0 !important; }
+
   /* 颜色渐变页：移动端 卡片/广告/分类筛选 同一行 */
   .grad-head { flex-wrap: nowrap !important; gap: 6px !important; }
   .grad-tabs { flex-shrink: 0 !important; }

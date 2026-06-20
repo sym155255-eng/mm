@@ -301,15 +301,15 @@ function CommentSection({ linkId }) {
               </div>
             )}
             <input ref={fileRef} type="file" accept="image/*" onChange={onPickImage} style={{ display: 'none' }} />
-            <div style={s.cmtToolRow}>
-              <button type="button" onClick={() => fileRef.current && fileRef.current.click()} disabled={uploading} style={s.cmtImgBtn}>
+            <div className="cmt-tool-row" style={s.cmtToolRow}>
+              <button type="button" className="cmt-img-btn" onClick={() => fileRef.current && fileRef.current.click()} disabled={uploading} style={s.cmtImgBtn}>
                 {uploading ? '上传中…' : '🖼️ 图片'}
               </button>
-              <div style={s.cmtCaptchaBox}>
+              <div className="cmt-captcha-box" style={s.cmtCaptchaBox}>
                 <input value={captchaText} onChange={e => setCaptchaText(e.target.value)} placeholder="验证码" style={s.cmtCaptchaInput} />
-                {captcha.svg && <img src={captcha.svg} alt="验证码" title="点击刷新" onClick={loadCaptcha} style={s.cmtCaptchaImg} />}
+                {captcha.svg && <img src={captcha.svg} className="cmt-captcha-img" alt="验证码" title="点击刷新" onClick={loadCaptcha} style={s.cmtCaptchaImg} />}
               </div>
-              <button onClick={submit} disabled={submitting || uploading} style={{ ...s.cmtSubmitBtn, marginLeft: 'auto', ...((submitting || uploading) ? { opacity: 0.6, cursor: 'default' } : {}) }}>
+              <button onClick={submit} className="cmt-submit-btn" disabled={submitting || uploading} style={{ ...s.cmtSubmitBtn, marginLeft: 'auto', ...((submitting || uploading) ? { opacity: 0.6, cursor: 'default' } : {}) }}>
                 {submitting ? '提交中…' : '发表评论'}
               </button>
             </div>
