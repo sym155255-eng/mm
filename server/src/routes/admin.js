@@ -39,6 +39,21 @@ router.delete('/users/:id', (req, res) => {
   res.json({ ok: true });
 });
 // 评论管理：列出全部
+// ── 访客统计 ──────────────────────────────────────────────
+router.get('/stats', (req, res) => {
+  const d = db();
+  const today = new Date().toISOString().slice(0, 10);
+  const totals = d.prepare('SELECT COALESCE(SUM(pv),0) AS pv, COALESCE(SUM(uv),0) AS uv FROM stats_daily').get();
+  const todayRow = d.prepare('SELECT pv, uv FROM stats_daily WHERE date=?').get(today) || { pv: 0, uv: 0 };
+  const series = d.prepare('SELECT date, pv, uv FROM stats_daily ORDER BY date DESC LIMIT 14').all().reverse();
+  const linkViews = d.prepare('SELECT COALESCE(SUM(views),0) AS v FROM links').get().v;
+  res.json({
+    totalPv: totals.pv, totalUv: totals.uv,
+    todayPv: todayRow.pv, todayUv: todayRow.uv,
+    linkViews, series,
+  });
+});
+
 // ── 投稿审核 ──────────────────────────────────────────────
 router.get('/submissions', (req, res) => {
   const rows = db().prepare(`

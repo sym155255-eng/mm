@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { fetchLinkDetail, fetchPublicData, fetchComments, postComment, uploadCommentImage, fetchCaptcha } from '../api';
+import { fetchLinkDetail, fetchPublicData, fetchComments, postComment, uploadCommentImage, fetchCaptcha, recordVisit } from '../api';
 import Avatar from '../components/Avatar';
 
 function applyTheme(s) {
@@ -34,6 +34,8 @@ export default function SiteDetail() {
     });
     return () => { alive = false; };
   }, [id]);
+
+  useEffect(() => { recordVisit(); }, [id]);
 
   function openSite() {
     if (link?.url) window.open(link.url, '_blank', 'noopener,noreferrer');
@@ -303,13 +305,11 @@ function CommentSection({ linkId }) {
               <button type="button" onClick={() => fileRef.current && fileRef.current.click()} disabled={uploading} style={s.cmtImgBtn}>
                 {uploading ? '上传中…' : '🖼️ 图片'}
               </button>
-              <div style={{ ...s.cmtCaptchaBox, flex: 1, minWidth: 0 }}>
-                <input value={captchaText} onChange={e => setCaptchaText(e.target.value)} placeholder="验证码" style={{ ...s.cmtCaptchaInput, flex: 1, minWidth: 0, width: 'auto' }} />
+              <div style={s.cmtCaptchaBox}>
+                <input value={captchaText} onChange={e => setCaptchaText(e.target.value)} placeholder="验证码" style={s.cmtCaptchaInput} />
                 {captcha.svg && <img src={captcha.svg} alt="验证码" title="点击刷新" onClick={loadCaptcha} style={s.cmtCaptchaImg} />}
               </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
-              <button onClick={submit} disabled={submitting || uploading} style={{ ...s.cmtSubmitBtn, ...((submitting || uploading) ? { opacity: 0.6, cursor: 'default' } : {}) }}>
+              <button onClick={submit} disabled={submitting || uploading} style={{ ...s.cmtSubmitBtn, marginLeft: 'auto', ...((submitting || uploading) ? { opacity: 0.6, cursor: 'default' } : {}) }}>
                 {submitting ? '提交中…' : '发表评论'}
               </button>
             </div>
@@ -374,7 +374,7 @@ const s = {
   cmtSubmitRow: { display: 'flex', gap: 10, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' },
   cmtSubmitBtn: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 26px', fontSize: 15, fontWeight: 700, cursor: 'pointer', flexShrink: 0 },
   cmtImgBtn: { background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: 10, padding: '11px 18px', fontSize: 14, fontWeight: 600, cursor: 'pointer', flexShrink: 0 },
-  cmtToolRow: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'nowrap' },
+  cmtToolRow: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   cmtCaptchaBox: { display: 'flex', alignItems: 'center', gap: 8, background: '#f3f4f6', borderRadius: 10, padding: '4px 6px 4px 12px' },
   cmtCaptchaInput: { width: 80, border: 'none', background: 'transparent', fontSize: 14, outline: 'none' },
   cmtCaptchaImg: { height: 38, borderRadius: 6, cursor: 'pointer', flexShrink: 0 },

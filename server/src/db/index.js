@@ -244,6 +244,23 @@ async function initDB() {
   try { db._db.run(`ALTER TABLE links ADD COLUMN desc_gradient TEXT DEFAULT ''`); db._save(); } catch {}
   try { db._db.run(`ALTER TABLE ads ADD COLUMN desc_gradient TEXT DEFAULT ''`); db._save(); } catch {}
 
+  // 访客统计（按天聚合：PV 浏览量 / UV 独立访客）
+  db._db.run(`
+    CREATE TABLE IF NOT EXISTS stats_daily (
+      date TEXT PRIMARY KEY,
+      pv INTEGER DEFAULT 0,
+      uv INTEGER DEFAULT 0
+    )
+  `);
+  db._db.run(`
+    CREATE TABLE IF NOT EXISTS visit_ips (
+      date TEXT NOT NULL,
+      ip TEXT NOT NULL,
+      PRIMARY KEY (date, ip)
+    )
+  `);
+  db._save();
+
   // 用户投稿（待审核的卡片链接）
   db._db.run(`
     CREATE TABLE IF NOT EXISTS submissions (

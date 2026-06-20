@@ -11,6 +11,27 @@ router.get('/captcha', (req, res) => {
   res.json(captcha.issue());
 });
 
+function clientIP(req) {
+  return (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || 'unknown';
+}
+
+// 访客埋点：页面加载时上报一次（PV +1；当天该 IP 首次访问则 UV +1）
+router.post('/visit', (req, res) => {
+  const db = getDB();
+  const date = new Date().toISOString().slice(0, 10);
+  const ip = clientIP(req);
+  if (!db.prepare('SELECT date FROM stats_daily WHERE date=?').get(date)) {
+    db.prepare('INSERT INTO stats_daily(date,pv,uv) VALUES(?,0,0)').run(date);
+  }
+  db.prepare('UPDATE stats_daily SET pv=pv+1 WHERE date=?').run(date);
+  const seen = db.prepare('SELECT 1 FROM visit_ips WHERE date=? AND ip=?').get(date, ip);
+  if (!seen) {
+    db.prepare('INSERT INTO visit_ips(date,ip) VALUES(?,?)').run(date, ip);
+    db.prepare('UPDATE stats_daily SET uv=uv+1 WHERE date=?').run(date);
+  }
+  res.json({ ok: true });
+});
+
 // 用户上传目录（评论图片）
 const UPLOADS_DIR = path.join(__dirname, '../../../data/uploads');
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });

@@ -11,6 +11,7 @@ import BottomNav from './components/BottomNav';
 import Pages from './pages/admin/Pages';
 import PopupNotice from './pages/admin/PopupNotice';
 import Gradients from './pages/admin/Gradients';
+import Stats from './pages/admin/Stats';
 import Login from './pages/Login';
 import AdminLayout from './pages/admin/Layout';
 import Categories from './pages/admin/Categories';
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="users" element={<Users />} />
           <Route path="popup" element={<PopupNotice />} />
+          <Route path="stats" element={<Stats />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

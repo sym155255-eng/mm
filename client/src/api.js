@@ -24,6 +24,15 @@ export async function fetchNavDetail(id) {
   return r.json();
 }
 
+// 访客统计
+export async function recordVisit() {
+  try { await fetch(`${BASE}/public/visit`, { method: 'POST' }); } catch {}
+}
+export async function getStats() {
+  const r = await fetch(`${BASE}/admin/stats`, { headers: authHeaders() });
+  return r.json();
+}
+
 // 投稿
 export async function submitContribution(data) {
   const r = await fetch(`${BASE}/public/submission`, { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) });

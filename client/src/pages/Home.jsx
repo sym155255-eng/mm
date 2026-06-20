@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { fetchPublicData, updateLink, getSubLinks, createSubLink, updateSubLink, deleteSubLink } from '../api';
+import { fetchPublicData, updateLink, getSubLinks, createSubLink, updateSubLink, deleteSubLink, recordVisit } from '../api';
 
 // 渐变文字样式（用于卡片/广告描述）
 function gradText(gradient) {
@@ -95,6 +95,9 @@ export default function Home() {
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, [load]);
+
+  // 访客埋点（每次进首页上报一次）
+  useEffect(() => { recordVisit(); }, []);
 
   const { categories, links, settings, ads, subCategories = [], notices = [], banners = [], navs = [] } = data;
   const topAds = ads.filter(a => a.position === 'top');
