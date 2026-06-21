@@ -1,55 +1,63 @@
 ============================================================
- 导航网站 · 换服务器部署 + 从备份恢复数据 完整步骤
+ 导航网站 · 换服务器部署 + 从备份恢复数据（详细版）
  代码仓库: https://github.com/sym155255-eng/mm
  备份仓库(私有): https://github.com/<用户名>/nav-db-backup
  线上: https://1558686.xyz   后端端口: 3001   部署目录: ~/ddd
 ============================================================
 
-【总览】换服务器 = 装环境 → 拉代码 → 构建 → 恢复数据库 → 起服务 → 配反代/HTTPS → 改DNS
-（数据库可从备份仓库 nav-db-backup 恢复；上传的图片 data/uploads 不在备份内，会丢失）
-
-【带 token 的地址怎么拼】三段拼起来，中间 @github.com 固定不变：
-   https://  +  你的token  +  @github.com/<用户名>/nav-db-backup.git
-   token 是 ghp_ 或 github_pat_ 开头那一长串；凡写“你的token”处都换成它，@github.com 别动。
+读法：每段都是“# 说明在上面，命令在下面”。把 <用户名> 换成你的 GitHub 账号，
+      “你的token”换成 GitHub 生成的 ghp_ 开头那串，中间 @github.com 不要改。
 
 
 ────────────────────────────────────────────
- 第 ① 步：装环境（Node 20 + git + pm2）  Ubuntu/Debian，root
+ 第 ① 步：装环境（Node 20 + git + pm2）
 ────────────────────────────────────────────
+
+# 安装 Node.js 20 运行环境和 git
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 apt install -y nodejs git
+
+# 安装 PM2（让服务后台常驻、崩溃自动拉起）
 npm install -g pm2
-node -v        # 出现 v20.x 即可
+
+# 验证 Node 版本（出现 v20.x 即成功）
+node -v
 
 
 ────────────────────────────────────────────
- 第 ② 步：拉代码 + 构建
+ 第 ② 步：拉代码 + 安装依赖 + 构建前端
 ────────────────────────────────────────────
+
+# 进入/新建部署目录
 mkdir -p ~/ddd && cd ~/ddd
+
+# 从代码仓库克隆项目到当前目录（提示目录非空=已克隆过，跳过这条）
 git clone https://github.com/sym155255-eng/mm.git .
-#（若提示目录非空 = 已克隆过，跳过 clone）
+
+# 安装前端依赖
 npm --prefix client install
+
+# 构建前端（生成 client/dist 静态文件）
 npm --prefix client run build
+
+# 安装后端依赖
 npm --prefix server install
 
 
 ────────────────────────────────────────────
- 第 ③ 步：★ 从备份恢复数据库（顺序千万别错）★
+ 第 ③ 步：★从备份恢复数据库（顺序别错）★
 ────────────────────────────────────────────
-说明：备份仓库 nav-db-backup 里存的是整个数据库 nav.db
-      （所有链接/分类/广告/评论/用户/投稿/访客统计）。
+# 备份仓库里存的是整个数据库 nav.db（链接/分类/广告/评论/用户/投稿/访客统计）。
+# 必须“先停服务 → 再覆盖 nav.db → 最后启动”。
+# 原因：服务启动时把数据库读进内存，若运行中覆盖文件，下次写盘会用空库盖掉你恢复的数据。
 
-⚠️ 必须“先停服务 → 再覆盖 nav.db → 最后启动”。
-   原因：服务用 sql.js，启动时把数据库读进内存；如果在运行中覆盖文件，
-   进程下一次写盘会用内存里的空库盖掉你刚恢复的文件，数据照样没了。
+# 1. 先停掉服务（首次部署还没启动过，就跳过这条）
+pm2 stop nav-site
 
-# 1. 先停服务（首次部署、还没 pm2 start 过，则跳过这步）
-pm2 stop nav-site 2>/dev/null
-
-# 2. 建好数据目录
+# 2. 确保数据目录存在
 mkdir -p ~/ddd/data
 
-# 3. 从备份仓库克隆，取出 nav.db
+# 3. 从备份仓库拉下最新 nav.db（带 token 的地址）
 git clone https://你的token@github.com/<用户名>/nav-db-backup.git /tmp/dbbak
 
 # 4. 覆盖到数据目录
@@ -58,92 +66,105 @@ cp /tmp/dbbak/nav.db ~/ddd/data/nav.db
 # 5. 清理临时目录
 rm -rf /tmp/dbbak
 
-#（全新站点、不需要旧数据 → 跳过本步，系统自动新建库，
-#  管理员默认 admin / admin123，登录后请尽快改密码）
+# （全新站点、不需要旧数据 → 整个第③步跳过，系统会自动新建库，
+#   管理员默认 admin / admin123，登录后请尽快改密码）
 
 
 ────────────────────────────────────────────
- 第 ④ 步：启动服务 + 开机自启
+ 第 ④ 步：启动服务 + 设开机自启
 ────────────────────────────────────────────
+
+# 进入部署目录
 cd ~/ddd
-pm2 start server/src/index.js --name nav-site
-pm2 save
-pm2 startup systemd -u root --hp /root     # 按提示再粘贴它输出的那条命令
 
-# 验证后端
-curl -I http://127.0.0.1:3001      # 返回 200 OK 即正常
-# 打开网站若是你的数据（不是默认示例）= 恢复成功
+# 用 PM2 启动后端（名字叫 nav-site）
+pm2 start server/src/index.js --name nav-site
+
+# 保存当前进程列表
+pm2 save
+
+# 生成开机自启脚本（执行后按它提示再粘贴它输出的那一条命令）
+pm2 startup systemd -u root --hp /root
+
+# 验证后端是否正常（返回 200 OK 即成功）
+curl -I http://127.0.0.1:3001
 
 
 ────────────────────────────────────────────
  第 ⑤ 步：重新开启数据库自动备份（新服务器要重配 .env）
 ────────────────────────────────────────────
+
+# 打开/新建后端环境变量文件
 nano ~/ddd/server/.env
-# 写入（你的token 换成有 repo 权限的 Token，<用户名> 换成账号，@github.com 保留）：
+
+# 在文件里写入下面 4 行（你的token 换成 repo 权限的令牌，<用户名> 换成账号，@github.com 保留）：
 #   BACKUP_REPO=https://你的token@github.com/<用户名>/nav-db-backup.git
 #   BACKUP_INTERVAL_MIN=60
 #   BACKUP_GIT_NAME=nav-backup
 #   BACKUP_GIT_EMAIL=nav-backup@local
-# 保存：Ctrl+O 回车，Ctrl+X 退出
+# 保存退出：Ctrl+O 回车，Ctrl+X
 
+# 重启让配置生效
 cd ~/ddd && pm2 restart nav-site
+
+# 看日志确认（出现“💾 自动备份已启用”，约1分钟后出现“💾 数据库已自动备份到 GitHub”即成功；Ctrl+C 退出）
 pm2 logs nav-site --lines 20
-#  看到 “💾 自动备份已启用，每 60 分钟一次”；
-#  约 1 分钟后出现 “💾 数据库已自动备份到 GitHub” 即成功。
-#  新服务器继续往同一个 nav-db-backup 推，无缝衔接。（看完 Ctrl+C 退出日志）
 
-# Token 生成：GitHub → Settings → Developer settings → Personal access tokens
-#   → Tokens (classic) → Generate new token (classic)
-#   → 勾 repo（整组）→ 有效期建议 No expiration → 生成并复制（只显示一次）
+# 令牌怎么拿：GitHub → Settings → Developer settings → Personal access tokens
+#   → Tokens (classic) → Generate new token (classic) → 勾 repo（整组）
+#   → 有效期建议 No expiration → 生成并复制（只显示一次）
 
 
 ────────────────────────────────────────────
- 第 ⑥ 步：反向代理 + 域名 HTTPS（1Panel 面板里）
+ 第 ⑥ 步：反向代理 + 域名 HTTPS（在 1Panel 面板里点）
 ────────────────────────────────────────────
-1) 装 1Panel（若没装）：
-   curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh | bash
-   装完用  1pctl user-info  查看面板地址/端口/安全入口/账号
-2) 网站 → 创建网站 → 选【反向代理】标签：
-     域名：1558686.xyz
-     代号：nav
-     代理地址：http://127.0.0.1:3001
-     端口 80，先不要勾“启用 HTTPS”
-3) 把域名 DNS 的 A 记录改指到【新服务器 IP】，等几分钟生效
-4) 该网站 → HTTPS → 申请证书：
-     主域名 1558686.xyz；验证方式选【HTTP】；勾自动续签 → 确认
-   （HTTP 验证前提：域名已解析到本机且 80 端口可访问）
+
+# 安装 1Panel（若没装）
+curl -sSL https://resource.fit2cloud.com/1panel/package/quick_start.sh | bash
+
+# 查看面板登录地址/端口/安全入口/账号
+1pctl user-info
+
+# 然后在 1Panel 网页里：
+#  1) 网站 → 创建网站 → 选【反向代理】标签：
+#       域名 1558686.xyz；代号 nav；代理地址 http://127.0.0.1:3001；端口 80；先不勾 HTTPS
+#  2) 把域名 DNS 的 A 记录改指到【新服务器 IP】，等几分钟生效
+#  3) 该网站 → HTTPS → 申请证书：主域名 1558686.xyz，验证方式选【HTTP】，勾自动续签 → 确认
 
 
 ────────────────────────────────────────────
- 第 ⑦ 步：收尾检查
+ 第 ⑦ 步：收尾检查（逐项确认）
 ────────────────────────────────────────────
-□ http://新服务器IP:3001 或 http://域名 能出页面
-□ 数据是你的内容（不是“常用工具/GitHub/百度”默认示例）= 恢复成功
-□ 后台 /admin 能登录
-□ pm2 logs 出现“自动备份已启用”及“已自动备份到 GitHub”
-□ HTTPS 证书签发成功，https 正常
+# □ http://新服务器IP:3001 或 http://域名 能打开页面
+# □ 显示的是你的数据（不是“常用工具/GitHub/百度”默认示例）= 恢复成功
+# □ 后台 /admin 能登录
+# □ pm2 日志出现“自动备份已启用”及“已自动备份到 GitHub”
+# □ HTTPS 证书签发成功，https 正常访问
 
 
 ────────────────────────────────────────────
- 日常更新代码
+ 日常更新代码（以后改了代码）
 ────────────────────────────────────────────
-cd ~/ddd && bash update.sh      # = git pull + 前端构建 + pm2 重启（数据不动）
+
+# 一条命令搞定：git pull + 前端构建 + 重启（不动数据）
+cd ~/ddd && bash update.sh
 
 
 ────────────────────────────────────────────
  需要单独留意的数据（不在 git 里）
 ────────────────────────────────────────────
-data/nav.db      数据库      —— 已配 GitHub 自动备份（nav-db-backup），可恢复
-data/uploads/    用户上传图   —— 未自动备份，重要的话自行定期下载
-data/icons/      网站图标    —— 可自动重新抓取，无需备份
-data/.jwt_secret 登录密钥    —— 丢失只让旧登录态失效（自动重建），影响小
+# data/nav.db      数据库     —— 已配 GitHub 自动备份(nav-db-backup)，可恢复
+# data/uploads/    用户上传图  —— 未自动备份，重要的话自行定期下载
+# data/icons/      网站图标   —— 可自动重新抓取，无需备份
+# data/.jwt_secret 登录密钥   —— 丢失只让旧登录失效(自动重建)，影响小
 
 
 ────────────────────────────────────────────
  token 失效 / 泄露 怎么换
 ────────────────────────────────────────────
-1) GitHub → Settings → Developer settings → Personal access tokens
-   → 把旧 token Revoke，再 Generate 新的（勾 repo）
-2) 用新 token 重写 ~/ddd/server/.env 的 BACKUP_REPO（同第⑤步）→ pm2 restart nav-site
+
+# 1) 去 GitHub 把旧 token Revoke，重新 Generate（勾 repo）
+# 2) 用新 token 重写 .env 的 BACKUP_REPO（同第⑤步），再重启
+cd ~/ddd && pm2 restart nav-site
 
 ============================================================
