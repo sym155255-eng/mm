@@ -254,7 +254,9 @@ router.delete('/links/:id', (req, res) => {
 let refetchRunning = false;
 router.post('/refetch-icons', (req, res) => {
   if (refetchRunning) return res.json({ ok: true, running: true, message: '已有抓取任务在进行中' });
-  const links = db().prepare('SELECT id, url FROM links').all().filter(l => l.url);
+  // 跳过手动上传的图标（文件名含 up_），只重抓空图标或自动抓取的图标，避免覆盖用户上传
+  const links = db().prepare('SELECT id, url, icon FROM links').all()
+    .filter(l => l.url && !/(^|\/)up_/.test(l.icon || ''));
   res.json({ ok: true, started: true, total: links.length });
 
   // 后台跑，抓到一个更新一个，前端轮询/SSE 会自动刷新
