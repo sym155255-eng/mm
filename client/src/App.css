@@ -229,8 +229,8 @@
 /* 手机始终 2 列，卡片内边距收紧 */
 @media (max-width: 768px) {
   .link-grid > a, .link-grid > div {
-    padding: 7px 10px !important;
-    gap: 8px !important;
+    padding: 7px 8px !important;
+    gap: 5px !important;
   }
   /* 移动端卡片图标调大 */
   .card-ico { width: 42px !important; height: 42px !important; }
