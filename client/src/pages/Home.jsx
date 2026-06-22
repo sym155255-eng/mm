@@ -539,7 +539,7 @@ function LinkCard({ link, onOpen, editMode, onEdit }) {
   const inner = (
     <>
       {editBtn}
-      <div style={styles.cardIcon}>
+      <div className="card-ico" style={styles.cardIcon}>
         <FaviconImg url={link.url} title={link.title} icon={link.icon} />
       </div>
       <div style={styles.cardContent}>
