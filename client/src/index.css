@@ -38,6 +38,7 @@ html, body, #root {
   max-width: 100%;
   overflow-x: hidden;   /* 旧浏览器兜底 */
   overflow-x: clip;     /* 现代浏览器：防横向溢出且不破坏 sticky 定位 */
+  touch-action: manipulation;  /* 禁双击放大、去掉 300ms 点击延迟 */
 }
 
 body {
